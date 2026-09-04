@@ -1,4 +1,5 @@
 import { Users, BookOpen, Calendar, MessageCircle, TrendingUp, Globe, UserPlus, Users2, Share2, LineChart } from 'lucide-react';
+import { LoginDialog, SignUpDialog } from '@/components/login-dialog';
 
 export default function MindSpaceLanding() {
   return (
@@ -16,9 +17,7 @@ export default function MindSpaceLanding() {
           <a href="#sobre" className="text-muted-foreground hover:text-primary font-medium text-lg transition-colors max-sm:text-base">
             Sobre
           </a>
-          <a href="#login" className="text-muted-foreground hover:text-primary font-medium text-lg transition-colors max-sm:text-base">
-            Login
-          </a>
+          <LoginDialog />
         </header>
 
         <main className="relative z-10 flex-1 flex flex-col justify-center px-10 pl-16 md:pl-20 lg:pl-50 pr-10 md:pr-12 lg:pr-32 max-w-7xl pb-20 mt-28 md:mt-35 max-sm:px-6 max-sm:mt-16 max-sm:pb-10">
@@ -32,9 +31,7 @@ export default function MindSpaceLanding() {
 
           <div className="mt-12 max-sm:mt-8">
             <p className="text-sm text-muted-foreground ml-2 max-sm:mb-2">Primeiro acesso?</p>
-            <button className="bg-primary text-primary-foreground px-10 py-3 rounded-full text-lg font-medium hover:bg-primary/90 transition-colors cursor-pointer max-sm:w-full">
-              Criar Conta
-            </button>
+            <SignUpDialog />
           </div>
 
           <div className="h-[2px] w-full max-w-xl bg-border my-10 max-sm:my-8"></div>
