@@ -3,8 +3,9 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.exceptions import APIException
 
-# 2. Importação do router 
-# from app.routers import auth_router
+
+from app.routers import auth_router
+from app.routers import disciplina_router
 
 app = FastAPI(
     title="Estudos Colaborativos API",
@@ -30,8 +31,9 @@ async def api_exception_handler(request: Request, exc: APIException):
         },
     )
 
-# 5. Inclusão das Rotas
-# app.include_router(auth_router.router, prefix="/api/v1/auth", tags=["Autenticação"])
+
+app.include_router(auth_router.router, prefix="/api/v1/auth", tags=["Autenticação"])
+app.include_router(disciplina_router.router, prefix="/api/v1")
 
 @app.get("/", tags=["Health"])
 def root():

@@ -1,4 +1,3 @@
-# server/app/alembic/env.py
 import os
 from logging.config import fileConfig
 
@@ -8,22 +7,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
 from app.database import Base
 from app.models import usuarios  
-
+from app.models import disciplinas # 
 
 config = context.config
-
-
 config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL"))
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-
 target_metadata = Base.metadata
-
 
 def run_migrations_offline() -> None:
     url = config.get_main_option("sqlalchemy.url")
