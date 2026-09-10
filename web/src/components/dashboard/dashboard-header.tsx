@@ -1,5 +1,6 @@
 import { Bell, Menu, Search, X } from 'lucide-react'
 
+import { useAuth } from '@/auth/use-auth'
 import { Button } from '@/components/ui/button'
 import { dashboardSummary } from '@/data/dashboard'
 
@@ -18,6 +19,7 @@ export function DashboardHeader({
   notificationsOpen,
   onNotificationsToggle,
 }: DashboardHeaderProps) {
+  const session = useAuth()
   return (
     <header className="relative flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
       <div className="flex items-start gap-3">
@@ -32,7 +34,7 @@ export function DashboardHeader({
         </Button>
         <div>
           <h1 className="font-heading text-xl font-bold tracking-[-0.025em] text-primary sm:text-[22px]">
-            Bom te ver, usuário
+            Bom te ver, {session?.user.name.split(' ')[0] ?? 'estudante'}
           </h1>
           <p className="mt-1 text-xs text-muted-foreground sm:text-[13px]">
             Continue de onde parou ou explore um grupo novo hoje.
