@@ -1,20 +1,34 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Plus, Pencil, Trash2, Check, Menu } from 'lucide-react';
 import { useLayout } from '../../components/layout/app-layout';
 import NovaDisciplinaModal from './modal-disciplinas'; 
+import {api} from '../../api/client'; 
+
+interface Disciplina {
+  id: number;
+  nome: string;
+  professor: string;
+  descricao: string;
+  cor: string;
+  ativo: boolean;
+}
 
 export default function Disciplinas() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [disciplinas, setDisciplinas] = useState<Disciplina[]>([]);
   const { openMenu } = useLayout();
+  const carregarDisciplinas = async () => {
+    try {
+      const response = await api.get('/disciplinas/');
+      setDisciplinas(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar disciplinas:', error);
+    }
+  };
 
-  const disciplinas = [
-    { id: 1, nome: 'Cálculo III', professor: 'Prof. Ana Santos', concluidas: 5, total: 9, progresso: 56, cor: 'bg-destructive', corTexto: 'text-destructive', ativo: true },
-    { id: 2, nome: 'Estrutura de Dados', professor: 'Prof. Carlos Lima', concluidas: 7, total: 10, progresso: 70, cor: 'bg-accent', corTexto: 'text-accent', ativo: false },
-    { id: 3, nome: 'UX Design', professor: 'Prof. Marina Costa', concluidas: 8, total: 8, progresso: 100, cor: 'bg-success', corTexto: 'text-success', ativo: false },
-    { id: 4, nome: 'Banco de Dados', professor: 'Prof. João Mendes', concluidas: 3, total: 7, progresso: 43, cor: 'bg-warning', corTexto: 'text-warning', ativo: false },
-    { id: 5, nome: 'Redes de Computadores', professor: 'Prof. Lucia Ferreira', concluidas: 4, total: 6, progresso: 67, cor: 'bg-accent', corTexto: 'text-accent', ativo: false },
-    { id: 6, nome: 'Inteligência Artificial', professor: 'Prof. Roberto Alves', concluidas: 2, total: 8, progresso: 25, cor: 'bg-destructive', corTexto: 'text-destructive', ativo: false },
-  ];
+  useEffect(() => {
+    carregarDisciplinas();
+  }, []);
 
   const tarefas = [
     { id: 1, nome: 'Resolver lista de integrais triplas', prioridade: 'Alta', status: 'Vence amanhã', feito: false },
@@ -69,14 +83,16 @@ export default function Disciplinas() {
             </button>
           </div>
         </header>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {disciplinas.map((disc) => (
             <div 
               key={disc.id} 
               className={`relative p-5 rounded-xl border transition-all cursor-pointer group ${
                 disc.ativo 
-                  ? 'border-accent bg-secondary shadow-sm' 
-                  : 'border-border bg-card hover:border-accent/50'
+                  ? 'border-accent bg-card shadow-sm' 
+                  : 'border-border bg-card hover:border-accent/50' 
+                  
               }`}
             >
               <div className="flex justify-between items-start mb-6">
@@ -89,18 +105,20 @@ export default function Disciplinas() {
                   <button className="hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>
+              
               <div className="space-y-2">
                 <div className="w-full h-1.5 bg-border rounded-full overflow-hidden">
-                  <div className={`h-full rounded-full ${disc.cor}`} style={{ width: `${disc.progresso}%` }}></div>
+                  <div className={`h-full rounded-full ${disc.cor || 'bg-accent'}`} style={{ width: '0%' }}></div>
                 </div>
                 <div className="flex justify-between items-center text-xs">
-                  <span className="text-muted-foreground">{disc.concluidas} de {disc.total} tarefas</span>
-                  <span className={`font-semibold ${disc.corTexto}`}>{disc.progresso}%</span>
+                  <span className="text-muted-foreground">0 de 0 tarefas</span>
+                  <span className={`font-semibold text-muted-foreground`}>0%</span>
                 </div>
               </div>
             </div>
           ))}
         </div>
+
         <div className="border border-accent bg-card rounded-2xl p-4 sm:p-6 shadow-sm overflow-hidden">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border pb-6 gap-4">
             <div className="flex items-start sm:items-center gap-3">
@@ -156,6 +174,7 @@ export default function Disciplinas() {
       <NovaDisciplinaModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
+        onSuccess={carregarDisciplinas}
       />
     </div>
   );
