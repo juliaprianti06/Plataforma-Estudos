@@ -28,6 +28,8 @@
     --color-input: var(--input);
     --color-border: var(--border);
     --color-destructive: var(--destructive);
+    --color-success: var(--chart-4);
+    --color-warning: var(--destructive);
     --color-accent-foreground: var(--accent-foreground);
     --color-accent: var(--accent);
     --color-muted-foreground: var(--muted-foreground);
@@ -60,8 +62,8 @@
     --popover-foreground: #1C1A33;
     --primary: #2A2560;
     --primary-foreground: #FFFFFF;
-    --secondary: #74768B;
-    --secondary-foreground: #2A2560;
+    --secondary: #6B6890;
+    --secondary-foreground: #FFFFFF;
     --muted: #EDEBFB;
     --muted-foreground: #6B6890;
     --accent: #5B4FE0;
@@ -72,9 +74,9 @@
     --ring: #5B4FE0;
     --chart-1: #5B4FE0;
     --chart-2: #FF7A5C;
-    --chart-3: #F5B942;
+    --chart-3: #6B6890;
     --chart-4: #4CAF7D;
-    --chart-5: #2A5DA8;
+    --chart-5: #2A2560;
     --radius: 0.625rem;
     --sidebar: #2A2560;
     --sidebar-foreground: #FFFFFF;
@@ -87,37 +89,37 @@
 }
 
 .dark {
-    --background: #171533;
+    --background: #1C1A33;
     --foreground: #EDEBFB;
-    --card: #211D4A;
+    --card: #2A2560;
     --card-foreground: #EDEBFB;
-    --popover: #211D4A;
+    --popover: #2A2560;
     --popover-foreground: #EDEBFB;
-    --primary: #7A6FF0;
-    --primary-foreground: #171533;
-    --secondary: #2E2A5E;
+    --primary: #EDEBFB;
+    --primary-foreground: #1C1A33;
+    --secondary: #2A2560;
     --secondary-foreground: #EDEBFB;
-    --muted: #2E2A5E;
-    --muted-foreground: #9C97C9;
-    --accent: #5B4FE0;
-    --accent-foreground: #FFFFFF;
+    --muted: #2A2560;
+    --muted-foreground: #DAD7EE;
+    --accent: #DAD7EE;
+    --accent-foreground: #2A2560;
     --destructive: #FF7A5C;
     --border: rgba(255,255,255,.10);
     --input: rgba(255,255,255,.15);
-    --ring: #7A6FF0;
-    --chart-1: #7A6FF0;
+    --ring: #DAD7EE;
+    --chart-1: #5B4FE0;
     --chart-2: #FF7A5C;
-    --chart-3: #F5B942;
+    --chart-3: #6B6890;
     --chart-4: #4CAF7D;
-    --chart-5: #6FA8E0;
-    --sidebar: #171533;
+    --chart-5: #DAD7EE;
+    --sidebar: #1C1A33;
     --sidebar-foreground: #EDEBFB;
     --sidebar-primary: #FF7A5C;
     --sidebar-primary-foreground: #FFFFFF;
     --sidebar-accent: rgba(255,255,255,.10);
     --sidebar-accent-foreground: #EDEBFB;
     --sidebar-border: rgba(255,255,255,.10);
-    --sidebar-ring: #7A6FF0;
+    --sidebar-ring: #DAD7EE;
 }
 @layer base {
   * {
@@ -129,8 +131,7 @@
     min-width: 320px;
     }
   html {
-    @apply font-sans;
-    background: #f7f6fc;
+    @apply font-sans bg-background;
     }
 
   button,

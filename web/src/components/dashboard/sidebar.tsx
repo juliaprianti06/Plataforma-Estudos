@@ -19,7 +19,7 @@ export function Sidebar({ open, onClose, onNavigate }: SidebarProps) {
       <button
         aria-label="Fechar menu lateral"
         className={cn(
-          'fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-[2px] transition-opacity lg:hidden',
+          'fixed inset-0 z-40 bg-sidebar/40 backdrop-blur-[2px] transition-opacity lg:hidden',
           open ? 'block opacity-100' : 'hidden opacity-0',
         )}
         onClick={onClose}
@@ -28,7 +28,7 @@ export function Sidebar({ open, onClose, onNavigate }: SidebarProps) {
 
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-[248px] flex-col bg-[#302468] text-white shadow-2xl transition-transform duration-300 lg:sticky lg:top-0 lg:z-20 lg:flex lg:h-screen lg:w-[216px] lg:translate-x-0 lg:shadow-none xl:w-[232px]',
+          'fixed inset-y-0 left-0 z-50 w-[248px] flex-col bg-sidebar text-sidebar-foreground shadow-2xl transition-transform duration-300 lg:sticky lg:top-0 lg:z-20 lg:flex lg:h-screen lg:w-[216px] lg:translate-x-0 lg:shadow-none xl:w-[232px]',
           open ? 'flex translate-x-0' : 'hidden -translate-x-full',
         )}
       >
@@ -36,7 +36,7 @@ export function Sidebar({ open, onClose, onNavigate }: SidebarProps) {
           <Brand />
           <Button
             aria-label="Fechar menu"
-            className="text-white hover:bg-white/10 hover:text-white lg:hidden"
+            className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground lg:hidden"
             onClick={onClose}
             size="icon"
             variant="ghost"
@@ -55,8 +55,8 @@ export function Sidebar({ open, onClose, onNavigate }: SidebarProps) {
                   <button
                     aria-current={item.active ? 'page' : undefined}
                     className={cn(
-                      'flex h-10 w-full items-center gap-3 rounded-lg px-3 text-left text-[13px] font-medium text-violet-100/80 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white',
-                      item.active && 'bg-white/15 text-white shadow-sm',
+                      'flex h-10 w-full items-center gap-3 rounded-lg px-3 text-left text-[13px] font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring',
+                      item.active && 'bg-sidebar-accent text-sidebar-foreground shadow-sm',
                     )}
                     onClick={() => {
                       onNavigate(item.label)
@@ -73,22 +73,22 @@ export function Sidebar({ open, onClose, onNavigate }: SidebarProps) {
           </ul>
         </nav>
 
-        <div className="border-t border-white/10 p-4">
+        <div className="border-t border-sidebar-border p-4">
           <button
-            className="group flex w-full items-center gap-3 rounded-xl p-2 text-left transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="group flex w-full items-center gap-3 rounded-xl p-2 text-left transition-colors hover:bg-sidebar-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring"
             onClick={() => onNavigate('Perfil')}
             type="button"
           >
-            <Avatar className="size-9 border border-white/20">
-              <AvatarFallback className="bg-[#7d73a5] text-xs font-semibold text-white">
+            <Avatar className="size-9 border border-sidebar-foreground/20">
+              <AvatarFallback className="bg-sidebar-accent text-xs font-semibold text-sidebar-foreground">
                 {currentUser.initials}
               </AvatarFallback>
             </Avatar>
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-xs font-semibold text-white">
+              <span className="block truncate text-xs font-semibold text-sidebar-foreground">
                 {currentUser.name}
               </span>
-              <span className="block text-[10px] text-violet-200/70">Ver perfil</span>
+              <span className="block text-[10px] text-sidebar-foreground/70">Ver perfil</span>
             </span>
             <LogOut aria-hidden="true" className="size-4 opacity-0 transition-opacity group-hover:opacity-70" />
           </button>

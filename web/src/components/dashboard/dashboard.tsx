@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { tasks } from '@/data/dashboard'
 
@@ -13,6 +13,11 @@ export function Dashboard() {
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [message, setMessage] = useState('')
+  const messageTimer = useRef<number | null>(null)
+
+  useEffect(() => () => {
+    if (messageTimer.current !== null) window.clearTimeout(messageTimer.current)
+  }, [])
 
   const filteredTasks = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase('pt-BR')
@@ -26,11 +31,15 @@ export function Dashboard() {
   function handleNavigate(label: string) {
     if (label === 'Início') return
     setMessage(`${label} estará disponível em breve.`)
-    window.setTimeout(() => setMessage(''), 2500)
+    if (messageTimer.current !== null) window.clearTimeout(messageTimer.current)
+    messageTimer.current = window.setTimeout(() => {
+      setMessage('')
+      messageTimer.current = null
+    }, 2500)
   }
 
   return (
-    <div className="flex min-h-screen bg-[#f7f6fc] text-[#2f2850]">
+    <div className="flex min-h-screen bg-background text-foreground">
       <Sidebar
         onClose={() => setSidebarOpen(false)}
         onNavigate={handleNavigate}
@@ -61,7 +70,7 @@ export function Dashboard() {
       {message && (
         <div
           aria-live="polite"
-          className="fixed bottom-5 left-1/2 z-[60] -translate-x-1/2 rounded-full bg-[#302468] px-4 py-2 text-xs font-medium text-white shadow-xl"
+          className="fixed bottom-5 left-1/2 z-[60] -translate-x-1/2 rounded-full bg-primary px-4 py-2 text-xs font-medium text-primary-foreground shadow-xl"
           role="status"
         >
           {message}

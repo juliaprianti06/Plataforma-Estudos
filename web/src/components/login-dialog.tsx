@@ -51,7 +51,7 @@ function AuthDialog({ initialMode, trigger }: AuthDialogProps) {
 
       <DialogContent className="max-h-[calc(100vh-2rem)] overflow-y-auto border-0 p-0 shadow-2xl sm:max-w-md">
         <div className="bg-primary px-8 pb-7 pt-8 text-primary-foreground">
-          <div className="mb-5 flex size-12 items-center justify-center rounded-2xl bg-white/12 ring-1 ring-white/15">
+          <div className="mb-5 flex size-12 items-center justify-center rounded-2xl bg-primary-foreground/12 ring-1 ring-primary-foreground/15">
             {isSignup ? (
               <UserPlus className="size-6" aria-hidden="true" />
             ) : (
