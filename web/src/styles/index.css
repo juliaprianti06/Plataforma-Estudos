@@ -28,6 +28,7 @@
     --color-input: var(--input);
     --color-border: var(--border);
     --color-destructive: var(--destructive);
+    --color-destructive-text: var(--foreground);
     --color-success: var(--chart-4);
     --color-warning: var(--destructive);
     --color-accent-foreground: var(--accent-foreground);

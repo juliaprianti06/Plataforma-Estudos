@@ -102,3 +102,32 @@ Os testes usam Node.js 24, o runner nativo e o Vite já instalado. Cobrem
 persistência, expiração, armazenamento indisponível, separação mock/API,
 contratos HTTP, erros e logout. As chamadas HTTP são simuladas nos testes;
 não exigem banco de dados nem backend ativo.
+
+## Tela de grupos
+
+Após entrar, acesse **Grupos** no menu ou `/groups`. A rota exige uma sessão,
+assim como o dashboard.
+
+- No modo mock, a tela começa com os seis grupos da referência.
+- A busca encontra nomes, categorias e assuntos, ignorando acentos.
+- **Criar grupo** mantém os campos de nome, categoria, descrição e ícone e gera
+  um código de seis caracteres, com botão **Copiar**. O convite fica ativo
+  apenas depois de salvar e permanece o mesmo nas edições.
+- Administradores podem editar; membros podem consultar os detalhes.
+- **Adicionar grupo** permite entrar pelo código recebido e também mantém o
+  catálogo de demonstração. Quem entra recebe o papel de membro; entradas
+  repetidas não aumentam a contagem.
+- Os grupos e suas participações ficam em um registro compartilhado no
+  localStorage, com a lista de grupos separada por usuário. Assim, dois usuários
+  de demonstração no mesmo navegador podem testar o convite. Outros navegadores
+  e dispositivos dependem do backend. Dados antigos são migrados ao abrir a tela.
+- No modo API, os grupos de exemplo não são carregados; as operações de grupos
+  continuam locais até a implementação do backend de grupos.
+
+A interface `GroupsRepository`, em `src/groups/repository.ts`, define
+`list`, `discover`, `create`, `update`, `join` e `joinByCode`. Para integrar ao banco,
+implemente um repositório HTTP com esse contrato e troque a criação do
+repositório em `src/components/groups/groups-page.tsx`. O servidor deverá
+validar participação e permissões de administrador; as verificações locais
+servem apenas para o protótipo. A API deverá garantir a unicidade dos códigos
+  e registrar a entrada e a contagem de membros numa única transação.

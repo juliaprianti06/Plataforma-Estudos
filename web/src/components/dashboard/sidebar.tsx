@@ -72,7 +72,7 @@ export function Sidebar({ open, onClose, onNavigate }: SidebarProps) {
           <ul className="space-y-1">
             {navigationItems.map((item) => {
               const Icon = item.icon
-              const to = item.label === 'Início' ? '/dashboard' : null
+              const to = item.label === 'Início' ? '/dashboard' : item.label === 'Grupos' ? '/groups' : null
               const className = cn(
                 'flex h-10 w-full items-center gap-3 rounded-lg px-3 text-left text-[13px] font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring',
                 pathname === to && 'bg-sidebar-accent text-sidebar-foreground shadow-sm',
