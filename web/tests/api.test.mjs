@@ -33,6 +33,7 @@ test('contrato de API: login, restauração, erros, autorização e logout', asy
   const { sessionStore } = await server.ssrLoadModule('/src/auth/session.ts')
   const { Route } = await server.ssrLoadModule('/src/routes/dashboard.tsx')
   const { Route: GroupsRoute } = await server.ssrLoadModule('/src/routes/groups.tsx')
+  const { Route: ProfileRoute } = await server.ssrLoadModule('/src/routes/profile.tsx')
   const profile = { id: 'user-1', name: 'Ana Silva', email: 'ana@example.test' }
   let status = 200
   let invalidSession = false
@@ -74,6 +75,7 @@ test('contrato de API: login, restauração, erros, autorização e logout', asy
     assert.equal(sessionStore.getSnapshot().user.name, 'Ana Silva')
     await Route.options.beforeLoad()
     await GroupsRoute.options.beforeLoad()
+    await ProfileRoute.options.beforeLoad()
   })
 
   await t.test('registration uses the agreed contract', async () => {
@@ -118,6 +120,7 @@ test('contrato de API: login, restauração, erros, autorização e logout', asy
     await assert.rejects(auth.logout())
     await assert.rejects(Route.options.beforeLoad(), (error) => error.options?.to === '/')
     await assert.rejects(GroupsRoute.options.beforeLoad(), (error) => error.options?.to === '/')
+    await assert.rejects(ProfileRoute.options.beforeLoad(), (error) => error.options?.to === '/')
     assert.equal(calls.at(-1).url, '/auth/logout')
     assert.equal(sessionStore.getSnapshot(), null)
     assert.equal(globalThis.window.localStorage.getItem('mindspace.auth.session.v1'), null)

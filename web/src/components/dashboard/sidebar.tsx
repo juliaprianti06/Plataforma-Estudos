@@ -3,8 +3,9 @@ import { useState } from 'react'
 import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
 import { auth } from '@/auth/auth'
 import { useAuth } from '@/auth/use-auth'
+import { useProfile } from '@/profile/use-profile'
 
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { navigationItems } from '@/data/dashboard'
 import { cn } from '@/lib/utils'
@@ -19,10 +20,11 @@ type SidebarProps = {
 
 export function Sidebar({ open, onClose, onNavigate }: SidebarProps) {
   const session = useAuth()
+  const profile = useProfile()
   const navigate = useNavigate()
   const pathname = useRouterState({ select: (state) => state.location.pathname })
   const [loggingOut, setLoggingOut] = useState(false)
-  const name = session?.user.name ?? 'Estudante'
+  const name = profile?.name ?? session?.user.name ?? 'Estudante'
   const initials = name.split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase()
 
   async function handleLogout() {
@@ -93,13 +95,15 @@ export function Sidebar({ open, onClose, onNavigate }: SidebarProps) {
         </nav>
 
         <div className="border-t border-sidebar-border p-4">
-          <button
-            type="button"
+          <Link
+            to="/profile"
             aria-label="Ver meu perfil"
-            className="group flex w-full items-center gap-3 rounded-xl p-2 text-left transition-colors hover:bg-sidebar-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring"
-            onClick={() => onNavigate('Perfil')}
+            aria-current={pathname === '/profile' ? 'page' : undefined}
+            className={cn('group flex w-full items-center gap-3 rounded-xl p-2 text-left transition-colors hover:bg-sidebar-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring', pathname === '/profile' && 'bg-sidebar-accent')}
+            onClick={onClose}
           >
             <Avatar className="size-9 border border-sidebar-foreground/20">
+              {profile?.avatar && <AvatarImage src={profile.avatar} alt="" />}
               <AvatarFallback className="bg-sidebar-accent text-xs font-semibold text-sidebar-foreground">
                 {initials}
               </AvatarFallback>
@@ -110,7 +114,7 @@ export function Sidebar({ open, onClose, onNavigate }: SidebarProps) {
               </span>
               <span className="block text-[10px] text-sidebar-foreground/70">Ver perfil</span>
             </span>
-          </button>
+          </Link>
           <button
             type="button"
             disabled={loggingOut}

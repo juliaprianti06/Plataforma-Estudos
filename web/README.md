@@ -131,3 +131,32 @@ repositório em `src/components/groups/groups-page.tsx`. O servidor deverá
 validar participação e permissões de administrador; as verificações locais
 servem apenas para o protótipo. A API deverá garantir a unicidade dos códigos
   e registrar a entrada e a contagem de membros numa única transação.
+
+## Perfil e preferências
+
+Acesse **Ver perfil** no rodapé do menu, ou `/profile`, após entrar.
+
+- **Perfil:** nome completo, apresentação de até 300 caracteres, até três áreas
+  de interesse e foto JPG/PNG de até 5 MB. A imagem é recortada no centro e
+  reduzida para 320 × 320 antes de ser armazenada. Há prévia, remoção e validação.
+- **Preferências:** avisos de estudos e novidades de grupos podem ser ligados
+  ou desligados. As escolhas controlam as notificações de exemplo no dashboard;
+  não há envio de e-mails ou notificações do sistema.
+- **Conta:** informações de acesso, download em JSON dos dados salvos do perfil
+  e restauração da personalização, com confirmação, preservando os grupos.
+- Nome e foto salvos aparecem no menu; a saudação do dashboard usa o nome do
+  perfil. O identificador da conta continua o mesmo.
+- Alterações ficam como rascunho até **Salvar alterações**. É possível descartá-las,
+  e navegar para outra página com dados pendentes abre uma confirmação.
+
+`src/profile/store.ts` mantém somente os campos permitidos, com validação e
+persistência separada por usuário e modo de autenticação. `use-profile.ts`
+compartilha as mudanças entre componentes. Os dados ficam locais, inclusive
+no modo API, até implementar a leitura e a gravação do perfil no backend.
+A atualização em outra aba será carregada após recarregar essa aba.
+
+O e-mail de acesso é somente leitura. Alteração de senha, alteração/verificação
+de e-mail e exclusão de conta não são simuladas como operações reais. Na integração
+futura, precisam de endpoints autenticados no servidor. A API de perfil deverá
+validar a propriedade dos dados e armazenar a foto em um serviço de arquivos.
+O download do perfil não inclui tokens, senhas nem informações de outros usuários.
