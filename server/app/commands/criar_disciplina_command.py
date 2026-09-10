@@ -1,7 +1,7 @@
 from app.models.disciplinas import Disciplina
 from app.schemas.disciplina_schema import DisciplinaCreate
 from app.commands.base_command import BaseCommand
-from app.repositories.disciplina_repository import DisciplinaRepository
+from app.repository.disciplina_repository import DisciplinaRepository
 
 class CriarDisciplinaCommand(BaseCommand):
     def __init__(self, repository: DisciplinaRepository, disciplina_data: DisciplinaCreate, usuario_id: int):

@@ -32,8 +32,8 @@ async def api_exception_handler(request: Request, exc: APIException):
     )
 
 
-app.include_router(auth_router.router, prefix="/api/v1/auth", tags=["Autenticação"])
-app.include_router(disciplina_router.router, prefix="/api/v1")
+app.include_router(auth_router.router, tags=["Autenticação"])
+app.include_router(disciplina_router.router)
 
 @app.get("/", tags=["Health"])
 def root():
