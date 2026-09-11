@@ -9,7 +9,8 @@ load_dotenv()
 
 from app.database import Base
 from app.models import usuarios  
-from app.models import disciplinas # 
+from app.models import disciplinas 
+from app.models import tarefa
 
 config = context.config
 config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL"))

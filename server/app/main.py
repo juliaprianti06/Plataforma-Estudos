@@ -4,8 +4,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.exceptions import APIException
 
 
+
 from app.routers import auth_router
 from app.routers import disciplina_router
+from app.routers import tarefa_router
 
 app = FastAPI(
     title="Estudos Colaborativos API",
@@ -34,6 +36,7 @@ async def api_exception_handler(request: Request, exc: APIException):
 
 app.include_router(auth_router.router, tags=["Autenticação"])
 app.include_router(disciplina_router.router)
+app.include_router(tarefa_router.router)
 
 @app.get("/", tags=["Health"])
 def root():
