@@ -9,6 +9,13 @@ class DisciplinaBase(BaseModel):
     cor: str = Field(default="bg-accent")
     ativo: bool = Field(default=True)
 
+class DisciplinaUpdate(BaseModel):
+    nome: Optional[str] = None
+    professor: Optional[str] = None
+    descricao: Optional[str] = None
+    cor: Optional[str] = None
+    ativo: Optional[bool] = None
+
 class DisciplinaCreate(DisciplinaBase):
     pass
 

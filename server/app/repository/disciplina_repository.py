@@ -13,3 +13,19 @@ class DisciplinaRepository:
         self.db.commit()
         self.db.refresh(disciplina)
         return disciplina
+    
+
+    def buscar_por_id(self, disciplina_id: int, usuario_id: int):
+        return self.db.query(Disciplina).filter(
+            Disciplina.id == disciplina_id,
+            Disciplina.usuario_id == usuario_id
+        ).first()
+
+   
+    def deletar(self, disciplina: Disciplina):
+        self.db.delete(disciplina)
+        self.db.commit()
+        
+
+    def update(self):
+        self.db.commit()
