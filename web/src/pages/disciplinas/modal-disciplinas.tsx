@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { api } from '../../api/client';
 import { X } from 'lucide-react';
 
@@ -6,12 +6,14 @@ interface DisciplinaModalProps {
   isOpen?: boolean;
   onClose?: () => void;
   onSuccess?: () => void;
+  disciplina?: any | null; 
 }
 
 export default function DisciplinaModal({ 
   isOpen = true, 
   onClose = () => {}, 
-  onSuccess = () => {} 
+  onSuccess = () => {},
+  disciplina = null 
 }: DisciplinaModalProps) {
 
   const [nome, setNome] = useState('');
@@ -29,6 +31,20 @@ export default function DisciplinaModal({
     'bg-neutral-accent'  
   ];
 
+  useEffect(() => {
+    if (disciplina) {
+      setNome(disciplina.nome || '');
+      setProfessor(disciplina.professor || '');
+      setDescricao(disciplina.descricao || '');
+      setCorSelecionada(disciplina.cor || 'bg-accent');
+    } else {
+      setNome('');
+      setProfessor('');
+      setDescricao('');
+      setCorSelecionada('bg-accent');
+    }
+  }, [disciplina, isOpen]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); 
     setIsSubmitting(true);
@@ -42,18 +58,18 @@ export default function DisciplinaModal({
         ativo: true
       };
 
-      await api.post('/disciplinas/', payload);
-      setNome('');
-      setProfessor('');
-      setDescricao('');
-      setCorSelecionada('bg-accent');
+      if (disciplina && disciplina.id) {
+        await api.put(`/disciplinas/${disciplina.id}`, payload);
+      } else {
+        await api.post('/disciplinas/', payload);
+      }
       
       onSuccess(); 
       onClose();   
       
     } catch (error) {
       console.error("Erro ao salvar disciplina:", error);
-      alert("Houve um erro ao criar a disciplina. Tente novamente.");
+      alert("Houve um erro ao salvar a disciplina. Tente novamente.");
     } finally {
       setIsSubmitting(false);
     }
@@ -66,12 +82,12 @@ export default function DisciplinaModal({
       <div className="bg-card w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-xl">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-primary">
-            Nova disciplina
+            {disciplina ? 'Editar disciplina' : 'Nova disciplina'}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="text-muted-foreground hover:text-primary transition-colors rounded-full p-1 hover:bg-muted/50"
+            className="text-muted-foreground hover:text-primary transition-colors cursor-pointer rounded-full p-1 hover:bg-muted/50"
           >
             <X className="w-5 h-5" />
           </button>
@@ -125,7 +141,7 @@ export default function DisciplinaModal({
                   key={cor}
                   type="button"
                   onClick={() => setCorSelecionada(cor)}
-                  className={`w-7 h-7 rounded-full flex items-center justify-center transition-transform hover:scale-110 ${cor}`}
+                  className={`w-7 h-7 rounded-full flex items-center justify-center transition-transform cursor-pointer hover:scale-110 ${cor}`}
                 >
                   {corSelecionada === cor && (
                     <span className="w-2.5 h-2.5 bg-card rounded-full" />
@@ -139,14 +155,14 @@ export default function DisciplinaModal({
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="text-sm font-semibold text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
+              className="text-sm font-semibold text-muted-foreground hover:text-primary transition-colors cursor-pointer disabled:opacity-50"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="bg-accent text-accent-foreground px-8 py-2.5 rounded-xl text-sm font-semibold hover:bg-accent/90 transition-colors shadow-sm disabled:opacity-70"
+              className="bg-accent text-accent-foreground px-8 py-2.5 rounded-xl text-sm font-semibold cursor-pointer hover:bg-accent/90 transition-colors shadow-sm disabled:opacity-70"
             >
               {isSubmitting ? 'Salvando...' : 'Salvar'}
             </button>

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, Plus, Pencil, Trash2, Check, Menu } from 'lucide-react';
 import { useLayout } from '../../components/layout/app-layout';
 import NovaDisciplinaModal from './modal-disciplinas'; 
-import {api} from '../../api/client'; 
+import { api } from '../../api/client'; 
 
 interface Disciplina {
   id: number;
@@ -16,7 +16,9 @@ interface Disciplina {
 export default function Disciplinas() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [disciplinas, setDisciplinas] = useState<Disciplina[]>([]);
+  const [disciplinaEditando, setDisciplinaEditando] = useState<Disciplina | null>(null);
   const { openMenu } = useLayout();
+  
   const carregarDisciplinas = async () => {
     try {
       const response = await api.get('/disciplinas/');
@@ -30,6 +32,27 @@ export default function Disciplinas() {
     carregarDisciplinas();
   }, []);
 
+  const handleExcluirDisciplina = async (id: number) => {
+    if (window.confirm('Tem certeza que deseja excluir esta disciplina?')) {
+      try {
+        await api.delete(`/disciplinas/${id}`);
+        carregarDisciplinas(); 
+      } catch (error) {
+        console.error('Erro ao excluir:', error);
+        alert('Erro ao excluir a disciplina.');
+      }
+    }
+  };
+  const handleEditarDisciplina = (disciplina: Disciplina) => {
+    setDisciplinaEditando(disciplina);
+    setIsModalOpen(true);
+  };
+
+  const handleFecharModal = () => {
+    setDisciplinaEditando(null);
+    setIsModalOpen(false);
+  };
+
   const tarefas = [
     { id: 1, nome: 'Resolver lista de integrais triplas', prioridade: 'Alta', status: 'Vence amanhã', feito: false },
     { id: 2, nome: 'Estudar teorema de Green', prioridade: 'Média', status: 'Vence Ter', feito: false },
@@ -42,10 +65,14 @@ export default function Disciplinas() {
 
   const getBadgeCor = (prioridade: string) => {
     switch (prioridade) {
-      case 'Alta': return 'bg-red-100 text-red-600';
-      case 'Média': return 'bg-orange-100 text-orange-600';
-      case 'Baixa': return 'bg-green-100 text-green-600';
-      default: return 'bg-gray-100 text-gray-600';
+      case 'Alta': 
+        return 'bg-destructive/15 text-destructive font-bold';
+      case 'Média': 
+        return 'bg-warning/15 text-warning font-bold';
+      case 'Baixa': 
+        return 'bg-success/15 text-success font-bold';
+      default: 
+        return 'bg-muted text-muted-foreground font-bold';
     }
   };
 
@@ -92,7 +119,6 @@ export default function Disciplinas() {
                 disc.ativo 
                   ? 'border-accent bg-card shadow-sm' 
                   : 'border-border bg-card hover:border-accent/50' 
-                  
               }`}
             >
               <div className="flex justify-between items-start mb-6">
@@ -101,8 +127,18 @@ export default function Disciplinas() {
                   <p className="text-xs text-muted-foreground mt-1">{disc.professor}</p>
                 </div>
                 <div className={`flex gap-2 text-muted-foreground ${disc.ativo ? 'opacity-100' : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100'} transition-opacity`}>
-                  <button className="hover:text-primary"><Pencil className="w-4 h-4" /></button>
-                  <button className="hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
+                  <button 
+                    onClick={() => handleEditarDisciplina(disc)} 
+                    className="hover:text-primary transition-colors cursor-pointer"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={() => handleExcluirDisciplina(disc.id)} 
+                    className="hover:text-destructive transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
               
@@ -119,6 +155,7 @@ export default function Disciplinas() {
           ))}
         </div>
 
+        {/* --- COMPONENTE DE TAREFAS MANTIDO IGUAL --- */}
         <div className="border border-accent bg-card rounded-2xl p-4 sm:p-6 shadow-sm overflow-hidden">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border pb-6 gap-4">
             <div className="flex items-start sm:items-center gap-3">
@@ -173,8 +210,9 @@ export default function Disciplinas() {
       </div>
       <NovaDisciplinaModal 
         isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+        onClose={handleFecharModal} 
         onSuccess={carregarDisciplinas}
+        disciplina={disciplinaEditando}
       />
     </div>
   );
