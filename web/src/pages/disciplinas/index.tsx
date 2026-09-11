@@ -21,7 +21,12 @@ export default function Disciplinas() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [disciplinaParaExcluir, setDisciplinaParaExcluir] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [busca, setBusca] = useState('');
   const { openMenu } = useLayout();
+
+  const disciplinasFiltradas = disciplinas.filter((d) =>
+    d.nome.toLowerCase().includes(busca.toLowerCase())
+  );
   
   const carregarDisciplinas = async () => {
     try {
@@ -111,6 +116,8 @@ export default function Disciplinas() {
               <input 
                 type="text" 
                 placeholder="Buscar disciplina..." 
+                value={busca}
+                onChange={(e) => setBusca(e.target.value)}
                 className="pl-10 pr-4 py-2 rounded-full border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring w-full sm:w-64"
               />
             </div>
@@ -124,7 +131,7 @@ export default function Disciplinas() {
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {disciplinas.map((disc) => (
+          {disciplinasFiltradas.map((disc) => (
             <div 
               key={disc.id} 
               className={`relative p-5 rounded-xl border transition-all cursor-pointer group ${
