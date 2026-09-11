@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Search, Plus, Pencil, Trash2, Check, Menu } from 'lucide-react';
 import { useLayout } from '../../components/layout/app-layout';
-import NovaDisciplinaModal from './modal-disciplinas'; 
-import { api } from '../../api/client'; 
+import NovaDisciplinaModal from './modal-disciplinas';
+import ConfirmDialog from '../../components/ui/confirm-dialog';
+import { api } from '../../api/client';
 
 interface Disciplina {
   id: number;
@@ -17,6 +18,9 @@ export default function Disciplinas() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [disciplinas, setDisciplinas] = useState<Disciplina[]>([]);
   const [disciplinaEditando, setDisciplinaEditando] = useState<Disciplina | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [disciplinaParaExcluir, setDisciplinaParaExcluir] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { openMenu } = useLayout();
   
   const carregarDisciplinas = async () => {
@@ -32,15 +36,23 @@ export default function Disciplinas() {
     carregarDisciplinas();
   }, []);
 
-  const handleExcluirDisciplina = async (id: number) => {
-    if (window.confirm('Tem certeza que deseja excluir esta disciplina?')) {
-      try {
-        await api.delete(`/disciplinas/${id}`);
-        carregarDisciplinas(); 
-      } catch (error) {
-        console.error('Erro ao excluir:', error);
-        alert('Erro ao excluir a disciplina.');
-      }
+  const handleAbrirConfirmExcluir = (id: number) => {
+    setDisciplinaParaExcluir(id);
+    setConfirmOpen(true);
+  };
+
+  const handleExcluir = async () => {
+    if (disciplinaParaExcluir === null) return;
+    setIsDeleting(true);
+    try {
+      await api.delete(`/disciplinas/${disciplinaParaExcluir}`);
+      carregarDisciplinas();
+    } catch (error) {
+      console.error('Erro ao excluir:', error);
+    } finally {
+      setIsDeleting(false);
+      setConfirmOpen(false);
+      setDisciplinaParaExcluir(null);
     }
   };
   const handleEditarDisciplina = (disciplina: Disciplina) => {
@@ -121,10 +133,13 @@ export default function Disciplinas() {
                   : 'border-border bg-card hover:border-accent/50' 
               }`}
             >
-              <div className="flex justify-between items-start mb-6">
-                <div>
-                  <h3 className="font-semibold text-primary text-lg leading-tight">{disc.nome}</h3>
-                  <p className="text-xs text-muted-foreground mt-1">{disc.professor}</p>
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex items-start gap-3">
+                  <div className={`w-1 h-10 rounded-full shrink-0 mt-0.5 ${disc.cor || 'bg-accent'}`} />
+                  <div>
+                    <h3 className="font-semibold text-primary text-lg leading-tight">{disc.nome}</h3>
+                    <p className="text-xs text-muted-foreground mt-1">{disc.professor}</p>
+                  </div>
                 </div>
                 <div className={`flex gap-2 text-muted-foreground ${disc.ativo ? 'opacity-100' : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100'} transition-opacity`}>
                   <button 
@@ -134,14 +149,20 @@ export default function Disciplinas() {
                     <Pencil className="w-4 h-4" />
                   </button>
                   <button 
-                    onClick={() => handleExcluirDisciplina(disc.id)} 
+                    onClick={() => handleAbrirConfirmExcluir(disc.id)} 
                     className="hover:text-destructive transition-colors cursor-pointer"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
-              
+
+              {disc.descricao && (
+                <p className="text-xs text-muted-foreground mb-4 line-clamp-2 leading-relaxed">
+                  {disc.descricao}
+                </p>
+              )}
+
               <div className="space-y-2">
                 <div className="w-full h-1.5 bg-border rounded-full overflow-hidden">
                   <div className={`h-full rounded-full ${disc.cor || 'bg-accent'}`} style={{ width: '0%' }}></div>
@@ -213,6 +234,14 @@ export default function Disciplinas() {
         onClose={handleFecharModal} 
         onSuccess={carregarDisciplinas}
         disciplina={disciplinaEditando}
+      />
+      <ConfirmDialog
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={handleExcluir}
+        title="Excluir disciplina"
+        description="Deseja realmente excluir essa disciplina? Essa ação não pode ser desfeita."
+        isLoading={isDeleting}
       />
     </div>
   );
