@@ -29,7 +29,11 @@ const PRIORIDADES = [
   },
 ];
 
-const STATUS_OPTIONS = ['A fazer', 'Em andamento', 'Concluído'];
+const STATUS_OPTIONS = [
+  { label: 'A fazer', value: 'a_fazer' },
+  { label: 'Em andamento', value: 'em_andamento' },
+  { label: 'Concluído', value: 'concluido' },
+];
 
 export default function TarefaModal({
   isOpen = true,
@@ -42,7 +46,7 @@ export default function TarefaModal({
   const [nome, setNome] = useState('');
   const [prioridade, setPrioridade] = useState('Média');
   const [dataVencimento, setDataVencimento] = useState('');
-  const [status, setStatus] = useState('A fazer');
+  const [status, setStatus] = useState('a_fazer');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -50,12 +54,12 @@ export default function TarefaModal({
       setNome(tarefa.nome || '');
       setPrioridade(tarefa.prioridade || 'Média');
       setDataVencimento(tarefa.data_vencimento || '');
-      setStatus(tarefa.feito ? 'Concluído' : 'A fazer');
+      setStatus(tarefa.status || 'a_fazer');
     } else {
       setNome('');
       setPrioridade('Média');
       setDataVencimento('');
-      setStatus('A fazer');
+      setStatus('a_fazer');
     }
   }, [tarefa, isOpen]);
 
@@ -67,7 +71,7 @@ export default function TarefaModal({
         nome,
         prioridade,
         data_vencimento: dataVencimento || null,
-        feito: status === 'Concluído',
+        status: status,
         disciplina_id: disciplinaId,
       };
       if (tarefa?.id) {
@@ -155,7 +159,7 @@ export default function TarefaModal({
                 className="w-full px-3 py-2.5 rounded-xl border border-border bg-card text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-colors appearance-none cursor-pointer"
               >
                 {STATUS_OPTIONS.map((s) => (
-                  <option key={s} value={s}>{s}</option>
+                  <option key={s.value} value={s.value}>{s.label}</option>
                 ))}
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">

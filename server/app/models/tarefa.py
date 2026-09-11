@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Date
+from sqlalchemy import Column, Integer, String, ForeignKey, Date
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -9,7 +9,7 @@ class Tarefa(Base):
     nome = Column(String, nullable=False)
     prioridade = Column(String, nullable=False) 
     data_vencimento = Column(Date, nullable=True) 
-    feito = Column(Boolean, default=False)
+    status = Column(String, nullable=False, default='a_fazer')
     disciplina_id = Column(Integer, ForeignKey("disciplinas.id", ondelete="CASCADE"), nullable=False)
     usuario_id = Column(Integer, nullable=False)
     disciplina = relationship("Disciplina", back_populates="tarefas")

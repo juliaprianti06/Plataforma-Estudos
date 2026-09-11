@@ -16,7 +16,7 @@ interface Tarefa {
   nome: string;
   prioridade: string;
   data_vencimento: string | null;
-  feito: boolean;
+  status: string;
   disciplina_id: number;
 }
 
@@ -53,7 +53,8 @@ export function TarefasPanel({ disciplina, onTarefasChange }: TarefasPanelProps)
 
   const handleToggleFeito = async (tarefa: Tarefa) => {
     try {
-      await api.put(`/tarefas/${tarefa.id}`, { feito: !tarefa.feito });
+      const novoStatus = tarefa.status === 'concluido' ? 'a_fazer' : 'concluido';
+      await api.put(`/tarefas/${tarefa.id}`, { status: novoStatus });
       carregarTarefas();
     } catch (error) {
       console.error('Erro ao atualizar tarefa:', error);
@@ -84,7 +85,15 @@ export function TarefasPanel({ disciplina, onTarefasChange }: TarefasPanelProps)
     }
   };
 
-  const concluidas = tarefas.filter((t) => t.feito).length;
+  const getStatusDisplay = (status: string) => {
+    switch (status) {
+      case 'concluido': return { label: 'Concluído', className: 'bg-accent/15 text-accent font-bold' };
+      case 'em_andamento': return { label: 'Em andamento', className: 'bg-primary/15 text-primary font-bold' };
+      case 'a_fazer': default: return { label: 'A fazer', className: 'bg-muted text-muted-foreground font-bold' };
+    }
+  };
+
+  const concluidas = tarefas.filter((t) => t.status === 'concluido').length;
 
   return (
     <>
@@ -118,6 +127,16 @@ export function TarefasPanel({ disciplina, onTarefasChange }: TarefasPanelProps)
             </p>
           )}
           <div className="space-y-1">
+            {tarefas.length > 0 && (
+              <div className="hidden md:flex items-center justify-between py-2 px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b border-border/50">
+                <div className="pl-9">Título</div>
+                <div className="flex items-center pr-32">
+                  <div className="w-24 text-center">Prioridade</div>
+                  <div className="w-28 text-center">Data</div>
+                  <div className="w-32 text-center">Status</div>
+                </div>
+              </div>
+            )}
             {tarefas.map((tarefa) => (
               <div
                 key={tarefa.id}
@@ -127,29 +146,46 @@ export function TarefasPanel({ disciplina, onTarefasChange }: TarefasPanelProps)
                   <button
                     onClick={() => handleToggleFeito(tarefa)}
                     className={`w-5 h-5 mt-0.5 md:mt-0 shrink-0 rounded flex items-center justify-center transition-colors cursor-pointer ${
-                      tarefa.feito
+                      tarefa.status === 'concluido'
                         ? 'bg-accent text-white'
                         : 'border-2 border-border text-transparent hover:border-accent'
                     }`}
                   >
                     <Check className="w-3.5 h-3.5" strokeWidth={3} />
                   </button>
-                  <span className={`text-sm font-medium leading-tight ${tarefa.feito ? 'text-muted-foreground line-through' : 'text-primary'}`}>
+                  <span className={`text-sm font-medium leading-tight ${tarefa.status === 'concluido' ? 'text-muted-foreground line-through' : 'text-primary'}`}>
                     {tarefa.nome}
                   </span>
                 </div>
-                <div className="flex items-center justify-between md:justify-end gap-4 md:gap-6 w-full md:w-auto pl-8 md:pl-0">
-                  <div className="flex items-center gap-3 md:gap-6">
-                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${getBadgeCor(tarefa.prioridade)}`}>
-                      {tarefa.prioridade}
-                    </span>
+                <div className="flex items-center justify-between md:justify-end w-full md:w-auto pl-8 md:pl-0 md:pr-16">
+                  <div className="flex items-center gap-3 md:gap-0">
+                    <div className="md:w-24 flex justify-center">
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${getBadgeCor(tarefa.prioridade)}`}>
+                        {tarefa.prioridade}
+                      </span>
+                    </div>
+                    <div className="md:w-28 flex justify-center hidden md:flex">
+                      {tarefa.data_vencimento ? (
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(tarefa.data_vencimento + 'T00:00:00').toLocaleDateString('pt-BR')}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
+                    </div>
+                    {/* Data mobile: */}
                     {tarefa.data_vencimento && (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-muted-foreground md:hidden">
                         {new Date(tarefa.data_vencimento + 'T00:00:00').toLocaleDateString('pt-BR')}
                       </span>
                     )}
+                    <div className="md:w-32 flex justify-center">
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${getStatusDisplay(tarefa.status).className}`}>
+                        {getStatusDisplay(tarefa.status).label}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex gap-3 text-muted-foreground opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                  <div className="flex gap-3 text-muted-foreground opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity md:w-16 justify-end">
                     <button
                       onClick={() => { setTarefaEditando(tarefa); setIsModalOpen(true); }}
                       className="hover:text-primary cursor-pointer"

@@ -6,7 +6,7 @@ class TarefaBase(BaseModel):
     nome: str
     prioridade: str
     data_vencimento: Optional[date] = None
-    feito: bool = False
+    status: str = 'a_fazer'
     disciplina_id: int
 
 class TarefaCreate(TarefaBase):
@@ -16,7 +16,7 @@ class TarefaUpdate(BaseModel):
     nome: Optional[str] = None
     prioridade: Optional[str] = None
     data_vencimento: Optional[date] = None
-    feito: Optional[bool] = None
+    status: Optional[str] = None
     disciplina_id: Optional[int] = None
 
 class TarefaResponse(TarefaBase):

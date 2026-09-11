@@ -40,7 +40,7 @@ export default function Disciplinas() {
       resultados.forEach(({ id, tarefas }) => {
         mapa[id] = {
           total: tarefas.length,
-          concluidas: tarefas.filter((t: any) => t.feito).length,
+          concluidas: tarefas.filter((t: any) => t.status === 'concluido').length,
         };
       });
       setProgressoMap(mapa);
