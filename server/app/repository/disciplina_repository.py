@@ -27,5 +27,7 @@ class DisciplinaRepository:
         self.db.commit()
         
 
-    def update(self):
+    def update(self, disciplina: Disciplina):
         self.db.commit()
+        self.db.refresh(disciplina)
+        return disciplina

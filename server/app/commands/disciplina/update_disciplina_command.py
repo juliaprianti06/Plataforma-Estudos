@@ -19,5 +19,5 @@ class AtualizarDisciplinaCommand(BaseCommand):
         for chave, valor in dados_dicionario.items():
             setattr(disciplina, chave, valor)
 
-        self.repository.update()
+        self.repository.update(disciplina)
         return disciplina
