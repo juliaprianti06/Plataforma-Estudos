@@ -42,10 +42,11 @@ A interface `src/auth/types.ts` separa as telas do provedor de autenticação.
 Não há fallback automático para demonstração quando a API falha.
 Sessões mock não são aceitas no modo API.
 
-**O backend de autenticação ainda precisa ser implementado.** Os arquivos
-`server/app/routers/auth_router.py`, `services/auth_service.py` e
-`schemas/usuario_schema.py` estão vazios, e o router está comentado em
-`server/app/main.py`. Configurar a URL não implementa essas rotas.
+**Esta branch entrega o frontend de autenticação.** O backend foi
+implementado separadamente em `feature/backend-autenticacao` e aguarda a
+integração da modelagem. Enquanto essa entrega não entrar em `develop`,
+o modo `mock` permite revisar o frontend sem banco. Para testar o modo `api`,
+execute o backend da branch correspondente em uma cópia de trabalho separada.
 
 Contrato esperado, relativo a `VITE_API_URL`:
 
@@ -81,10 +82,10 @@ Erros tratados: 401 (credenciais inválidas), 409 (e-mail já cadastrado),
 422 (dados inválidos), 429 (excesso de tentativas), timeout e falha de rede.
 Recuperação de senha ainda não foi implementada; o botão informa isso.
 
-No servidor, conecte router → serviço de autenticação → repositório de usuários
-→ banco de dados. Implemente validação, hash de senha, unicidade de e-mail,
-emissão/validação/expiração/revogação de tokens e autorização em todas as rotas
-privadas. Configure CORS para a origem do frontend.
+A entrega do backend deve manter validação, hash de senha, unicidade de
+e-mail, expiração e revogação de tokens e autorização nas rotas privadas.
+O CORS deve permitir a origem do frontend. A proteção de navegação no React
+não substitui essas verificações no servidor.
 
 O adaptador atual espera tokens Bearer guardados conforme “Lembrar de mim”.
 Se o backend adotar cookies HttpOnly, adapte o cliente e o provedor para
