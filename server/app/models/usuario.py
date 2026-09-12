@@ -7,7 +7,7 @@ class Usuario(Base):
 
     id_usuario = Column(Integer, primary_key=True, index=True, autoincrement=True)
     nome = Column(String(100), nullable=False)
-    login = Column(String(50), unique=True, nullable=False, index=True)
+    login = Column(String(100), unique=True, nullable=False, index=True)
     senha_hash = Column(String(255), nullable=False)  # nunca salvar senha em texto puro
     email = Column(String(100), unique=True, nullable=False)
     ativo = Column(Boolean, default=True)
