@@ -31,7 +31,7 @@ O projeto tem como objetivo apoiar estudantes na organização de sua rotina aca
 
 | Camada | Tecnologias |
 |---|---|
-| Frontend | React, TypeScript, Vite, Tailwind CSS e TanStack Router |
+| Frontend | React, TypeScript, Vite, Tailwind CSS, TanStack Router e DnD Kit|
 | Backend | Python, FastAPI, SQLAlchemy e Alembic |
 | Banco de dados | PostgreSQL |
 | Autenticação | JWT e hash seguro de senhas |
@@ -281,19 +281,15 @@ As funcionalidades críticas representam o produto mínimo esperado e têm prece
 
 ### Repository Pattern
 
-Separa o acesso ao banco de dados das regras de negócio:
-
-```text
-Controller/Router → Service → Repository → Banco de dados
-```
+Separa o acesso ao banco de dados (consultas e leituras) das regras de negócio e rotas da API, facilitando a manutenção e a criação de testes isolados.
 
 ### Command Pattern
 
-Aplicado principalmente às operações do Kanban, como movimentação de cartões e alteração do status das tarefas.
+Aplicado para encapsular operações de escrita e regras de negócio complexas, como a criação de disciplinas e a movimentação de cartões no Kanban (alteração de status das tarefas). Isso garante rastreabilidade e isola a lógica de negócio dos *controllers*.
 
-### Singleton
+### Injeção de Dependência (Dependency Injection) e Connection Pool
 
-Poderá ser utilizado para centralizar configurações e gerenciar a conexão com o banco de dados, quando compatível com a arquitetura adotada.
+Em substituição ao padrão Singleton clássico, o projeto utiliza a injeção de dependência nativa do FastAPI (`Depends`) aliada ao gerenciamento de *Pool* de conexões do SQLAlchemy. Isso garante que as conexões com o banco de dados sejam distribuídas, abertas e fechadas de forma altamente escalável e segura durante o ciclo de vida das requisições, sem sobrecarregar o banco.
 
 ## Critérios de priorização
 
