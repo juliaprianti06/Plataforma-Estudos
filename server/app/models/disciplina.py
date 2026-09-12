@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Text
-from core.database import Base
+from app.database import Base
 
 
 class Disciplina(Base):
