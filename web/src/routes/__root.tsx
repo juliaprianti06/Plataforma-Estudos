@@ -1,9 +1,8 @@
-import { createRootRoute, Outlet } from '@tanstack/react-router'
+import { createRootRoute } from '@tanstack/react-router'
+import { auth } from '@/auth/auth'
+import { RootLayout } from '@/components/root-layout'
 
 export const Route = createRootRoute({
-  component: () => (
-    <div className="min-h-screen bg-background text-foreground">
-      <Outlet />
-    </div>
-  ),
+  beforeLoad: () => auth.restore(),
+  component: RootLayout,
 })
