@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
-from core.database import Base
+from app.database import Base
 
 
 class ColunaKanban(Base):
