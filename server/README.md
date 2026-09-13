@@ -1,6 +1,6 @@
 # Backend de autenticação
 
-Esta branch depende de `feature/models-entidades`. Ela preserva os commits da modelagem e acrescenta a configuração do PostgreSQL, as migrations executáveis e a autenticação que o frontend já espera.
+A modelagem de `feature/models-entidades` foi integrada ao `develop` pelo PR #8. Esta branch foi atualizada com essa base e acrescenta a configuração do PostgreSQL, as migrations executáveis e a autenticação que o frontend já espera.
 
 ## Iniciar com Docker
 
@@ -95,6 +95,6 @@ A suíte exige `TEST_DATABASE_URL` explícita, com nome terminado em `_test`, e 
 
 O downgrade da autenticação reduz novamente o limite de login a 50 caracteres. Se houver valores maiores, o PostgreSQL recusa a redução; não trunque os dados para forçar esse retorno.
 
-## Revisão da dependência
+## Integração com develop
 
-O trabalho pode avançar nesta branch enquanto a modelagem é revisada. Após o merge da modelagem, atualize a base desta branch com o `develop` aprovado e confira o diff antes de abrir seu PR de autenticação. Se a modelagem mudar, ajuste as migrations e rode a suíte novamente. Não é necessário modificar nem publicar commits na branch do autor.
+A dependência da modelagem foi resolvida pelo [PR #8](https://github.com/juliaprianti06/Plataforma-Estudos/pull/8). O backend de autenticação pode ser revisado diretamente contra `develop`. O [PR #9](https://github.com/juliaprianti06/Plataforma-Estudos/pull/9) entrega o frontend de login separadamente. Para validar o fluxo completo antes dos merges, execute esse frontend em uma cópia de trabalho separada, com `VITE_AUTH_MODE=api`, conforme descrito acima.
