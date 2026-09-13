@@ -1,4 +1,5 @@
 import { Users, BookOpen, Calendar, MessageCircle, TrendingUp, Globe, UserPlus, Users2, Share2, LineChart } from 'lucide-react';
+import { LoginDialog, SignUpDialog } from '@/components/login-dialog';
 
 export default function MindSpaceLanding() {
   return (
@@ -16,9 +17,7 @@ export default function MindSpaceLanding() {
           <a href="#sobre" className="text-muted-foreground hover:text-primary font-medium text-lg transition-colors max-sm:text-base">
             Sobre
           </a>
-          <a href="#login" className="text-muted-foreground hover:text-primary font-medium text-lg transition-colors max-sm:text-base">
-            Login
-          </a>
+          <LoginDialog />
         </header>
 
         <main className="relative z-10 flex-1 flex flex-col justify-center px-10 pl-16 md:pl-20 lg:pl-50 pr-10 md:pr-12 lg:pr-32 max-w-7xl pb-20 mt-28 md:mt-35 max-sm:px-6 max-sm:mt-16 max-sm:pb-10">
@@ -32,9 +31,7 @@ export default function MindSpaceLanding() {
 
           <div className="mt-12 max-sm:mt-8">
             <p className="text-sm text-muted-foreground ml-2 max-sm:mb-2">Primeiro acesso?</p>
-            <button className="bg-primary text-primary-foreground px-10 py-3 rounded-full text-lg font-medium hover:bg-primary/90 transition-colors cursor-pointer max-sm:w-full">
-              Criar Conta
-            </button>
+            <SignUpDialog />
           </div>
 
           <div className="h-[2px] w-full max-w-xl bg-border my-10 max-sm:my-8"></div>
@@ -104,35 +101,35 @@ export default function MindSpaceLanding() {
           <h3 className="text-4xl font-bold text-primary mb-12 max-sm:text-3xl max-sm:mb-8 text-center sm:text-left">Sobre</h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-sm:gap-6">
-            <div className="bg-[#74768B] p-6 rounded-xl flex flex-col items-center justify-center text-center shadow-md hover:shadow-lg transition-all hover:scale-105 min-h-[220px]">
-              <BookOpen className="w-12 h-12 text-white/90 mb-3" strokeWidth={1.5} />
-              <h4 className="text-lg font-bold text-white mb-2">Material Rico</h4>
-              <p className="text-sm text-white/80">Compartilhe e acesse resumos, mapas mentais e anotações.</p>
+            <div className="bg-secondary p-6 rounded-xl flex flex-col items-center justify-center text-center shadow-md hover:shadow-lg transition-all hover:scale-105 min-h-[220px]">
+              <BookOpen className="w-12 h-12 text-secondary-foreground/90 mb-3" strokeWidth={1.5} />
+              <h4 className="text-lg font-bold text-secondary-foreground mb-2">Material Rico</h4>
+              <p className="text-sm text-secondary-foreground/80">Compartilhe e acesse resumos, mapas mentais e anotações.</p>
             </div>
-            <div className="bg-[#74768B] p-6 rounded-xl flex flex-col items-center justify-center text-center shadow-md hover:shadow-lg transition-all hover:scale-105 min-h-[220px]">
-              <Users className="w-12 h-12 text-white/90 mb-3" strokeWidth={1.5} />
-              <h4 className="text-lg font-bold text-white mb-2">Grupos de Estudo</h4>
-              <p className="text-sm text-white/80">Conecte-se com outras pessoas que estão aprendendo o mesmo assunto.</p>
+            <div className="bg-secondary p-6 rounded-xl flex flex-col items-center justify-center text-center shadow-md hover:shadow-lg transition-all hover:scale-105 min-h-[220px]">
+              <Users className="w-12 h-12 text-secondary-foreground/90 mb-3" strokeWidth={1.5} />
+              <h4 className="text-lg font-bold text-secondary-foreground mb-2">Grupos de Estudo</h4>
+              <p className="text-sm text-secondary-foreground/80">Conecte-se com outras pessoas que estão aprendendo o mesmo assunto.</p>
             </div>
-            <div className="bg-[#74768B] p-6 rounded-xl flex flex-col items-center justify-center text-center shadow-md hover:shadow-lg transition-all hover:scale-105 min-h-[220px]">
-              <MessageCircle className="w-12 h-12 text-white/90 mb-3" strokeWidth={1.5} />
-              <h4 className="text-lg font-bold text-white mb-2">Fóruns Ativos</h4>
-              <p className="text-sm text-white/80">Tire suas dúvidas e debata soluções com toda a comunidade.</p>
+            <div className="bg-secondary p-6 rounded-xl flex flex-col items-center justify-center text-center shadow-md hover:shadow-lg transition-all hover:scale-105 min-h-[220px]">
+              <MessageCircle className="w-12 h-12 text-secondary-foreground/90 mb-3" strokeWidth={1.5} />
+              <h4 className="text-lg font-bold text-secondary-foreground mb-2">Fóruns Ativos</h4>
+              <p className="text-sm text-secondary-foreground/80">Tire suas dúvidas e debata soluções com toda a comunidade.</p>
             </div>
-            <div className="bg-[#74768B] p-6 rounded-xl flex flex-col items-center justify-center text-center shadow-md hover:shadow-lg transition-all hover:scale-105 min-h-[220px]">
-              <TrendingUp className="w-12 h-12 text-white/90 mb-3" strokeWidth={1.5} />
-              <h4 className="text-lg font-bold text-white mb-2">Evolução Constante</h4>
-              <p className="text-sm text-white/80">Acompanhe seu progresso e se mantenha motivado todos os dias.</p>
+            <div className="bg-secondary p-6 rounded-xl flex flex-col items-center justify-center text-center shadow-md hover:shadow-lg transition-all hover:scale-105 min-h-[220px]">
+              <TrendingUp className="w-12 h-12 text-secondary-foreground/90 mb-3" strokeWidth={1.5} />
+              <h4 className="text-lg font-bold text-secondary-foreground mb-2">Evolução Constante</h4>
+              <p className="text-sm text-secondary-foreground/80">Acompanhe seu progresso e se mantenha motivado todos os dias.</p>
             </div>
-            <div className="bg-[#74768B] p-6 rounded-xl flex flex-col items-center justify-center text-center shadow-md hover:shadow-lg transition-all hover:scale-105 min-h-[220px]">
-              <Calendar className="w-12 h-12 text-white/90 mb-3" strokeWidth={1.5} />
-              <h4 className="text-lg font-bold text-white mb-2">Calendário</h4>
-              <p className="text-sm text-white/80">Acompanhe cronogramas de estudos, aulas e datas importantes da comunidade.</p>
+            <div className="bg-secondary p-6 rounded-xl flex flex-col items-center justify-center text-center shadow-md hover:shadow-lg transition-all hover:scale-105 min-h-[220px]">
+              <Calendar className="w-12 h-12 text-secondary-foreground/90 mb-3" strokeWidth={1.5} />
+              <h4 className="text-lg font-bold text-secondary-foreground mb-2">Calendário</h4>
+              <p className="text-sm text-secondary-foreground/80">Acompanhe cronogramas de estudos, aulas e datas importantes da comunidade.</p>
             </div>
-            <div className="bg-[#74768B] p-6 rounded-xl flex flex-col items-center justify-center text-center shadow-md hover:shadow-lg transition-all hover:scale-105 min-h-[220px]">
-              <Globe className="w-12 h-12 text-white/90 mb-3" strokeWidth={1.5} />
-              <h4 className="text-lg font-bold text-white mb-2">Acesso Global</h4>
-              <p className="text-sm text-white/80">Estude a qualquer hora, de qualquer lugar, com pessoas do mundo todo.</p>
+            <div className="bg-secondary p-6 rounded-xl flex flex-col items-center justify-center text-center shadow-md hover:shadow-lg transition-all hover:scale-105 min-h-[220px]">
+              <Globe className="w-12 h-12 text-secondary-foreground/90 mb-3" strokeWidth={1.5} />
+              <h4 className="text-lg font-bold text-secondary-foreground mb-2">Acesso Global</h4>
+              <p className="text-sm text-secondary-foreground/80">Estude a qualquer hora, de qualquer lugar, com pessoas do mundo todo.</p>
             </div>
           </div>
         </div>
