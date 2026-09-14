@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKeyConstraint
+from sqlalchemy.orm import relationship
 from app.database import Base
 
 class Disciplina(Base):
@@ -11,3 +12,4 @@ class Disciplina(Base):
     descricao = Column(String, nullable=True)
     cor = Column(String, nullable=False, default="bg-accent")
     ativo = Column(Boolean, default=True)
+    tarefas = relationship("Tarefa", back_populates="disciplina", cascade="all, delete-orphan")
