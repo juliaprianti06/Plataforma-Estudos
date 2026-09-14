@@ -1,5 +1,6 @@
 import { Bell, Menu, Search, X } from 'lucide-react'
 
+import { useAuth } from '@/auth/use-auth'
 import { Button } from '@/components/ui/button'
 import { dashboardSummary } from '@/data/dashboard'
 
@@ -18,12 +19,13 @@ export function DashboardHeader({
   notificationsOpen,
   onNotificationsToggle,
 }: DashboardHeaderProps) {
+  const session = useAuth()
   return (
     <header className="relative flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
       <div className="flex items-start gap-3">
         <Button
           aria-label="Abrir menu"
-          className="-ml-2 mt-0.5 text-[#302468] lg:hidden"
+          className="-ml-2 mt-0.5 text-primary lg:hidden"
           onClick={onMenuOpen}
           size="icon"
           variant="ghost"
@@ -31,10 +33,10 @@ export function DashboardHeader({
           <Menu />
         </Button>
         <div>
-          <h1 className="font-heading text-xl font-bold tracking-[-0.025em] text-[#302468] sm:text-[22px]">
-            Bom te ver, usuário
+          <h1 className="font-heading text-xl font-bold tracking-[-0.025em] text-primary sm:text-[22px]">
+            Bom te ver, {session?.user.name.split(' ')[0] ?? 'estudante'}
           </h1>
-          <p className="mt-1 text-xs text-[#8b86a4] sm:text-[13px]">
+          <p className="mt-1 text-xs text-muted-foreground sm:text-[13px]">
             Continue de onde parou ou explore um grupo novo hoje.
           </p>
         </div>
@@ -45,10 +47,10 @@ export function DashboardHeader({
           <span className="sr-only">Buscar tarefas</span>
           <Search
             aria-hidden="true"
-            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6f6894]"
+            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
           />
           <input
-            className="h-9 w-full rounded-full border border-[#d9d5eb] bg-white py-2 pl-9 pr-9 text-xs text-[#302468] shadow-sm outline-none transition focus:border-[#7868b1] focus:ring-3 focus:ring-[#7868b1]/15"
+            className="h-9 w-full rounded-full border border-border bg-card py-2 pl-9 pr-9 text-xs text-primary shadow-sm outline-none transition focus:border-ring focus:ring-3 focus:ring-ring/15"
             onChange={(event) => onQueryChange(event.target.value)}
             placeholder="Buscar..."
             type="search"
@@ -57,7 +59,7 @@ export function DashboardHeader({
           {query && (
             <button
               aria-label="Limpar busca"
-              className="absolute right-2 top-1/2 grid size-6 -translate-y-1/2 place-items-center rounded-full text-[#8b86a4] hover:bg-[#f1eff8]"
+              className="absolute right-2 top-1/2 grid size-6 -translate-y-1/2 place-items-center rounded-full text-muted-foreground hover:bg-muted"
               onClick={() => onQueryChange('')}
               type="button"
             >
@@ -70,28 +72,28 @@ export function DashboardHeader({
           <Button
             aria-expanded={notificationsOpen}
             aria-label={`${dashboardSummary.notifications} notificações`}
-            className="relative text-[#70688f] hover:bg-white"
+            className="relative text-muted-foreground hover:bg-card"
             onClick={onNotificationsToggle}
             size="icon"
             variant="ghost"
           >
             <Bell />
-            <span className="absolute right-1.5 top-1.5 size-2 rounded-full border-2 border-[#f7f6fc] bg-[#f07178]" />
+            <span className="absolute right-1.5 top-1.5 size-2 rounded-full border-2 border-background bg-destructive" />
           </Button>
 
           {notificationsOpen && (
-            <div className="absolute right-0 top-11 z-30 w-72 rounded-xl border border-[#dfdbea] bg-white p-4 text-xs shadow-xl">
+            <div className="absolute right-0 top-11 z-30 w-72 rounded-xl border border-border bg-card p-4 text-xs shadow-xl">
               <div className="mb-3 flex items-center justify-between">
-                <p className="font-semibold text-[#302468]">Notificações</p>
-                <span className="rounded-full bg-[#eeeaf9] px-2 py-0.5 text-[10px] font-bold text-[#5a4a94]">
+                <p className="font-semibold text-primary">Notificações</p>
+                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-primary">
                   {dashboardSummary.notifications} novas
                 </span>
               </div>
-              <p className="border-t border-[#eeecf5] py-3 text-[#69637f]">
+              <p className="border-t border-border py-3 text-muted-foreground">
                 Sua atividade “Revisar cap. 5 de React” vence amanhã.
               </p>
-              <p className="border-t border-[#eeecf5] pt-3 text-[#69637f]">
-                O Workshop de React começa na próxima terça-feira.
+              <p className="border-t border-border pt-3 text-muted-foreground">
+                Workshop de React: confira a data nos próximos eventos.
               </p>
             </div>
           )}

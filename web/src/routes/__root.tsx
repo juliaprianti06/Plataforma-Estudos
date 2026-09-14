@@ -1,23 +1,8 @@
-import { createRootRoute, Outlet, useLocation } from '@tanstack/react-router'
-import { AppLayout } from '../components/layout/app-layout'
+import { createRootRoute } from '@tanstack/react-router'
+import { auth } from '@/auth/auth'
+import { RootLayout } from '@/components/layout/root-layout'
 
 export const Route = createRootRoute({
-  component: RootComponent,
+  beforeLoad: () => auth.restore(),
+  component: RootLayout,
 })
-
-function RootComponent() {
-  const location = useLocation()
-  const isLandingPage = location.pathname === '/'
-
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-      {isLandingPage ? (
-        <Outlet />
-      ) : (
-        <AppLayout>
-          <Outlet />
-        </AppLayout>
-      )}
-    </div>
-  )
-}

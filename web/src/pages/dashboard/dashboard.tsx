@@ -1,15 +1,17 @@
 import { useMemo, useState } from 'react'
+
 import { tasks } from '@/data/dashboard'
 import { DashboardHeader } from './dashboard-header'
 import { KanbanBoard } from './kanban-board'
 import { StudyCard } from './study-card'
 import { UpcomingEvents } from './upcoming-events'
-import { useLayout } from '../layout/app-layout'
+import { useLayout } from '@/components/layout/app-layout'
 
 export function Dashboard() {
   const { openMenu } = useLayout()
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [query, setQuery] = useState('')
+
   const filteredTasks = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase('pt-BR')
     if (!normalizedQuery) return tasks
@@ -31,6 +33,7 @@ export function Dashboard() {
 
       <div className="mt-5 grid min-h-0 flex-1 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
         <KanbanBoard searching={query.trim().length > 0} tasks={filteredTasks} />
+
         <aside aria-label="Resumo dos estudos" className="space-y-4 xl:pt-[25px]">
           <StudyCard />
           <UpcomingEvents />

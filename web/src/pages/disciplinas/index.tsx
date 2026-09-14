@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search, Plus, Pencil, Trash2, Check, Menu } from 'lucide-react';
-import { useLayout } from '../../components/layout/app-layout';
+import { useLayout } from '@/components/layout/app-layout';
 import NovaDisciplinaModal from './modal-disciplinas';
 import ConfirmDialog from '../../components/ui/confirm-dialog';
 import { api } from '../../api/client';
@@ -183,7 +183,6 @@ export default function Disciplinas() {
           ))}
         </div>
 
-        {/* --- COMPONENTE DE TAREFAS MANTIDO IGUAL --- */}
         <div className="border border-accent bg-card rounded-2xl p-4 sm:p-6 shadow-sm overflow-hidden">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border pb-6 gap-4">
             <div className="flex items-start sm:items-center gap-3">

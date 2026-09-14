@@ -1,10 +1,9 @@
 import { useState, createContext, useContext } from 'react';
-import { Sidebar } from './sidebar';
+import { Sidebar } from './sidebar'
 import { useNavigate } from '@tanstack/react-router';
 
 export const LayoutContext = createContext({ openMenu: () => {} });
 export const useLayout = () => useContext(LayoutContext);
-
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [message, setMessage] = useState('');
@@ -30,8 +29,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         />
         <main className="min-w-0 flex-1">
           {children}
-        </main>
-        
+        </main>   
         {message && (
           <div
             aria-live="polite"

@@ -11,10 +11,11 @@ import {
   Calendar, 
   Timer 
 } from 'lucide-react'
-
+import { useNavigate } from '@tanstack/react-router'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { currentUser } from '@/data/dashboard'
+import { auth } from '@/auth/auth'
+import { useAuth } from '@/auth/use-auth'
 import { cn } from '@/lib/utils'
 
 type SidebarProps = {
@@ -26,7 +27,19 @@ type SidebarProps = {
 
 export function Sidebar({ open, onClose, onNavigate, activeRoute = 'Início' }: SidebarProps) {
   const [currentActive, setCurrentActive] = useState(activeRoute)
-  
+  const session = useAuth()
+  const navigate = useNavigate()
+  const initials = session?.user.name
+    .split(' ')
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase() ?? '?'
+
+  async function handleLogout() {
+    await auth.logout()
+    navigate({ to: '/' })
+  }  
   const navigationItems = [
     { label: 'Início', icon: Home },
     { label: 'Grupos', icon: Users },
@@ -48,7 +61,6 @@ export function Sidebar({ open, onClose, onNavigate, activeRoute = 'Início' }: 
         onClick={onClose}
         type="button"
       />
-
       <aside
         className={cn(
           'fixed inset-y-0 left-0 z-50 flex w-[248px] flex-col bg-sidebar text-sidebar-foreground font-sans shadow-2xl transition-transform duration-300 lg:sticky lg:top-0 lg:z-20 lg:h-screen lg:w-[216px] lg:translate-x-0 lg:shadow-none xl:w-[232px]',
@@ -72,13 +84,11 @@ export function Sidebar({ open, onClose, onNavigate, activeRoute = 'Início' }: 
             <X />
           </Button>
         </div>
-
         <nav aria-label="Navegação principal" className="px-3 pb-4 border-b border-dotted border-white/20">
           <ul className="space-y-1.5">
             {navigationItems.map((item) => {
               const Icon = item.icon
-              const isActive = currentActive === item.label
-              
+              const isActive = currentActive === item.label  
               return (
                 <li key={item.label}>
                   <button
@@ -104,32 +114,27 @@ export function Sidebar({ open, onClose, onNavigate, activeRoute = 'Início' }: 
             })}
           </ul>
         </nav>
-
         <div className="flex-1"></div>
-
         <div className="border-t border-dotted border-white/20 p-4">
           <button
             className="group flex w-full items-center gap-3 rounded-xl p-2 text-left transition-colors hover:bg-sidebar-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring"
-            onClick={() => {
-              setCurrentActive('Perfil') 
-              onNavigate('Perfil')
-            }}
+            onClick={handleLogout}
             type="button"
           >
             <Avatar className="size-10 border border-sidebar-border">
               <AvatarFallback className="bg-sidebar-accent text-sidebar-accent-foreground text-xs font-bold">
-                {currentUser.initials}
+                {initials}
               </AvatarFallback>
             </Avatar>
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm font-semibold text-sidebar-foreground">
-                {currentUser.name}
+                {session?.user.name ?? 'Usuário'}
               </span>
-              <span className="block text-[11px] text-sidebar-foreground/60">
-                Ver perfil
+              <span className="flex items-center gap-1 text-[11px] text-sidebar-foreground/60">
+                <LogOut aria-hidden="true" className="size-3" />
+                Sair
               </span>
             </span>
-            <LogOut aria-hidden="true" className="size-4 opacity-0 transition-opacity group-hover:opacity-100 text-sidebar-foreground" />
           </button>
         </div>
       </aside>

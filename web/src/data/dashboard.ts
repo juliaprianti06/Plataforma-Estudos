@@ -28,10 +28,8 @@ export type DashboardTask = {
 
 export type DashboardEvent = {
   id: number
-  day: string
-  month: string
+  startsAt: string
   title: string
-  schedule: string
 }
 
 export const currentUser = {
@@ -111,24 +109,18 @@ export const tasks: DashboardTask[] = [
 export const upcomingEvents: DashboardEvent[] = [
   {
     id: 1,
-    day: '12',
-    month: 'OUT',
+    startsAt: '2026-10-12T14:00:00-03:00',
     title: 'Workshop de React',
-    schedule: 'Terça-feira, 14:00',
   },
   {
     id: 2,
-    day: '13',
-    month: 'OUT',
+    startsAt: '2026-10-13T10:00:00-03:00',
     title: 'Revisão de grupo',
-    schedule: 'Quarta-feira, 10:00',
   },
   {
     id: 3,
-    day: '15',
-    month: 'OUT',
+    startsAt: '2026-10-15T16:00:00-03:00',
     title: 'Apresentação final',
-    schedule: 'Sexta-feira, 16:00',
   },
 ]
 
