@@ -1,10 +1,14 @@
-import { Outlet } from '@tanstack/react-router'
+import { Outlet, useLocation } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { sessionStore } from '@/auth/session'
 import { useAuth } from '@/auth/use-auth'
+import { AppLayout } from '@/components/layout/app-layout'
 
 export function RootLayout() {
   const session = useAuth()
+  const location = useLocation()
+  const isLandingPage = location.pathname === '/'
+
   useEffect(() => {
     if (!session) return
     const checkExpiry = () => {
@@ -20,7 +24,13 @@ export function RootLayout() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Outlet />
+      {isLandingPage ? (
+        <Outlet />
+      ) : (
+        <AppLayout>
+          <Outlet />
+        </AppLayout>
+      )}
     </div>
   )
 }
