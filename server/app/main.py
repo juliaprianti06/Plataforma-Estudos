@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 
 from app.config import get_settings
 from app.core.exceptions import APIException
-from app.routers import auth_router, profile_router, groups_router
+from app.routers import auth_router, profile_router, groups_router, tasks_router, dashboard_router
 
 app = FastAPI(title="Estudos Colaborativos API", version="1.0.0")
 app.add_middleware(
@@ -51,6 +51,10 @@ app.include_router(profile_router.router, prefix="/api/v1/profile", tags=["Perfi
 
 
 app.include_router(groups_router.router, prefix="/api/v1/groups", tags=["Grupos"])
+
+
+app.include_router(tasks_router.router, prefix="/api/v1", tags=["Tarefas e eventos"])
+app.include_router(dashboard_router.router, prefix="/api/v1/dashboard", tags=["Dashboard"])
 
 
 @app.get("/", tags=["Health"])

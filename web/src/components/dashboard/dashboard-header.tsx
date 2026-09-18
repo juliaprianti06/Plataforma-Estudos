@@ -4,6 +4,7 @@ import { useProfile } from '@/profile/use-profile'
 import { Button } from '@/components/ui/button'
 
 type DashboardHeaderProps = {
+  notifications?: string[]
   query: string
   onQueryChange: (query: string) => void
   onMenuOpen: () => void
@@ -12,6 +13,7 @@ type DashboardHeaderProps = {
 }
 
 export function DashboardHeader({
+  notifications: remoteNotifications,
   query,
   onQueryChange,
   onMenuOpen,
@@ -19,7 +21,7 @@ export function DashboardHeader({
   onNotificationsToggle,
 }: DashboardHeaderProps) {
   const profile = useProfile()
-  const notifications = [
+  const notifications = remoteNotifications ?? [
     ...(profile?.notifications.tasks !== false ? ['Sua atividade “Revisar cap. 5 de React” vence amanhã.'] : []),
     ...(profile?.notifications.groups !== false ? ['Workshop de React: confira a data nos próximos eventos.'] : []),
   ]
@@ -95,7 +97,7 @@ export function DashboardHeader({
               {notifications.length ? notifications.map((notification) => (
                 <p key={notification} className="border-t border-border py-3 text-muted-foreground">{notification}</p>
               )) : (
-                <p className="border-t border-border pt-3 leading-relaxed text-muted-foreground">Seus avisos estão pausados. Você pode ativá-los nas preferências do perfil.</p>
+                <p className="border-t border-border pt-3 leading-relaxed text-muted-foreground">Nenhuma notificação no momento. Confira suas preferências no perfil.</p>
               )}
             </div>
           )}

@@ -1,8 +1,8 @@
-# Backend de autenticação, perfil e grupos
+# Backend de estudos colaborativos
 
 A modelagem e a autenticação já estão no `develop`. Este checkout inclui a
-persistência do perfil e acrescenta grupos, catálogo e convites, usando o
-PostgreSQL e as sessões existentes.
+persistência do perfil, grupos, catálogo, convites, tarefas, eventos e dashboard,
+usando o PostgreSQL e as sessões existentes.
 
 ## Iniciar com Docker
 
@@ -190,3 +190,59 @@ A implementação de perfil do backend é a mesma do PR #11 e faz parte da base
 desta branch. A entrega acrescenta grupos no backend e frontend, além das
 telas e da integração de perfil no frontend. Não inclui as migrations alternativas
 de disciplinas/tarefas do PR #12.
+
+## Tarefas, eventos e dashboard
+
+A organização repositório + Commands de `feature/tarefas` foi adaptada ao modelo
+aprovado: tarefas pertencem a colunas de grupos e se vinculam a responsáveis.
+Não foi feito merge nem alteração na branch do autor. IDs e autenticação seguem
+as entidades aprovadas e a sessão Bearer do backend atual.
+
+| Método | Caminho relativo a `/api/v1` | Operação |
+| --- | --- | --- |
+| GET | `/tasks?groupId=1` | Tarefas dos grupos da conta; filtro de grupo opcional |
+| POST | `/tasks` | Cria tarefa e registra o criador como responsável (201) |
+| PUT | `/tasks/{id}` | Atualiza campos e coluna conforme o status |
+| DELETE | `/tasks/{id}` | Exclui tarefa e seus vínculos de responsabilidade (204) |
+| GET | `/events` | Próximos 100 eventos dos grupos da conta |
+| POST | `/events` | Administrador cria encontro com data futura (201) |
+| DELETE | `/events/{id}` | Administrador exclui encontro (204) |
+| GET | `/dashboard` | Tarefas, eventos, avisos e progresso real |
+
+Exemplo de tarefa:
+
+```json
+{
+  "groupId": "1",
+  "title": "Revisar exercícios",
+  "description": "Capítulo 2",
+  "priority": "high",
+  "status": "todo",
+  "dueAt": "2030-01-15T18:00:00-03:00",
+  "disciplineId": null
+}
+```
+
+No PUT, envie os campos sem `groupId`; esta etapa não permite transferência entre
+grupos. `priority` aceita high/medium/low e `status` aceita todo/progress/done;
+o serviço traduz para os valores das entidades. `dueAt` é opcional e exige fuso.
+`disciplineId`, quando enviado, precisa estar vinculado ao grupo. A seleção de
+disciplinas e gestão de responsáveis ainda não fazem parte da interface.
+Responsáveis e administradores editam/excluem; outros membros apenas consultam.
+Pessoas sem participação ativa recebem 404 para recursos de outros grupos.
+
+Eventos recebem `groupId`, `title` e `startsAt` com fuso e data futura.
+O dashboard calcula progresso pelas tarefas concluídas de todos os grupos da
+conta, sem dados de demonstração. A tarefa retomável precisa ser editável e pendente;
+prioriza tarefas em andamento e prazo mais próximo. Retomar usa PUT, registrando
+o primeiro início. Os avisos respeitam preferências de perfil e abrangem tarefas
+vencidas/com prazo em até 24 horas e eventos em até sete dias, limitados a 20.
+Não há envio externo, leitura persistida de notificações nem atualização em tempo real.
+
+A migration `t10a20260913` depende de `g10a20260913`, cria `eventos_grupo` e completa
+colunas Kanban ausentes nos grupos antigos. Seu downgrade remove eventos e
+preserva as colunas para não apagar tarefas existentes.
+
+Esta entrega depende de grupos e perfil. Os modelos de tarefas preservam as
+entidades aprovadas de grupos, colunas Kanban e responsáveis; a implementação
+alternativa do PR #12 precisa ser compatibilizada antes de integrar as duas.

@@ -42,7 +42,7 @@ A interface `src/auth/types.ts` separa as telas do provedor de autenticação.
 Não há fallback automático para demonstração quando a API falha.
 Sessões mock não são aceitas no modo API.
 
-O backend deste checkout implementa autenticação, perfil e grupos. Para iniciar
+O backend deste checkout implementa autenticação, perfil, grupos, tarefas e eventos. Para iniciar
 a API e o PostgreSQL, siga `server/README.md` e execute o Compose na raiz.
 
 Contrato esperado, relativo a `VITE_API_URL`:
@@ -137,7 +137,7 @@ Acesse **Ver perfil** no rodapé do menu, ou `/profile`, após entrar.
   de interesse e foto JPG/PNG de até 5 MB. A imagem é recortada no centro e
   reduzida para 320 × 320 antes de ser armazenada. Há prévia, remoção e validação.
 - **Preferências:** avisos de estudos e novidades de grupos podem ser ligados
-  ou desligados. As escolhas controlam os avisos de exemplo do dashboard;
+  ou desligados. No modo API, controlam avisos de prazos e eventos reais; no mock, exemplos;
   não há envio de e-mails ou notificações do sistema.
 - **Conta:** informações de acesso, download em JSON dos dados salvos do perfil
   e restauração da personalização, com confirmação, preservando os grupos.
@@ -180,3 +180,31 @@ as sessões ou os grupos. Trocar de sessão cancela as requisições pendentes d
 
 O e-mail permanece somente leitura. Alteração de senha, alteração/verificação de
 e-mail e exclusão de conta continuam fora desta etapa.
+
+## Tarefas, eventos e dashboard
+
+No modo API, `/dashboard` fornece tarefas dos grupos da conta, eventos futuros,
+notificações e o resumo. O modo mock preserva os exemplos do protótipo. Não há
+fallback para exemplos quando o servidor falha ou a conta ainda não tem dados.
+
+- **Nova tarefa:** escolha um grupo, título, descrição, prioridade, status e prazo
+  opcional. A pessoa que cria fica responsável. Responsáveis e administradores
+  podem editar ou excluir; outros membros apenas consultam.
+- **Kanban:** a edição de status move a tarefa entre as três colunas no banco.
+  Não há movimentação por arrastar nesta etapa.
+- **Continuar estudando:** apresenta uma tarefa editável pendente. Retomar salva
+  o status em andamento e registra o primeiro início. A porcentagem representa
+  tarefas concluídas / total de tarefas dos seus grupos, e não avanço em um curso.
+- **Novo evento:** administradores agendam encontros com data futura. Membros
+  consultam; administradores podem excluir com confirmação. A lista mostra os
+  próximos 100 eventos, ordenados pela data.
+- **Notificações:** até 20 avisos de tarefas vencidas ou com prazo nas próximas
+  24 horas e eventos nos próximos sete dias, respeitando o perfil. São calculados
+  ao consultar o dashboard; não há envio de e-mails nem marcação de leitura.
+- **Atualizar:** consulta novamente o servidor; salvar também atualiza o painel.
+  Falhas de gravação mantêm o formulário. Falhas ao recarregar após uma gravação
+  confirmada permitem tentar a leitura novamente, sem reenviar a criação.
+
+As chamadas de grupos e dashboard ficam vinculadas ao usuário e token que as
+iniciaram. Trocar de sessão cancela requisições pendentes. Campos de formulário
+usam horário local do navegador e enviam datas ISO com fuso.

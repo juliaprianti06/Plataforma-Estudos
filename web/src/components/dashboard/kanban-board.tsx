@@ -18,9 +18,10 @@ const priorityClasses: Record<TaskPriority, string> = {
 type KanbanBoardProps = {
   tasks: DashboardTask[]
   searching: boolean
+  onEdit?: (task: DashboardTask) => void
 }
 
-function TaskCard({ task }: { task: DashboardTask }) {
+function TaskCard({ task, onEdit }: { task: DashboardTask; onEdit?: (task: DashboardTask) => void }) {
   const completed = task.status === 'done'
 
   return (
@@ -56,12 +57,15 @@ function TaskCard({ task }: { task: DashboardTask }) {
           >
             {task.detail}
           </p>
+          {'description' in task && typeof task.description === 'string' && task.description && <p className="mt-1 line-clamp-2 text-[10px] text-muted-foreground">{task.description}</p>}
+          {'dueAt' in task && typeof task.dueAt === 'string' && <p className="mt-1 text-[9px] text-muted-foreground">Prazo: <time dateTime={task.dueAt}>{new Date(task.dueAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' })}</time></p>}
         </div>
       </div>
+      {onEdit && 'canEdit' in task && task.canEdit === true && <button type="button" className="mt-2 rounded text-xs font-semibold text-accent focus-visible:outline-ring" onClick={() => onEdit(task)}>Editar tarefa</button>}
     </article>
   )
 }
-export function KanbanBoard({ tasks, searching }: KanbanBoardProps) {
+export function KanbanBoard({ tasks, searching, onEdit }: KanbanBoardProps) {
   const [showAll, setShowAll] = useState(false)
 
   const groupedTasks = useMemo(
@@ -117,7 +121,7 @@ export function KanbanBoard({ tasks, searching }: KanbanBoardProps) {
 
                   <div className="space-y-2">
                     {displayedTasks.map((task) => (
-                      <TaskCard key={task.id} task={task} />
+                      <TaskCard key={task.id} task={task} onEdit={onEdit} />
                     ))}
                     {displayedTasks.length === 0 && (
                       <div className="grid min-h-20 place-items-center rounded-lg border border-dashed border-border text-center text-[10px] text-muted-foreground">
@@ -140,7 +144,7 @@ export function KanbanBoard({ tasks, searching }: KanbanBoardProps) {
             <div>
               <Circle aria-hidden="true" className="mx-auto mb-3 size-8 text-muted-foreground" />
               <p className="text-sm font-semibold text-foreground">Nenhuma tarefa encontrada</p>
-              <p className="mt-1 text-xs text-muted-foreground">Tente buscar usando outro termo.</p>
+              <p className="mt-1 text-xs text-muted-foreground">{searching ? 'Tente buscar usando outro termo.' : 'Crie uma tarefa em um dos seus grupos para começar.'}</p>
             </div>
           </div>
         )}
