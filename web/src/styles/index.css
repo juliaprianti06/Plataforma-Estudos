@@ -51,6 +51,9 @@
     --radius-2xl: calc(var(--radius) * 1.8);
     --radius-3xl: calc(var(--radius) * 2.2);
     --radius-4xl: calc(var(--radius) * 2.6);
+    --color-warning: var(--warning);
+    --color-success: var(--success);
+    --color-neutral-accent: var(--neutral-accent);
 }
 
 :root {
@@ -86,6 +89,9 @@
     --sidebar-accent-foreground: #FFFFFF;
     --sidebar-border: rgba(255,255,255,.12);
     --sidebar-ring: #5B4FE0;
+    --warning: #F5B942;
+    --success: #4CAF7D;
+    --neutral-accent: #74768B;
 }
 
 .dark {
