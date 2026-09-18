@@ -1,8 +1,7 @@
 import { Bell, Menu, Search, X } from 'lucide-react'
 
-import { useAuth } from '@/auth/use-auth'
+import { useProfile } from '@/profile/use-profile'
 import { Button } from '@/components/ui/button'
-import { dashboardSummary } from '@/data/dashboard'
 
 type DashboardHeaderProps = {
   query: string
@@ -19,7 +18,11 @@ export function DashboardHeader({
   notificationsOpen,
   onNotificationsToggle,
 }: DashboardHeaderProps) {
-  const session = useAuth()
+  const profile = useProfile()
+  const notifications = [
+    ...(profile?.notifications.tasks !== false ? ['Sua atividade “Revisar cap. 5 de React” vence amanhã.'] : []),
+    ...(profile?.notifications.groups !== false ? ['Workshop de React: confira a data nos próximos eventos.'] : []),
+  ]
   return (
     <header className="relative flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
       <div className="flex items-start gap-3">
@@ -34,7 +37,7 @@ export function DashboardHeader({
         </Button>
         <div>
           <h1 className="font-heading text-xl font-bold tracking-[-0.025em] text-primary sm:text-[22px]">
-            Bom te ver, {session?.user.name.split(' ')[0] ?? 'estudante'}
+            Bom te ver, {profile?.name.split(' ')[0] ?? 'estudante'}
           </h1>
           <p className="mt-1 text-xs text-muted-foreground sm:text-[13px]">
             Continue de onde parou ou explore um grupo novo hoje.
@@ -71,14 +74,14 @@ export function DashboardHeader({
         <div className="relative">
           <Button
             aria-expanded={notificationsOpen}
-            aria-label={`${dashboardSummary.notifications} notificações`}
+            aria-label={`${notifications.length} notificações`}
             className="relative text-muted-foreground hover:bg-card"
             onClick={onNotificationsToggle}
             size="icon"
             variant="ghost"
           >
             <Bell />
-            <span className="absolute right-1.5 top-1.5 size-2 rounded-full border-2 border-background bg-destructive" />
+            {notifications.length > 0 && <span className="absolute right-1.5 top-1.5 size-2 rounded-full border-2 border-background bg-destructive" />}
           </Button>
 
           {notificationsOpen && (
@@ -86,15 +89,14 @@ export function DashboardHeader({
               <div className="mb-3 flex items-center justify-between">
                 <p className="font-semibold text-primary">Notificações</p>
                 <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-primary">
-                  {dashboardSummary.notifications} novas
+                  {notifications.length} novas
                 </span>
               </div>
-              <p className="border-t border-border py-3 text-muted-foreground">
-                Sua atividade “Revisar cap. 5 de React” vence amanhã.
-              </p>
-              <p className="border-t border-border pt-3 text-muted-foreground">
-                Workshop de React: confira a data nos próximos eventos.
-              </p>
+              {notifications.length ? notifications.map((notification) => (
+                <p key={notification} className="border-t border-border py-3 text-muted-foreground">{notification}</p>
+              )) : (
+                <p className="border-t border-border pt-3 leading-relaxed text-muted-foreground">Seus avisos estão pausados. Você pode ativá-los nas preferências do perfil.</p>
+              )}
             </div>
           )}
         </div>

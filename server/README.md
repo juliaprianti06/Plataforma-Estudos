@@ -1,8 +1,8 @@
-# Backend de autenticação e perfil
+# Backend de autenticação, perfil e grupos
 
-A modelagem e a autenticação já estão no `develop`. Esta entrega acrescenta
-persistência e endpoints autenticados para nome, apresentação, foto, interesses
-e preferências do perfil, usando o PostgreSQL e as sessões existentes.
+A modelagem e a autenticação já estão no `develop`. Este checkout inclui a
+persistência do perfil e acrescenta grupos, catálogo e convites, usando o
+PostgreSQL e as sessões existentes.
 
 ## Iniciar com Docker
 
@@ -156,3 +156,37 @@ verificação de e-mail e exclusão de conta ficam fora deste contrato.
 A suíte inclui persistência, isolamento entre contas, exportação sem dados sensíveis,
 restauração com preservação de grupos e validação de fotos. Execute os testes conforme
 a seção anterior, sempre com a base exclusiva terminada em `_test`.
+
+## Grupos e convites
+
+Todos os caminhos abaixo são relativos a `/api/v1` e exigem Bearer token.
+
+| Método | Caminho | Operação |
+| --- | --- | --- |
+| GET | `/groups` | Grupos com participação ativa da conta |
+| GET | `/groups/discover` | Até 100 grupos sem vínculo com a conta; sem expor convites |
+| POST | `/groups` | Cria grupo, administrador e três colunas Kanban (201) |
+| PUT | `/groups/{id}` | Edita dados do grupo, somente administrador |
+| POST | `/groups/{id}/join` | Entra em um grupo do catálogo |
+| POST | `/groups/join` | Entra por `{ "code": "ABC123" }` |
+
+Criação/edição recebem `name`, `description`, `category` e `icon`.
+A criação aceita `inviteCode` opcional, de seis letras/números maiúsculos;
+se omitido, o servidor gera um código. Colisão de código enviado retorna 409
+sem criar grupo. Nomes exigem 3–60 caracteres, descrições 10–240 e categorias/
+ícones seguem os valores da tela. O convite não muda ao editar.
+
+Grupos são descobertos por usuários autenticados e permitem entrada direta;
+convite é uma alternativa de acesso, não uma barreira de privacidade.
+Não há grupos privados, remoção de membros ou aprovação de pedidos nesta etapa.
+Entrada usa transação e bloqueio do grupo, rejeita duplicidade e retorna a contagem
+real de membros ativos. Somente status `admin` e `ativo` autorizam participação.
+A migration `g10a20260913`, posterior ao perfil `c10a20260912`, adiciona categoria,
+ícone e convite único, preenchendo os grupos existentes.
+
+## Dependências desta entrega
+
+A implementação de perfil do backend é a mesma do PR #11 e faz parte da base
+desta branch. A entrega acrescenta grupos no backend e frontend, além das
+telas e da integração de perfil no frontend. Não inclui as migrations alternativas
+de disciplinas/tarefas do PR #12.

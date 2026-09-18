@@ -25,7 +25,7 @@ memória. Recarregar preserva uma sessão válida; acesso direto a
 `/dashboard` sem sessão retorna à página inicial. Isso é controle de navegação
 para demonstração, não uma barreira de segurança.
 
-## Conectar ao backend depois
+## Conectar ao backend
 
 Copie `.env.example` para `.env` e configure:
 
@@ -42,11 +42,8 @@ A interface `src/auth/types.ts` separa as telas do provedor de autenticação.
 Não há fallback automático para demonstração quando a API falha.
 Sessões mock não são aceitas no modo API.
 
-**Esta branch entrega o frontend de autenticação.** O backend foi
-implementado separadamente em `feature/backend-autenticacao` e aguarda a
-integração da modelagem. Enquanto essa entrega não entrar em `develop`,
-o modo `mock` permite revisar o frontend sem banco. Para testar o modo `api`,
-execute o backend da branch correspondente em uma cópia de trabalho separada.
+O backend deste checkout implementa autenticação, perfil e grupos. Para iniciar
+a API e o PostgreSQL, siga `server/README.md` e execute o Compose na raiz.
 
 Contrato esperado, relativo a `VITE_API_URL`:
 
@@ -82,10 +79,9 @@ Erros tratados: 401 (credenciais inválidas), 409 (e-mail já cadastrado),
 422 (dados inválidos), 429 (excesso de tentativas), timeout e falha de rede.
 Recuperação de senha ainda não foi implementada; o botão informa isso.
 
-A entrega do backend deve manter validação, hash de senha, unicidade de
-e-mail, expiração e revogação de tokens e autorização nas rotas privadas.
-O CORS deve permitir a origem do frontend. A proteção de navegação no React
-não substitui essas verificações no servidor.
+O servidor valida credenciais e sessões, usa hash de senha Argon2, tokens Bearer
+com expiração e revogação, e autoriza as operações por usuário e grupo.
+Configure CORS para a origem do frontend.
 
 O adaptador atual espera tokens Bearer guardados conforme “Lembrar de mim”.
 Se o backend adotar cookies HttpOnly, adapte o cliente e o provedor para
@@ -103,3 +99,84 @@ Os testes usam Node.js 24, o runner nativo e o Vite já instalado. Cobrem
 persistência, expiração, armazenamento indisponível, separação mock/API,
 contratos HTTP, erros e logout. As chamadas HTTP são simuladas nos testes;
 não exigem banco de dados nem backend ativo.
+
+## Tela de grupos
+
+Após entrar, acesse **Grupos** no menu ou `/groups`. A rota exige uma sessão,
+assim como o dashboard.
+
+- No modo mock, a tela começa com os seis grupos da referência.
+- A busca encontra nomes, categorias e assuntos, ignorando acentos.
+- **Criar grupo** mantém os campos de nome, categoria, descrição e ícone e gera
+  um código de seis caracteres, com botão **Copiar**. O convite fica ativo
+  apenas depois de salvar e permanece o mesmo nas edições.
+- Administradores podem editar; membros podem consultar os detalhes.
+- **Adicionar grupo** permite entrar pelo código recebido e também mantém o
+  catálogo de grupos (exemplos no modo mock; grupos do servidor no modo API). Quem entra recebe o papel de membro; entradas
+  repetidas não aumentam a contagem.
+- No modo mock, os grupos e suas participações ficam em um registro compartilhado no
+  localStorage, com a lista de grupos separada por usuário. Assim, dois usuários
+  de demonstração no mesmo navegador podem testar o convite. Outros navegadores
+  e dispositivos dependem do backend. Dados antigos são migrados ao abrir a tela.
+- No modo API, a tela consulta `/groups` e persiste as operações no PostgreSQL.
+  Uma conta nova começa sem grupos; falhas exibem erro e permitem tentar novamente.
+  Os grupos são descobertos pelo catálogo e qualquer usuário autenticado pode entrar;
+  o código de convite oferece outra forma de encontrar o grupo. Esta etapa não
+  implementa grupos privados nem aprovação de pedidos de entrada.
+
+`src/groups/api-repository.ts` implementa `GroupsRepository` com chamadas HTTP.
+O servidor garante códigos únicos, cria grupo, administrador e colunas Kanban numa
+transação, rejeita participação duplicada e permite edição somente ao administrador.
+O catálogo retorna até 100 grupos por consulta; a busca da tela filtra a lista carregada.
+
+## Perfil e preferências
+
+Acesse **Ver perfil** no rodapé do menu, ou `/profile`, após entrar.
+
+- **Perfil:** nome completo, apresentação de até 300 caracteres, até três áreas
+  de interesse e foto JPG/PNG de até 5 MB. A imagem é recortada no centro e
+  reduzida para 320 × 320 antes de ser armazenada. Há prévia, remoção e validação.
+- **Preferências:** avisos de estudos e novidades de grupos podem ser ligados
+  ou desligados. As escolhas controlam os avisos de exemplo do dashboard;
+  não há envio de e-mails ou notificações do sistema.
+- **Conta:** informações de acesso, download em JSON dos dados salvos do perfil
+  e restauração da personalização, com confirmação, preservando os grupos.
+- Nome e foto salvos aparecem no menu; a saudação do dashboard usa o nome do
+  perfil. O identificador da conta continua o mesmo.
+- Alterações ficam como rascunho até **Salvar alterações**. É possível descartá-las,
+  e navegar para outra página com dados pendentes abre uma confirmação.
+
+`src/profile/store.ts` mantém a validação e o armazenamento do modo mock.
+No modo API, `api-store.ts` e `api-provider.ts` carregam o perfil do PostgreSQL
+por endpoints autenticados. O formulário aguarda o carregamento e só confirma
+alterações após a resposta do servidor. Falhas mantêm o rascunho para nova tentativa.
+O nome salvo também é atualizado na sessão; nome, foto e preferências são
+compartilhados entre o menu, o dashboard e a tela de perfil.
+
+Para usar o backend local, configure `web/.env` e reinicie o Vite:
+
+```dotenv
+VITE_AUTH_MODE=api
+VITE_API_URL=http://localhost:8000/api/v1
+```
+
+Os endpoints de perfil estão incluídos no backend deste checkout.
+Os perfis antigos do navegador não são enviados automaticamente ao banco.
+Alterações feitas em outra aba ou dispositivo aparecem após recarregar a página.
+
+| Método | Endpoint | Ação |
+| --- | --- | --- |
+| GET | `/profile/me` | Carregar o perfil da sessão |
+| PUT | `/profile/me` | Salvar todos os campos editáveis |
+| DELETE | `/profile/me` | Restaurar apenas a personalização |
+| GET | `/profile/me/export` | Baixar o perfil salvo em JSON |
+
+Os caminhos usam a base `VITE_API_URL`. O payload mantém `name`, `bio`, `interests`,
+`avatar` e `notifications: { tasks, groups }`; a resposta inclui `updatedAt`.
+A exportação acrescenta o e-mail e não inclui tokens, senhas ou dados de terceiros.
+As fotos ajustadas pelo navegador são validadas pela API antes de serem gravadas.
+A restauração recupera o nome anterior à primeira personalização, sem remover a conta,
+as sessões ou os grupos. Trocar de sessão cancela as requisições pendentes do perfil.
+
+O e-mail permanece somente leitura. Alteração de senha, alteração/verificação de
+e-mail e exclusão de conta continuam fora desta etapa.
