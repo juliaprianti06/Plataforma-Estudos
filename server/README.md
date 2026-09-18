@@ -1,6 +1,8 @@
-# Backend de autenticação
+# Backend de autenticação e perfil
 
-A modelagem de `feature/models-entidades` foi integrada ao `develop` pelo PR #8. Esta branch foi atualizada com essa base e acrescenta a configuração do PostgreSQL, as migrations executáveis e a autenticação que o frontend já espera.
+A modelagem e a autenticação já estão no `develop`. Esta entrega acrescenta
+persistência e endpoints autenticados para nome, apresentação, foto, interesses
+e preferências do perfil, usando o PostgreSQL e as sessões existentes.
 
 ## Iniciar com Docker
 
@@ -36,7 +38,7 @@ Configure o `.env` antes conforme a seção anterior. Para Python local, `DATABA
 
 ## Conectar o frontend existente
 
-A branch da modelagem ainda não contém as telas de autenticação. Execute o frontend na cópia de trabalho que contém `feature/autenticacao` ou uma branch descendente. No `web/.env` dessa cópia:
+O frontend de autenticação está no `develop`. A tela de perfil e sua integração HTTP serão entregues em outro PR. Para executar o login, configure `web/.env`:
 
 ```dotenv
 VITE_AUTH_MODE=api
@@ -45,7 +47,7 @@ VITE_API_URL=http://localhost:8000/api/v1
 
 Reinicie `npm run dev` após mudar essas variáveis. Use `http://localhost:5173`. As origens permitidas são configuradas em `CORS_ORIGINS`, como uma lista JSON.
 
-Contas criadas no modo `mock` ficam no navegador e não são transferidas para o PostgreSQL. Cadastre uma conta no modo `api` para testar o fluxo real. Esta entrega implementa autenticação; grupos, tarefas e preferências ainda precisam dos respectivos endpoints.
+Contas criadas no modo `mock` ficam no navegador e não são transferidas para o PostgreSQL. Cadastre uma conta no modo `api` para testar o fluxo real. Esta entrega inclui autenticação e perfil; os endpoints de grupos e tarefas ficam para outras features.
 
 ## Contrato HTTP
 
@@ -97,4 +99,60 @@ O downgrade da autenticação reduz novamente o limite de login a 50 caracteres.
 
 ## Integração com develop
 
-A dependência da modelagem foi resolvida pelo [PR #8](https://github.com/juliaprianti06/Plataforma-Estudos/pull/8). O backend de autenticação pode ser revisado diretamente contra `develop`. O [PR #9](https://github.com/juliaprianti06/Plataforma-Estudos/pull/9) entrega o frontend de login separadamente. Para validar o fluxo completo antes dos merges, execute esse frontend em uma cópia de trabalho separada, com `VITE_AUTH_MODE=api`, conforme descrito acima.
+A modelagem ([PR #8](https://github.com/juliaprianti06/Plataforma-Estudos/pull/8)),
+a autenticação do backend ([PR #10](https://github.com/juliaprianti06/Plataforma-Estudos/pull/10))
+e o login do frontend ([PR #9](https://github.com/juliaprianti06/Plataforma-Estudos/pull/9))
+já foram integrados. Este backend de perfil pode ser revisado diretamente contra
+`develop`, sem incluir as telas ou as features de grupos, tarefas e dashboard.
+
+## Perfil do usuário
+
+Os endpoints de perfil exigem o mesmo Bearer token da autenticação:
+
+| Método | Caminho | Resultado |
+| --- | --- | --- |
+| GET | `/api/v1/profile/me` | Perfil salvo ou valores iniciais, sem criar registros na leitura |
+| PUT | `/api/v1/profile/me` | Atualiza nome, apresentação, foto, interesses e preferências |
+| DELETE | `/api/v1/profile/me` | Restaura a personalização e retorna os valores iniciais |
+| GET | `/api/v1/profile/me/export` | JSON para download, acrescentando o e-mail da conta |
+
+Exemplo de corpo completo para o PUT:
+
+```json
+{
+  "name": "Ana Silva",
+  "bio": "Estudando Python",
+  "interests": ["Programação", "Design"],
+  "avatar": null,
+  "notifications": { "tasks": true, "groups": false }
+}
+```
+
+A resposta acrescenta `updatedAt` (data em UTC ou `null` para o perfil inicial).
+São permitidos nomes de 2 a 100 caracteres, apresentações de até 300 e até três
+interesses da lista da tela. Preferências exigem booleanos. Campos extras, incluindo
+ID do usuário, e-mail e atributos de acesso, são rejeitados; a conta é sempre obtida
+da sessão autenticada.
+
+A foto usa a data URL já preparada pelo frontend (320 × 320). A API aceita JPEG,
+PNG ou WebP estáticos, com até 300.000 caracteres na data URL e 1.024 pixels em cada
+dimensão. Pillow verifica o conteúdo, o formato declarado e a decodificação completa.
+URLs externas, SVG, conteúdo inválido e imagens animadas são rejeitados. Nesta etapa,
+a imagem pequena fica no PostgreSQL junto ao perfil, sem necessidade de um serviço
+de arquivos externo.
+
+A migration `c10a20260912` cria `perfis_usuarios`, com uma linha por usuário. A primeira
+gravação preserva o nome inicial; atualizações de nome também alteram `usuarios.nome`,
+portanto `/auth/me` e novos logins retornam o nome atualizado. Gravação e restauração
+usam transação e bloqueio da linha do usuário. A restauração remove somente a linha de
+personalização e recupera o nome inicial, mantendo conta, sessões e vínculos de grupos.
+
+A futura integração da tela de perfil usará estes endpoints quando
+`VITE_AUTH_MODE=api`. Perfis antigos do navegador não são importados automaticamente.
+As preferências são persistidas e retornadas pela API; esta entrega não implementa
+geração ou envio de notificações. O e-mail é somente leitura; alteração de senha,
+verificação de e-mail e exclusão de conta ficam fora deste contrato.
+
+A suíte inclui persistência, isolamento entre contas, exportação sem dados sensíveis,
+restauração com preservação de grupos e validação de fotos. Execute os testes conforme
+a seção anterior, sempre com a base exclusiva terminada em `_test`.

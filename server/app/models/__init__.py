@@ -13,3 +13,4 @@ from app.models.tarefa import Tarefa
 from app.models.tarefa_responsavel import TarefaResponsavel
 from app.models.usuario import Usuario
 from app.models.sessao_auth import SessaoAuth
+from app.models.perfil_usuario import PerfilUsuario

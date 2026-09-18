@@ -5,8 +5,8 @@ from fastapi.responses import JSONResponse
 
 from app.config import get_settings
 from app.core.exceptions import APIException
+from app.routers import auth_router, profile_router
 
-from app.routers import auth_router
 from app.routers import disciplina_router
 from app.routers import tarefa_router
 
@@ -47,7 +47,10 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 
 
-app.include_router(auth_router.router, prefix="/api/v1/auth", tags=["Autenticação"])
+app.include_router(auth_router.router, prefix="/api/v1/auth", tags=["Autentica\u00e7\u00e3o"])
+
+app.include_router(profile_router.router, prefix="/api/v1/profile", tags=["Perfil"])
+
 app.include_router(disciplina_router.router, prefix="/api/v1")
 app.include_router(tarefa_router.router, prefix="/api/v1")
 
