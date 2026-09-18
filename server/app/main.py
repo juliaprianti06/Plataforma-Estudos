@@ -7,6 +7,9 @@ from app.config import get_settings
 from app.core.exceptions import APIException
 from app.routers import auth_router, profile_router
 
+from app.routers import disciplina_router
+from app.routers import tarefa_router
+
 app = FastAPI(title="Estudos Colaborativos API", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
@@ -48,6 +51,8 @@ app.include_router(auth_router.router, prefix="/api/v1/auth", tags=["Autentica\u
 
 app.include_router(profile_router.router, prefix="/api/v1/profile", tags=["Perfil"])
 
+app.include_router(disciplina_router.router, prefix="/api/v1")
+app.include_router(tarefa_router.router, prefix="/api/v1")
 
 @app.get("/", tags=["Health"])
 def root():
