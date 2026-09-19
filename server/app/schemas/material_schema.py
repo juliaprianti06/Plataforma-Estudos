@@ -17,7 +17,6 @@ class MaterialCreate(MaterialBase):
 class MaterialUpdate(BaseModel):
     titulo: Optional[str] = None
     descricao: Optional[str] = None
-    disciplina_id: Optional[int] = None
     tipo: Optional[str] = None
 
 
