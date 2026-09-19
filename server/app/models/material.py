@@ -7,10 +7,12 @@ class Material(Base):
     __tablename__ = "materiais"
 
     id_material = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    id_grupo = Column(Integer, ForeignKey("grupos.id_grupo"), nullable=False)
-    id_usuario = Column(Integer, ForeignKey("usuarios.id_usuario"), nullable=False)  # quem fez upload
+    disciplina_id = Column(Integer, ForeignKey("disciplinas.id", ondelete="CASCADE"), nullable=False)
+    id_usuario = Column(Integer, ForeignKey("usuarios.id_usuario"), nullable=False)
     titulo = Column(String(150), nullable=False)
     descricao = Column(Text, nullable=True)
     url_arquivo = Column(String(255), nullable=False)
-    tipo = Column(String(50), nullable=True)  # pdf, video, link...
+    tipo = Column(String(50), nullable=True)  
+    content_type = Column(String(100), nullable=False)
+    tamanho_bytes = Column(Integer, nullable=False)
     data_upload = Column(DateTime(timezone=True), server_default=func.now())
