@@ -4,6 +4,7 @@ import { useLayout } from '../../components/layout/app-layout';
 import NovaDisciplinaModal from './modal-disciplinas';
 import ConfirmDialog from '../../components/ui/confirm-dialog';
 import { TarefasPanel } from '../tarefas/index';
+import { MateriaisPanel } from '../materiais/materiais-panel';
 import { api } from '../../api/client';
 
 interface Disciplina {
@@ -25,6 +26,7 @@ export default function Disciplinas() {
   const [busca, setBusca] = useState('');
   const [disciplinaSelecionada, setDisciplinaSelecionada] = useState<Disciplina | null>(null);
   const [progressoMap, setProgressoMap] = useState<Record<number, { total: number; concluidas: number }>>({});
+  const [activeTab, setActiveTab] = useState<'tarefas' | 'materiais'>('tarefas');
   const { openMenu } = useLayout();
 
   const disciplinasFiltradas = disciplinas.filter((d) =>
@@ -155,7 +157,7 @@ export default function Disciplinas() {
                   </div>
                 </div>
                 <div className={`flex items-center gap-2`}>
-                  <div className={`flex gap-2 text-muted-foreground opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity`}>
+                  <div className={`flex gap-2 text-muted-foreground transition-opacity`}>
                     <button 
                       onClick={(e) => { e.stopPropagation(); handleEditarDisciplina(disc); }} 
                       className="hover:text-primary transition-colors cursor-pointer"
@@ -203,10 +205,34 @@ export default function Disciplinas() {
         </div>
 
         {disciplinaSelecionada && (
-          <TarefasPanel
-            disciplina={disciplinaSelecionada}
-            onTarefasChange={() => carregarProgresso(disciplinas)}
-          />
+          <div className="space-y-4">
+            <div className="flex border-b border-border gap-6">
+              <button
+                className={`pb-2 text-sm font-semibold transition-colors ${activeTab === 'tarefas' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-primary'}`}
+                onClick={() => setActiveTab('tarefas')}
+              >
+                Tarefas
+              </button>
+              <button
+                className={`pb-2 text-sm font-semibold transition-colors ${activeTab === 'materiais' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-primary'}`}
+                onClick={() => setActiveTab('materiais')}
+              >
+                Materiais
+              </button>
+            </div>
+            
+            {activeTab === 'tarefas' ? (
+              <TarefasPanel
+                disciplina={disciplinaSelecionada}
+                onTarefasChange={() => carregarProgresso(disciplinas)}
+              />
+            ) : (
+              <MateriaisPanel 
+                disciplinaId={disciplinaSelecionada.id} 
+                disciplinas={disciplinas}
+              />
+            )}
+          </div>
         )}
 
       </div>

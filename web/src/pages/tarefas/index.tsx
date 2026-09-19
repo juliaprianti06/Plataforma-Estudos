@@ -185,7 +185,7 @@ export function TarefasPanel({ disciplina, onTarefasChange }: TarefasPanelProps)
                       </span>
                     </div>
                   </div>
-                  <div className="flex gap-3 text-muted-foreground opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity md:w-16 justify-end">
+                  <div className="flex gap-3 text-muted-foreground transition-opacity md:w-16 justify-end">
                     <button
                       onClick={() => { setTarefaEditando(tarefa); setIsModalOpen(true); }}
                       className="hover:text-primary cursor-pointer"
