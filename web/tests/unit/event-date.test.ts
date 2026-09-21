@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { formatEventDate } from '../src/lib/event-date.ts'
+import { formatEventDate } from '../../src/lib/event-date.ts'
 
 test('dia, mês e horário correspondem à data completa do evento', () => {
   assert.deepEqual(formatEventDate('2026-10-12T14:00:00-03:00'), {
