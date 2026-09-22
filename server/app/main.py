@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.config import get_settings
 from app.core.exceptions import APIException
@@ -9,6 +10,7 @@ from app.routers import auth_router, profile_router
 
 from app.routers import disciplina_router
 from app.routers import tarefa_router
+from app.routers import material_router
 
 app = FastAPI(title="Estudos Colaborativos API", version="1.0.0")
 app.add_middleware(
@@ -53,6 +55,9 @@ app.include_router(profile_router.router, prefix="/api/v1/profile", tags=["Perfi
 
 app.include_router(disciplina_router.router, prefix="/api/v1")
 app.include_router(tarefa_router.router, prefix="/api/v1")
+app.include_router(material_router.router, prefix="/api/v1")
+
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 @app.get("/", tags=["Health"])
 def root():

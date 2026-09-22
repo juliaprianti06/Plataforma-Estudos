@@ -4,16 +4,13 @@ from typing import Optional
 
 
 class MaterialBase(BaseModel):
-    id_grupo: int
+    disciplina_id: int
     titulo: str
     descricao: Optional[str] = None
-    url_arquivo: str
     tipo: Optional[str] = None
 
 
 class MaterialCreate(MaterialBase):
-    # id_usuario (quem fez o upload) deve vir do usuário autenticado (token),
-    # nunca do corpo da requisição.
     pass
 
 
@@ -26,6 +23,9 @@ class MaterialUpdate(BaseModel):
 class MaterialResponse(MaterialBase):
     id_material: int
     id_usuario: int
+    url_arquivo: str
+    content_type: str
+    tamanho_bytes: int
     data_upload: datetime
 
     model_config = ConfigDict(from_attributes=True)

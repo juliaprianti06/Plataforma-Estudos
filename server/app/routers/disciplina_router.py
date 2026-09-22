@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.schemas.disciplina_schema import DisciplinaCreate, DisciplinaResponse, DisciplinaUpdate
 from app.repository.disciplina_repository import DisciplinaRepository
+from app.repository.material_repository import MaterialRepository
 from app.commands.disciplina.criar_disciplina_command import CriarDisciplinaCommand
 from app.commands.disciplina.update_disciplina_command import AtualizarDisciplinaCommand
 from app.commands.disciplina.deletar_disciplina_command import DeletarDisciplinaCommand
@@ -72,8 +73,10 @@ def deletar_disciplina(
     db: Session = Depends(get_db),
 ):
     repository = DisciplinaRepository(db)
+    material_repository = MaterialRepository(db)
     comando = DeletarDisciplinaCommand(
         repository=repository,
+        material_repository=material_repository,
         disciplina_id=disciplina_id,
         usuario_id=auth.user.id_usuario
     )

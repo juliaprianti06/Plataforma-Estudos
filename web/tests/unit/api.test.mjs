@@ -21,7 +21,7 @@ test('contrato de API: login, restauração, erros, autorização e logout', asy
     envDir: false,
     define: { 'import.meta.env.VITE_AUTH_MODE': JSON.stringify('api') },
     optimizeDeps: { noDiscovery: true, include: [] },
-    resolve: { alias: { '@': fileURLToPath(new URL('../src', import.meta.url)) } },
+    resolve: { alias: { '@': fileURLToPath(new URL('../../src', import.meta.url)) } },
     server: { middlewareMode: true, watch: null, ws: false },
   })
   t.after(async () => {

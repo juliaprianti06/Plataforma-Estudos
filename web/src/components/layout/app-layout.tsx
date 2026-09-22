@@ -10,9 +10,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
 
   function handleNavigate(label: string) {
-    if (label === 'Início' || label === 'Disciplinas') {
+    if (label === 'Início' || label === 'Disciplinas' || label === 'Materiais') {
       if (label === 'Início') navigate({ to: '/dashboard' });
       if (label === 'Disciplinas') navigate({ to: '/disciplinas' });
+      if (label === 'Materiais') navigate({ to: '/materiais' });
       return;
     }
     setMessage(`${label} estará disponível em breve.`);

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { createSessionStore, SESSION_KEY } from '../src/auth/session-store.ts'
-import { createMockProvider } from '../src/auth/mock-provider.ts'
+import { createSessionStore, SESSION_KEY } from '../../src/auth/session-store.ts'
+import { createMockProvider } from '../../src/auth/mock-provider.ts'
 
 function memoryStorage(): Storage {
   const values = new Map<string, string>()

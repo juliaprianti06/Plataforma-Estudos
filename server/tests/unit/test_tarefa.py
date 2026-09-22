@@ -42,17 +42,14 @@ def test_listar_tarefas_da_disciplina(client):
     
     disc_id = criar_disciplina_helper(client, headers1)
     
-    # Criar tarefa
     client.post("/api/v1/tarefas/", json={
         "nome": "Ler livro", "prioridade": "Média", "data_vencimento": None, "status": "a_fazer", "disciplina_id": disc_id, "id_coluna": None
     }, headers=headers1)
-    
-    # Usuario dono lista
+  
     res1 = client.get(f"/api/v1/tarefas/disciplina/{disc_id}", headers=headers1)
     assert len(res1.json()) == 1
     assert res1.json()[0]["nome"] == "Ler livro"
     
-    # Usuario não dono lista (não deve acessar, dependendo da regra, mas no minimo retorna 0 ou 404/403)
     res2 = client.get(f"/api/v1/tarefas/disciplina/{disc_id}", headers=get_headers(token2))
     assert len(res2.json()) == 0
 
@@ -69,7 +66,7 @@ def test_atualizar_tarefa(client):
     res_upd = client.put(f"/api/v1/tarefas/{tarefa_id}", json={"status": "concluido"}, headers=headers)
     assert res_upd.status_code == 200
     assert res_upd.json()["status"] == "concluido"
-    assert res_upd.json()["nome"] == "Fazer TP" # Mantém os outros campos intactos
+    assert res_upd.json()["nome"] == "Fazer TP" 
 
 def test_deletar_tarefa(client):
     token = register_user(client, "tarefa4@example.com")
