@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import HTTPException
 from app.commands.base_command import BaseCommand
 from app.repository.tarefa_repository import TarefaRepository
@@ -15,10 +17,15 @@ class AtualizarTarefaCommand(BaseCommand):
         if not tarefa:
             raise HTTPException(status_code=404, detail="Tarefa não encontrada")
         
-        dados_dicionario = self.dados_atualizacao.dict(exclude_unset=True)
+        dados_dicionario = self.dados_atualizacao.model_dump(exclude_unset=True)
+        if 'status' in dados_dicionario and dados_dicionario['status'] != tarefa.status:
+            tarefa.concluido_em = (
+                datetime.now(timezone.utc)
+                if dados_dicionario['status'] == 'concluido'
+                else None
+            )
         for campo, valor in dados_dicionario.items():
             setattr(tarefa, campo, valor)
             
         self.repository.update(tarefa)
         return tarefa
-        

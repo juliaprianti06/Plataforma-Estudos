@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 from typing import Optional
-from datetime import date
+from datetime import date, datetime
 
 class TarefaBase(BaseModel):
     id_coluna: Optional[int] = None
@@ -24,5 +24,7 @@ class TarefaUpdate(BaseModel):
 class TarefaResponse(TarefaBase):
     id: int
     usuario_id: int
+    criado_em: Optional[datetime] = None
+    concluido_em: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
