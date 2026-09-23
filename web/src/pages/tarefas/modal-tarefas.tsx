@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X } from 'lucide-react';
 import { api } from '../../api/client';
 
@@ -6,7 +6,7 @@ interface TarefaModalProps {
   isOpen?: boolean;
   onClose?: () => void;
   onSuccess?: () => void;
-  tarefa?: any | null;
+  tarefa?: { id: number; nome: string; prioridade: string; data_vencimento: string | null; status: string; } | null;
   disciplinaId: number;
   disciplinaNome: string;
 }
@@ -35,33 +35,24 @@ const STATUS_OPTIONS = [
   { label: 'Concluído', value: 'concluido' },
 ];
 
-export default function TarefaModal({
-  isOpen = true,
+export default function TarefaModal(props: TarefaModalProps) {
+  if (!(props.isOpen ?? true)) return null;
+  return <TarefaModalForm key={`${props.disciplinaId ?? "todas"}:${props.tarefa?.id ?? "novo"}`} {...props} />;
+}
+
+function TarefaModalForm({
   onClose = () => {},
   onSuccess = () => {},
   tarefa = null,
   disciplinaId,
   disciplinaNome,
 }: TarefaModalProps) {
-  const [nome, setNome] = useState('');
-  const [prioridade, setPrioridade] = useState('Média');
-  const [dataVencimento, setDataVencimento] = useState('');
-  const [status, setStatus] = useState('a_fazer');
+  const [nome, setNome] = useState(tarefa?.nome ?? '');
+  const [prioridade, setPrioridade] = useState(tarefa?.prioridade || 'Média');
+  const [dataVencimento, setDataVencimento] = useState(tarefa?.data_vencimento ?? '');
+  const [status, setStatus] = useState(tarefa?.status || 'a_fazer');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (tarefa) {
-      setNome(tarefa.nome || '');
-      setPrioridade(tarefa.prioridade || 'Média');
-      setDataVencimento(tarefa.data_vencimento || '');
-      setStatus(tarefa.status || 'a_fazer');
-    } else {
-      setNome('');
-      setPrioridade('Média');
-      setDataVencimento('');
-      setStatus('a_fazer');
-    }
-  }, [tarefa, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,7 +79,6 @@ export default function TarefaModal({
     }
   };
 
-  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/20 p-4 backdrop-blur-sm">

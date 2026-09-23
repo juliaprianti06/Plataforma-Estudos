@@ -5,6 +5,7 @@ from app.database import get_db
 from app.routers.auth_router import CurrentAuth
 from app.schemas.tarefa_schema import TarefaCreate, TarefaResponse
 from app.repository.tarefa_repository import TarefaRepository
+from app.repository.disciplina_repository import DisciplinaRepository
 from app.commands.tarefa.criar_tarefa_command import CriarTarefaCommand
 from app.schemas.tarefa_schema import TarefaUpdate
 from app.commands.tarefa.update_tarefa_command import AtualizarTarefaCommand
@@ -25,6 +26,7 @@ def criar_tarefa(
     comando = CriarTarefaCommand(
         repository=repository,
         tarefa_data=tarefa,
+        disciplina_repository=DisciplinaRepository(db),
         usuario_id=auth.user.id_usuario
     )
     return comando.execute()
@@ -51,6 +53,7 @@ def atualizar_tarefa(
         repository=repository,
         tarefa_id=tarefa_id,
         dados_atualizacao=dados_atualizacao,
+        disciplina_repository=DisciplinaRepository(db),
         usuario_id=auth.user.id_usuario
     )
     return comando.execute()

@@ -62,3 +62,32 @@ def test_deletar_disciplina(client):
     assert res_del.status_code == 204
     
 
+
+
+@pytest.mark.parametrize('alteracao', [
+    {'nome': ''}, {'nome': '   '}, {'nome': None}, {'cor': None}, {'ativo': None},
+])
+def test_rejeita_campos_obrigatorios_invalidos(client, alteracao):
+    headers = get_headers(register_user(client, 'validacao@example.com'))
+    original = client.post('/api/v1/disciplinas/', json={'nome': 'Original'}, headers=headers).json()
+    response = client.put(f"/api/v1/disciplinas/{original['id']}", json=alteracao, headers=headers)
+    assert response.status_code == 422
+    assert client.get('/api/v1/disciplinas/', headers=headers).json() == [original]
+    assert client.post('/api/v1/disciplinas/', json={'nome': 'Nova', **alteracao}, headers=headers).status_code == 422
+
+
+def test_edicao_parcial_preserva_campos_e_permite_limpar_opcionais(client):
+    headers = get_headers(register_user(client, 'parcial@example.com'))
+    original = client.post('/api/v1/disciplinas/', json={
+        'nome': '  Física  ', 'professor': 'Ana', 'descricao': 'Notas', 'ativo': False,
+    }, headers=headers).json()
+    assert original['nome'] == 'Física'
+    response = client.put(f"/api/v1/disciplinas/{original['id']}", json={
+        'nome': '  Física II  ', 'professor': None, 'descricao': None,
+    }, headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data['nome'] == 'Física II'
+    assert data['professor'] is None and data['descricao'] is None
+    assert data['ativo'] is False
+    assert data['cor'] == original['cor']
