@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search, Plus, Menu, ChevronDown } from 'lucide-react';
-import { useLayout } from '../../components/layout/app-layout';
+import { useLayout } from '../../components/layout/layout-context';
 import { MateriaisPanel } from './materiais-panel';
 import ModalMateriais from './modal-materiais';
 import { api } from '../../api/client';

@@ -93,8 +93,6 @@ export function TarefasPanel({ disciplina, onTarefasChange }: TarefasPanelProps)
     }
   };
 
-  const concluidas = tarefas.filter((t) => t.status === 'concluido').length;
-
   return (
     <>
       <div className="border border-accent bg-card rounded-2xl p-4 sm:p-6 shadow-sm overflow-hidden">

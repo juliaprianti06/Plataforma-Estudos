@@ -1,23 +1,26 @@
-import { useState, createContext, useContext } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { LayoutContext } from './layout-context'
+import { navigationItems } from './navigation'
 import { Sidebar } from './sidebar'
 import { useNavigate } from '@tanstack/react-router';
 
-export const LayoutContext = createContext({ openMenu: () => {} });
-export const useLayout = () => useContext(LayoutContext);
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
+  const messageTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(messageTimer.current), []);
 
   function handleNavigate(label: string) {
-    if (label === 'Início' || label === 'Disciplinas' || label === 'Materiais') {
-      if (label === 'Início') navigate({ to: '/dashboard' });
-      if (label === 'Disciplinas') navigate({ to: '/disciplinas' });
-      if (label === 'Materiais') navigate({ to: '/materiais' });
+    clearTimeout(messageTimer.current);
+    const item = navigationItems.find((item) => item.label === label);
+    if (item && 'to' in item) {
+      setMessage('');
+      navigate({ to: item.to });
       return;
     }
     setMessage(`${label} estará disponível em breve.`);
-    window.setTimeout(() => setMessage(''), 2500);
+    messageTimer.current = setTimeout(() => setMessage(''), 2500);
   }
 
   return (

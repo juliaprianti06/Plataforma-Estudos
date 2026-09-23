@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search, Plus, Pencil, Trash2, Menu, ChevronDown, ChevronUp } from 'lucide-react';
-import { useLayout } from '../../components/layout/app-layout';
+import { useLayout } from '../../components/layout/layout-context';
 import NovaDisciplinaModal from './modal-disciplinas';
 import ConfirmDialog from '../../components/ui/confirm-dialog';
 import { TarefasPanel } from '../tarefas/index';
