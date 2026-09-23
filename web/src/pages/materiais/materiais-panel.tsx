@@ -29,6 +29,7 @@ interface MateriaisPanelProps {
   searchTerm?: string;
   filtroDisciplinaId?: string;
   filtroGrupo?: string;
+  onMaterialsChange?: () => void;
 }
 
 export function MateriaisPanel({ 
@@ -36,7 +37,8 @@ export function MateriaisPanel({
   disciplinas = [],
   searchTerm = '',
   filtroDisciplinaId = '',
-  filtroGrupo = ''
+  filtroGrupo = '',
+  onMaterialsChange,
 }: MateriaisPanelProps) {
   const [materiais, setMateriais] = useState<Material[]>([]);
   const [refresh, setRefresh] = useState(0);
@@ -70,6 +72,7 @@ export function MateriaisPanel({
     try {
       await api.delete(`/materiais/${materialParaExcluir}`);
       carregarMateriais();
+      onMaterialsChange?.();
     } catch (error) {
       console.error('Erro ao excluir material:', error);
     } finally {
@@ -127,13 +130,17 @@ export function MateriaisPanel({
   };
 
   const materiaisFiltrados = (loading ? [] : materiais).filter(material => {
-    if (searchTerm && !material.titulo.toLowerCase().includes(searchTerm.toLowerCase()) && !(material.descricao || '').toLowerCase().includes(searchTerm.toLowerCase())) {
+    const normalizar = (valor: string) => valor.trim().toLocaleLowerCase('pt-BR');
+    const buscaNormalizada = normalizar(searchTerm);
+    if (buscaNormalizada &&
+      !normalizar(material.titulo).includes(buscaNormalizada) &&
+      !normalizar(material.descricao || '').includes(buscaNormalizada)) {
       return false;
     }
     if (filtroDisciplinaId && material.disciplina_id.toString() !== filtroDisciplinaId) {
       return false;
     }
-    if (filtroGrupo && (material.tipo || '') !== filtroGrupo) {
+    if (filtroGrupo && normalizar(material.tipo || '') !== normalizar(filtroGrupo)) {
       return false;
     }
     return true;
