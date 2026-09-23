@@ -27,29 +27,29 @@ interface TarefasPanelProps {
 
 export function TarefasPanel({ disciplina, onTarefasChange }: TarefasPanelProps) {
   const [tarefas, setTarefas] = useState<Tarefa[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [refresh, setRefresh] = useState(0);
+  const [loadedKey, setLoadedKey] = useState<string | null>(null);
+  const requestKey = `${disciplina.id ?? "todas"}:${refresh}`;
+  const loading = loadedKey !== requestKey;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tarefaEditando, setTarefaEditando] = useState<Tarefa | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [tarefaParaExcluir, setTarefaParaExcluir] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const carregarTarefas = async () => {
-    setLoading(true);
-    try {
-      const response = await api.get(`/tarefas/disciplina/${disciplina.id}`);
-      setTarefas(response.data);
-      onTarefasChange?.();
-    } catch (error) {
-      console.error('Erro ao buscar tarefas:', error);
-    } finally {
-      setLoading(false);
-    }
+  const carregarTarefas = () => {
+    setRefresh((value) => value + 1);
+    onTarefasChange?.();
   };
 
   useEffect(() => {
-    carregarTarefas();
-  }, [disciplina.id]);
+    let active = true;
+    api.get<Tarefa[]>(`/tarefas/disciplina/${disciplina.id}`)
+      .then((response) => { if (active) setTarefas(response.data); })
+      .catch((error) => { if (active) { setTarefas([]); console.error('Erro ao buscar tarefas:', error); } })
+      .finally(() => { if (active) setLoadedKey(requestKey); });
+    return () => { active = false; };
+  }, [disciplina.id, requestKey]);
 
   const handleToggleFeito = async (tarefa: Tarefa) => {
     try {
@@ -135,7 +135,7 @@ export function TarefasPanel({ disciplina, onTarefasChange }: TarefasPanelProps)
                 </div>
               </div>
             )}
-            {tarefas.map((tarefa) => (
+            {(!loading ? tarefas : []).map((tarefa) => (
               <div
                 key={tarefa.id}
                 className="flex flex-col md:flex-row md:items-center justify-between py-3 md:py-4 border-b border-border/50 hover:bg-muted/30 px-2 rounded-lg transition-colors group gap-3 md:gap-0"

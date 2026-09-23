@@ -39,7 +39,10 @@ export function MateriaisPanel({
   filtroGrupo = ''
 }: MateriaisPanelProps) {
   const [materiais, setMateriais] = useState<Material[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [refresh, setRefresh] = useState(0);
+  const [loadedKey, setLoadedKey] = useState<string | null>(null);
+  const requestKey = `${disciplinaId ?? "todas"}:${refresh}`;
+  const loading = loadedKey !== requestKey;
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [materialEditando, setMaterialEditando] = useState<Material | null>(null);
@@ -48,22 +51,18 @@ export function MateriaisPanel({
   const [materialParaExcluir, setMaterialParaExcluir] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const carregarMateriais = async () => {
-    setLoading(true);
-    try {
-      const url = disciplinaId ? `/materiais/?disciplina_id=${disciplinaId}` : '/materiais/';
-      const response = await api.get(url);
-      setMateriais(response.data);
-    } catch (error) {
-      console.error('Erro ao buscar materiais:', error);
-    } finally {
-      setLoading(false);
-    }
+  const carregarMateriais = () => {
+    setRefresh((value) => value + 1);
   };
 
   useEffect(() => {
-    carregarMateriais();
-  }, [disciplinaId]);
+    let active = true;
+    api.get<Material[]>(disciplinaId ? `/materiais/?disciplina_id=${disciplinaId}` : '/materiais/')
+      .then((response) => { if (active) setMateriais(response.data); })
+      .catch((error) => { if (active) { setMateriais([]); console.error('Erro ao buscar materiais:', error); } })
+      .finally(() => { if (active) setLoadedKey(requestKey); });
+    return () => { active = false; };
+  }, [disciplinaId, requestKey]);
 
   const handleExcluir = async () => {
     if (materialParaExcluir === null) return;
@@ -127,7 +126,7 @@ export function MateriaisPanel({
     return 'FILE';
   };
 
-  const materiaisFiltrados = materiais.filter(material => {
+  const materiaisFiltrados = (loading ? [] : materiais).filter(material => {
     if (searchTerm && !material.titulo.toLowerCase().includes(searchTerm.toLowerCase()) && !(material.descricao || '').toLowerCase().includes(searchTerm.toLowerCase())) {
       return false;
     }

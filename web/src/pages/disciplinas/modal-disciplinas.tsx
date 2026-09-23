@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { api } from '../../api/client';
 import { X } from 'lucide-react';
 
@@ -6,20 +6,24 @@ interface DisciplinaModalProps {
   isOpen?: boolean;
   onClose?: () => void;
   onSuccess?: () => void;
-  disciplina?: any | null; 
+  disciplina?: { id: number; nome: string; professor?: string | null; descricao?: string | null; cor: string; } | null;
 }
 
-export default function DisciplinaModal({ 
-  isOpen = true, 
+export default function DisciplinaModal(props: DisciplinaModalProps) {
+  if (!(props.isOpen ?? true)) return null;
+  return <DisciplinaModalForm key={props.disciplina?.id ?? "novo"} {...props} />;
+}
+
+function DisciplinaModalForm({
   onClose = () => {}, 
   onSuccess = () => {},
   disciplina = null 
 }: DisciplinaModalProps) {
 
-  const [nome, setNome] = useState('');
-  const [professor, setProfessor] = useState('');
-  const [descricao, setDescricao] = useState('');
-  const [corSelecionada, setCorSelecionada] = useState('bg-accent');
+  const [nome, setNome] = useState(disciplina?.nome ?? '');
+  const [professor, setProfessor] = useState(disciplina?.professor ?? '');
+  const [descricao, setDescricao] = useState(disciplina?.descricao ?? '');
+  const [corSelecionada, setCorSelecionada] = useState(disciplina?.cor || 'bg-accent');
   const [isSubmitting, setIsSubmitting] = useState(false); 
 
   const cores = [
@@ -31,19 +35,6 @@ export default function DisciplinaModal({
     'bg-neutral-accent'  
   ];
 
-  useEffect(() => {
-    if (disciplina) {
-      setNome(disciplina.nome || '');
-      setProfessor(disciplina.professor || '');
-      setDescricao(disciplina.descricao || '');
-      setCorSelecionada(disciplina.cor || 'bg-accent');
-    } else {
-      setNome('');
-      setProfessor('');
-      setDescricao('');
-      setCorSelecionada('bg-accent');
-    }
-  }, [disciplina, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); 
@@ -75,7 +66,6 @@ export default function DisciplinaModal({
     }
   };
 
-  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/20 p-4 backdrop-blur-sm">

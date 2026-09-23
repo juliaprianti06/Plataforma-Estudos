@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Search, Plus, Pencil, Trash2, Menu, ChevronDown, ChevronUp } from 'lucide-react';
 import { useLayout } from '../../components/layout/layout-context';
 import NovaDisciplinaModal from './modal-disciplinas';
@@ -33,37 +33,36 @@ export default function Disciplinas() {
     d.nome.toLowerCase().includes(busca.toLowerCase())
   );
   
-  const carregarProgresso = async (lista: Disciplina[]) => {
+  const carregarProgresso = useCallback(async (lista: Disciplina[]) => {
     try {
       const resultados = await Promise.all(
-        lista.map((d) => api.get(`/tarefas/disciplina/${d.id}`).then((r) => ({ id: d.id, tarefas: r.data })))
+        lista.map((d) => api.get<{ status: string }[]>(`/tarefas/disciplina/${d.id}`).then((r) => ({ id: d.id, tarefas: r.data })))
       );
       const mapa: Record<number, { total: number; concluidas: number }> = {};
       resultados.forEach(({ id, tarefas }) => {
         mapa[id] = {
           total: tarefas.length,
-          concluidas: tarefas.filter((t: any) => t.status === 'concluido').length,
+          concluidas: tarefas.filter((t) => t.status === 'concluido').length,
         };
       });
       setProgressoMap(mapa);
     } catch (error) {
       console.error('Erro ao carregar progresso:', error);
     }
-  };
+  }, []);
 
-  const carregarDisciplinas = async () => {
-    try {
-      const response = await api.get('/disciplinas/');
-      setDisciplinas(response.data);
-      carregarProgresso(response.data);
-    } catch (error) {
-      console.error('Erro ao buscar disciplinas:', error);
-    }
-  };
+  const [refresh, setRefresh] = useState(0);
+  const carregarDisciplinas = () => setRefresh((value) => value + 1);
 
   useEffect(() => {
-    carregarDisciplinas();
-  }, []);
+    let active = true;
+    api.get<Disciplina[]>('/disciplinas/').then((response) => {
+      if (!active) return;
+      setDisciplinas(response.data);
+      void carregarProgresso(response.data);
+    }).catch((error) => { if (active) console.error('Erro ao buscar disciplinas:', error); });
+    return () => { active = false; };
+  }, [refresh, carregarProgresso]);
 
   const handleAbrirConfirmExcluir = (id: number) => {
     setDisciplinaParaExcluir(id);
