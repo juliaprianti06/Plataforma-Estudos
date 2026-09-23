@@ -1,6 +1,5 @@
-/// <reference types="vitest" />
 import path from "path"
-import { defineConfig } from 'vitest/config'
+import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
@@ -19,14 +18,6 @@ export default defineConfig({
   server: {
     watch: {
       usePolling: true,
-    },
-  },
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: './tests/setup.ts',
-    typecheck: {
-      tsconfig: './tsconfig.test.json',
     },
   },
 })
