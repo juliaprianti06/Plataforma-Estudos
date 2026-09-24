@@ -37,4 +37,11 @@ class UploadMaterialCommand(BaseCommand):
             tipo=self.tipo
         )
 
-        return self.material_repo.salvar(novo_material)
+        try:
+            material_criado = self.material_repo.salvar(novo_material)
+            self.material_repo.commit()
+            return material_criado
+        except Exception:
+            self.material_repo.rollback()
+            StorageService.delete_file(url_arquivo)
+            raise

@@ -10,7 +10,7 @@ class DisciplinaRepository:
 
     def salvar(self, disciplina: Disciplina) -> Disciplina:
         self.db.add(disciplina)
-        self.db.commit()
+        self.db.flush()
         self.db.refresh(disciplina)
         return disciplina
     
@@ -24,10 +24,20 @@ class DisciplinaRepository:
    
     def deletar(self, disciplina: Disciplina):
         self.db.delete(disciplina)
-        self.db.commit()
+        self.db.flush()
         
 
     def update(self, disciplina: Disciplina):
-        self.db.commit()
+        self.db.flush()
         self.db.refresh(disciplina)
         return disciplina
+
+    def commit(self) -> None:
+        try:
+            self.db.commit()
+        except Exception:
+            self.db.rollback()
+            raise
+
+    def rollback(self) -> None:
+        self.db.rollback()

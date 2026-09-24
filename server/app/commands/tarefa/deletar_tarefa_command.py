@@ -14,4 +14,5 @@ class DeletarTarefaCommand(BaseCommand):
             raise HTTPException(status_code=404, detail="Tarefa não encontrada")
         
         self.repository.deletar(tarefa)
+        self.repository.commit()
         return {"mensagem": "Tarefa excluída com sucesso"}
