@@ -20,4 +20,5 @@ class AtualizarDisciplinaCommand(BaseCommand):
             setattr(disciplina, chave, valor)
 
         self.repository.update(disciplina)
+        self.repository.commit()
         return disciplina

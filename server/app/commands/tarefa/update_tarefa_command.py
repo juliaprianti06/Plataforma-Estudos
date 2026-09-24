@@ -34,4 +34,5 @@ class AtualizarTarefaCommand(BaseCommand):
             setattr(tarefa, campo, valor)
             
         self.repository.update(tarefa)
+        self.repository.commit()
         return tarefa

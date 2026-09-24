@@ -1,8 +1,6 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from fastapi import APIRouter
 from typing import List
-from app.database import get_db
-from app.routers.auth_router import CurrentAuth
+from app.routers.auth_router import CurrentAuth, Database
 from app.schemas.tarefa_schema import TarefaCreate, TarefaResponse
 from app.repository.tarefa_repository import TarefaRepository
 from app.repository.disciplina_repository import DisciplinaRepository
@@ -20,7 +18,7 @@ router = APIRouter(
 def criar_tarefa(
     tarefa: TarefaCreate,
     auth: CurrentAuth,
-    db: Session = Depends(get_db),
+    db: Database,
 ):
     repository = TarefaRepository(db)
     comando = CriarTarefaCommand(
@@ -35,7 +33,7 @@ def criar_tarefa(
 def listar_tarefas_da_disciplina(
     disciplina_id: int,
     auth: CurrentAuth,
-    db: Session = Depends(get_db),
+    db: Database,
 ):
     repository = TarefaRepository(db)
     return repository.listar_por_disciplina(disciplina_id=disciplina_id, usuario_id=auth.user.id_usuario)
@@ -46,7 +44,7 @@ def atualizar_tarefa(
     tarefa_id: int,
     dados_atualizacao: TarefaUpdate,
     auth: CurrentAuth,
-    db: Session = Depends(get_db),
+    db: Database,
 ):
     repository = TarefaRepository(db)
     comando = AtualizarTarefaCommand(
@@ -62,7 +60,7 @@ def atualizar_tarefa(
 def deletar_tarefa(
     tarefa_id: int,
     auth: CurrentAuth,
-    db: Session = Depends(get_db),
+    db: Database,
 ):
     repository = TarefaRepository(db)
     comando = DeletarTarefaCommand(

@@ -33,4 +33,5 @@ class CriarTarefaCommand(BaseCommand):
         )
         
         tarefa_criada = self.repository.salvar(nova_tarefa) 
+        self.repository.commit()
         return tarefa_criada
