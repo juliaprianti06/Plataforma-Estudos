@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, status
+from fastapi import APIRouter, UploadFile, File, Form, status
 from typing import List, Optional
 
 from app.routers.auth_router import CurrentAuth, Database
@@ -7,7 +7,6 @@ from app.repository.material_repository import MaterialRepository
 from app.repository.disciplina_repository import DisciplinaRepository
 
 from app.commands.material.upload_material_command import UploadMaterialCommand
-from app.commands.material.list_materiais_command import ListMateriaisCommand
 from app.commands.material.update_material_command import AtualizarMaterialCommand
 from app.commands.material.delete_material_command import DeletarMaterialCommand
 
@@ -47,8 +46,7 @@ def listar_materiais(
     disciplina_id: Optional[int] = None
 ):
     repository = MaterialRepository(db)
-    command = ListMateriaisCommand(repository, auth.user.id_usuario, disciplina_id)
-    return command.execute()
+    return repository.listar_por_usuario(auth.user.id_usuario, disciplina_id)
 
 
 @router.put("/{id_material}", response_model=MaterialResponse)
