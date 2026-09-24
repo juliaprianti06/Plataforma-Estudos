@@ -5,7 +5,7 @@ export const navigationItems = [
   { label: 'Grupos', icon: Users },
   { label: 'Materiais', icon: BookOpen, to: '/materiais' },
   { label: 'Disciplinas', icon: ClipboardList, to: '/disciplinas' },
-  { label: 'Progresso', icon: Trophy },
+  { label: 'Progresso', icon: Trophy, to: '/progresso' },
   { label: 'Calendário', icon: Calendar },
   { label: 'Sessão de Estudos', icon: Timer },
 ] as const
