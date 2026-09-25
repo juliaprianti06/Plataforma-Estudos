@@ -11,6 +11,7 @@ from app.routers import auth_router, profile_router
 from app.routers import disciplina_router
 from app.routers import tarefa_router
 from app.routers import material_router
+from app.routers import progresso_router
 
 app = FastAPI(title="Estudos Colaborativos API", version="1.0.0")
 app.add_middleware(
@@ -56,6 +57,7 @@ app.include_router(profile_router.router, prefix="/api/v1/profile", tags=["Perfi
 app.include_router(disciplina_router.router, prefix="/api/v1")
 app.include_router(tarefa_router.router, prefix="/api/v1")
 app.include_router(material_router.router, prefix="/api/v1")
+app.include_router(progresso_router.router, prefix="/api/v1")
 
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 

@@ -18,8 +18,8 @@ class DeletarDisciplinaCommand(BaseCommand):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Disciplina não encontrada")
 
         materiais = self.material_repository.listar_por_usuario(self.usuario_id, self.disciplina_id)
+        self.repository.deletar(disciplina)
+        self.repository.commit()
         for material in materiais:
             StorageService.delete_file(material.url_arquivo)
-
-        self.repository.deletar(disciplina)
         return {"mensagem": "Disciplina deletada com sucesso"}

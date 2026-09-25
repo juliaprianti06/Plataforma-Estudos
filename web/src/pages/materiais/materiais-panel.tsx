@@ -29,6 +29,7 @@ interface MateriaisPanelProps {
   searchTerm?: string;
   filtroDisciplinaId?: string;
   filtroGrupo?: string;
+  onMaterialsChange?: () => void;
 }
 
 export function MateriaisPanel({ 
@@ -36,10 +37,14 @@ export function MateriaisPanel({
   disciplinas = [],
   searchTerm = '',
   filtroDisciplinaId = '',
-  filtroGrupo = ''
+  filtroGrupo = '',
+  onMaterialsChange,
 }: MateriaisPanelProps) {
   const [materiais, setMateriais] = useState<Material[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [refresh, setRefresh] = useState(0);
+  const [loadedKey, setLoadedKey] = useState<string | null>(null);
+  const requestKey = `${disciplinaId ?? "todas"}:${refresh}`;
+  const loading = loadedKey !== requestKey;
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [materialEditando, setMaterialEditando] = useState<Material | null>(null);
@@ -48,22 +53,18 @@ export function MateriaisPanel({
   const [materialParaExcluir, setMaterialParaExcluir] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const carregarMateriais = async () => {
-    setLoading(true);
-    try {
-      const url = disciplinaId ? `/materiais/?disciplina_id=${disciplinaId}` : '/materiais/';
-      const response = await api.get(url);
-      setMateriais(response.data);
-    } catch (error) {
-      console.error('Erro ao buscar materiais:', error);
-    } finally {
-      setLoading(false);
-    }
+  const carregarMateriais = () => {
+    setRefresh((value) => value + 1);
   };
 
   useEffect(() => {
-    carregarMateriais();
-  }, [disciplinaId]);
+    let active = true;
+    api.get<Material[]>(disciplinaId ? `/materiais/?disciplina_id=${disciplinaId}` : '/materiais/')
+      .then((response) => { if (active) setMateriais(response.data); })
+      .catch((error) => { if (active) { setMateriais([]); console.error('Erro ao buscar materiais:', error); } })
+      .finally(() => { if (active) setLoadedKey(requestKey); });
+    return () => { active = false; };
+  }, [disciplinaId, requestKey]);
 
   const handleExcluir = async () => {
     if (materialParaExcluir === null) return;
@@ -71,6 +72,7 @@ export function MateriaisPanel({
     try {
       await api.delete(`/materiais/${materialParaExcluir}`);
       carregarMateriais();
+      onMaterialsChange?.();
     } catch (error) {
       console.error('Erro ao excluir material:', error);
     } finally {
@@ -127,14 +129,18 @@ export function MateriaisPanel({
     return 'FILE';
   };
 
-  const materiaisFiltrados = materiais.filter(material => {
-    if (searchTerm && !material.titulo.toLowerCase().includes(searchTerm.toLowerCase()) && !(material.descricao || '').toLowerCase().includes(searchTerm.toLowerCase())) {
+  const materiaisFiltrados = (loading ? [] : materiais).filter(material => {
+    const normalizar = (valor: string) => valor.trim().toLocaleLowerCase('pt-BR');
+    const buscaNormalizada = normalizar(searchTerm);
+    if (buscaNormalizada &&
+      !normalizar(material.titulo).includes(buscaNormalizada) &&
+      !normalizar(material.descricao || '').includes(buscaNormalizada)) {
       return false;
     }
     if (filtroDisciplinaId && material.disciplina_id.toString() !== filtroDisciplinaId) {
       return false;
     }
-    if (filtroGrupo && (material.tipo || '') !== filtroGrupo) {
+    if (filtroGrupo && normalizar(material.tipo || '') !== normalizar(filtroGrupo)) {
       return false;
     }
     return true;

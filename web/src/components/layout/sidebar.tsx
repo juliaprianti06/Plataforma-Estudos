@@ -1,17 +1,6 @@
-import { useState } from 'react'
-import { 
-  LogOut, 
-  X, 
-  Brain, 
-  Home, 
-  Users, 
-  BookOpen, 
-  ClipboardList, 
-  Trophy, 
-  Calendar, 
-  Timer 
-} from 'lucide-react'
-import { useNavigate } from '@tanstack/react-router'
+import { LogOut, X, Brain } from 'lucide-react'
+import { useNavigate, useLocation } from '@tanstack/react-router'
+import { navigationItems } from './navigation'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { auth } from '@/auth/auth'
@@ -22,11 +11,10 @@ type SidebarProps = {
   open: boolean
   onClose: () => void
   onNavigate: (label: string) => void
-  activeRoute?: string 
 }
 
-export function Sidebar({ open, onClose, onNavigate, activeRoute = 'Início' }: SidebarProps) {
-  const [currentActive, setCurrentActive] = useState(activeRoute)
+export function Sidebar({ open, onClose, onNavigate }: SidebarProps) {
+  const pathname = useLocation({ select: (location) => location.pathname })
   const session = useAuth()
   const navigate = useNavigate()
   const initials = session?.user.name
@@ -40,15 +28,7 @@ export function Sidebar({ open, onClose, onNavigate, activeRoute = 'Início' }: 
     await auth.logout()
     navigate({ to: '/' })
   }  
-  const navigationItems = [
-    { label: 'Início', icon: Home },
-    { label: 'Grupos', icon: Users },
-    { label: 'Materiais', icon: BookOpen },
-    { label: 'Disciplinas', icon: ClipboardList },
-    { label: 'Progresso', icon: Trophy },
-    { label: 'Calendário', icon: Calendar },
-    { label: 'Sessão de Estudos', icon: Timer },
-  ]
+
 
   return (
     <>
@@ -88,7 +68,7 @@ export function Sidebar({ open, onClose, onNavigate, activeRoute = 'Início' }: 
           <ul className="space-y-1.5">
             {navigationItems.map((item) => {
               const Icon = item.icon
-              const isActive = currentActive === item.label  
+              const isActive = 'to' in item && (pathname === item.to || pathname.startsWith(`${item.to}/`))
               return (
                 <li key={item.label}>
                   <button
@@ -100,7 +80,6 @@ export function Sidebar({ open, onClose, onNavigate, activeRoute = 'Início' }: 
                         : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
                     )}
                     onClick={() => {
-                      setCurrentActive(item.label) 
                       onNavigate(item.label)       
                       onClose()                  
                     }}
