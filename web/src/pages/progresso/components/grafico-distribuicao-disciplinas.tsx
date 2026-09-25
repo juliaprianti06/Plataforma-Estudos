@@ -9,13 +9,21 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS
 
 export function GraficoDistribuicaoDisciplinas({ disciplines }: { disciplines: Discipline[] }) {
   const total = disciplines.reduce((sum, discipline) => sum + discipline.tarefas_total, 0)
-  let offset = 0
-  const segments = disciplines.map((discipline, index) => {
+  const segments = disciplines.reduce<{
+    items: Array<Discipline & { color: string; length: number; offset: number }>
+    offset: number
+  }>((resultado, discipline, index) => {
     const length = total === 0 ? 0 : (discipline.tarefas_total / total) * CIRCUMFERENCE
-    const segment = { ...discipline, color: COLORS[index % COLORS.length], length, offset }
-    offset += length
-    return segment
-  })
+    return {
+      items: [...resultado.items, {
+        ...discipline,
+        color: COLORS[index % COLORS.length],
+        length,
+        offset: resultado.offset,
+      }],
+      offset: resultado.offset + length,
+    }
+  }, { items: [], offset: 0 }).items
 
   return (
     <Card className="min-w-0">

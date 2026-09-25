@@ -10,6 +10,11 @@ import { GraficoEvolucao } from './components/grafico-evolucao'
 import { CartaoIndicador } from './components/cartao-indicador'
 import { CartaoTempoEstudo } from './components/cartao-tempo-estudo'
 
+type EstadoProgresso =
+  | { chave: string; estado: 'carregando' }
+  | { chave: string; estado: 'erro' }
+  | { chave: string; estado: 'sucesso'; dados: RespostaProgresso }
+
 function formatarPercentual(valor: number | null) {
   return valor === null ? '—' : `${valor.toLocaleString('pt-BR')}%`
 }
@@ -17,29 +22,37 @@ function formatarPercentual(valor: number | null) {
 export default function Progresso() {
   const { openMenu } = useLayout()
   const [periodo, setPeriodo] = useState<PeriodoProgresso>('semana')
-  const [dados, setDados] = useState<RespostaProgresso | null>(null)
-  const [carregando, setCarregando] = useState(true)
-  const [erro, setErro] = useState(false)
   const [tentativa, setTentativa] = useState(0)
+  const chaveRequisicao = `${periodo}:${tentativa}`
+  const [resultado, setResultado] = useState<EstadoProgresso>({
+    chave: chaveRequisicao,
+    estado: 'carregando',
+  })
 
   useEffect(() => {
     const controller = new AbortController()
-    setDados(null)
-    setCarregando(true)
-    setErro(false)
 
     buscarProgresso(periodo, controller.signal)
-      .then(setDados)
-      .catch(() => {
-        if (!controller.signal.aborted) setErro(true)
+      .then((dados) => {
+        if (!controller.signal.aborted) {
+          setResultado({ chave: chaveRequisicao, estado: 'sucesso', dados })
+        }
       })
-      .finally(() => {
-        if (!controller.signal.aborted) setCarregando(false)
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setResultado({ chave: chaveRequisicao, estado: 'erro' })
+        }
       })
 
     return () => controller.abort()
-  }, [periodo, tentativa])
+  }, [chaveRequisicao, periodo])
 
+  const estadoAtual = resultado.chave === chaveRequisicao
+    ? resultado
+    : { chave: chaveRequisicao, estado: 'carregando' as const }
+  const carregando = estadoAtual.estado === 'carregando'
+  const erro = estadoAtual.estado === 'erro'
+  const dados = estadoAtual.estado === 'sucesso' ? estadoAtual.dados : null
   const indicadores = dados?.indicadores
   const semTarefas = dados !== null && indicadores?.tarefas_total === 0
 
