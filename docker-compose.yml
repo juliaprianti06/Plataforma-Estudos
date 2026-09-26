@@ -17,12 +17,15 @@ services:
       retries: 10
 
   backend:
-    build: ./server
+    build:
+      context: ./server
+      dockerfile: dockerfile.dev
     restart: unless-stopped
     env_file:
       - ./server/.env
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/estudos_colaborativos
+      TEST_DATABASE_URL: postgresql://postgres:postgres@db:5432/estudos_colaborativos_test
     command: ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"]
     volumes:
       - ./server:/app
