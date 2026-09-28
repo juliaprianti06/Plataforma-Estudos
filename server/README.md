@@ -1,158 +1,96 @@
-# Backend de autenticação e perfil
+# Backend
 
-A modelagem e a autenticação já estão no `develop`. Esta entrega acrescenta
-persistência e endpoints autenticados para nome, apresentação, foto, interesses
-e preferências do perfil, usando o PostgreSQL e as sessões existentes.
+API da Plataforma de Estudos Colaborativos, construída com Python, FastAPI e PostgreSQL. O backend fornece autenticação e operações para perfil, disciplinas, tarefas, materiais e progresso.
 
-## Iniciar com Docker
+## Tecnologias
 
-Na raiz desta cópia de trabalho, com o Docker Desktop aberto:
+- **FastAPI** e **Uvicorn** para a API HTTP.
+- **Pydantic** para validar configurações e dados de entrada e saída.
+- **SQLAlchemy** e **psycopg2** para persistência no PostgreSQL.
+- **Alembic** para versionar alterações no banco.
+- **PyJWT** e **pwdlib/Argon2** para tokens e hash de senhas.
+- **Pillow** e **python-multipart** para imagens e envio de arquivos.
+- **pytest** e **httpx** para testes.
+
+## Estrutura
+
+```text
+app/
+├── commands/    # operações de escrita
+├── core/        # segurança, permissões e exceções
+├── models/      # entidades SQLAlchemy
+├── repository/  # consultas e persistência no banco
+├── routers/     # endpoints HTTP
+├── schemas/     # validação e formato dos dados da API
+├── services/    # regras de negócio e coordenação
+├── alembic/     # configuração e migrations
+├── config.py    # configurações do ambiente
+├── database.py  # engine e sessões do SQLAlchemy
+└── main.py      # criação da aplicação e registro das rotas
+```
+
+As rotas recebem requisições e delegam o trabalho às camadas da aplicação. Schemas representam o contrato HTTP, enquanto models representam os dados persistidos. O FastAPI fornece recursos como a sessão do banco e a autenticação por injeção de dependências.
+
+## Configuração
+
+Na raiz do repositório, crie `server/.env`:
 
 ```powershell
 Copy-Item server/.env.example server/.env
+```
+
+Gere uma chave para `JWT_SECRET` e coloque-a no arquivo:
+
+```powershell
 python -c "import secrets; print(secrets.token_urlsafe(48))"
 ```
 
-Cole a chave gerada em `JWT_SECRET` no arquivo `server/.env`. Faça a cópia apenas na primeira configuração, para preservar sua chave nas próximas execuções. O `.env` não deve ser commitado.
+
+## Iniciar a aplicação
+
+Com o Docker Desktop aberto, execute na raiz do repositório:
 
 ```powershell
-docker compose -p mindspace-backend up -d --build db backend
+docker compose up
 ```
 
-O PostgreSQL fica em `localhost:5432`, a API em `http://localhost:8000` e a documentação interativa em `http://localhost:8000/docs`. O Compose espera o banco ficar disponível e aplica `alembic upgrade head` antes de iniciar a API. Os dados ficam no volume `mindspace-backend_pgdata`; `docker compose -p mindspace-backend stop` interrompe os serviços preservando os dados.
+O Compose inicia PostgreSQL, backend e frontend. A API fica em `http://localhost:8000`, a documentação interativa em `http://localhost:8000/docs` e o frontend em `http://localhost:5173`. O backend aplica as migrations ao iniciar.
 
-O Compose é um ambiente de desenvolvimento local. As credenciais `postgres/postgres` são locais e as portas do banco e da API são publicadas apenas em `127.0.0.1`.
+## Endpoints principais
 
-## Executar a API com Python local
+As rotas ficam sob o prefixo `/api/v1`. Endpoints privados exigem `Authorization: Bearer <token>`.
 
-Requer Python 3.12 ou superior. Inicie somente o banco com o Compose e, dentro de `server`, execute:
+| Área | Rotas |
+| --- | --- |
+| Autenticação | `POST /auth/register`, `POST /auth/login`, `GET /auth/me`, `POST /auth/logout` |
+| Perfil | `GET /profile/me`, `PUT /profile/me`, `DELETE /profile/me`, `GET /profile/me/export` |
+| Disciplinas | `GET` e `POST /disciplinas/`, `PUT` e `DELETE /disciplinas/{id}` |
+| Tarefas | `POST /tarefas/`, `GET /tarefas/disciplina/{id}`, `PUT` e `DELETE /tarefas/{id}` |
+| Materiais | `GET` e `POST /materiais/`, `PUT` e `DELETE /materiais/{id}` |
+| Progresso | `GET /progresso/?periodo=semana` ou `GET /progresso/?periodo=mes` |
+
+## Migrations
+
+O backend aplica migrations automaticamente ao iniciar com Docker Compose. Para executar um comando manualmente:
 
 ```powershell
-python -m venv venv
-.\venv\Scripts\python.exe -m pip install -r requirements-dev.txt
-.\venv\Scripts\python.exe -m alembic upgrade head
-.\venv\Scripts\python.exe -m uvicorn app.main:app --reload
+docker compose exec backend alembic upgrade head
+docker compose exec backend alembic current
+docker compose exec backend alembic check
 ```
 
-Configure o `.env` antes conforme a seção anterior. Para Python local, `DATABASE_URL` usa `localhost`; no container, o Compose substitui o endereço por `db`. Não execute a API local e a API do container simultaneamente na porta 8000.
+## Testes
 
-## Conectar o frontend existente
-
-O frontend de autenticação está no `develop`. A tela de perfil e sua integração HTTP serão entregues em outro PR. Para executar o login, configure `web/.env`:
-
-```dotenv
-VITE_AUTH_MODE=api
-VITE_API_URL=http://localhost:8000/api/v1
-```
-
-Reinicie `npm run dev` após mudar essas variáveis. Use `http://localhost:5173`. As origens permitidas são configuradas em `CORS_ORIGINS`, como uma lista JSON.
-
-Contas criadas no modo `mock` ficam no navegador e não são transferidas para o PostgreSQL. Cadastre uma conta no modo `api` para testar o fluxo real. Esta entrega inclui autenticação e perfil; os endpoints de grupos e tarefas ficam para outras features.
-
-## Contrato HTTP
-
-| Método | Caminho | Entrada | Resposta |
-| --- | --- | --- | --- |
-| POST | `/api/v1/auth/register` | `{ "name": "Ana Silva", "email": "ana@example.com", "password": "senha-segura-123" }` | 201 com sessão |
-| POST | `/api/v1/auth/login` | `{ "email": "ana@example.com", "password": "senha-segura-123" }` | 200 com sessão |
-| GET | `/api/v1/auth/me` | Header `Authorization: Bearer <token>` | 200 com usuário |
-| POST | `/api/v1/auth/logout` | Header `Authorization: Bearer <token>` | 204 sem corpo |
-
-Uma sessão tem o formato:
-
-```json
-{
-  "access_token": "<token>",
-  "token_type": "bearer",
-  "expires_in": 3600,
-  "user": { "id": "1", "name": "Ana Silva", "email": "ana@example.com" }
-}
-```
-
-O `/me` retorna somente o objeto `user`. O ID é uma string para manter o contrato do frontend. O cadastro normaliza o e-mail para minúsculas, remove espaços nas extremidades e o utiliza também como `login`. Por isso, a segunda migration amplia `usuarios.login` de 50 para 100 caracteres, igual ao limite do e-mail. Nome aceita de 2 a 100 caracteres e senha de 6 a 128, mantendo o mínimo já usado no frontend. Senhas preservam espaços e são armazenadas somente como hash Argon2id.
-
-O token JWT expira em 60 minutos por padrão, configurável por `ACCESS_TOKEN_EXPIRE_MINUTES`. Cada token tem uma sessão persistida no banco; logout revoga apenas a sessão apresentada e os demais dispositivos continuam conectados. Usuários inativos e sessões revogadas ou expiradas não podem acessar `/me`. Não há renovação automática de tokens nesta etapa.
-
-Credenciais incorretas retornam 401; cadastro duplicado, 409; dados inválidos, 422. Erros usam `erro` e `mensagem`, e validações também incluem `campos`, sem repetir senhas enviadas.
-
-## Migrations e testes
-
-A migration original `9ad6d7063717` estava vazia e foi preservada. `b10a20260912` cria as 13 tabelas da modelagem e `b20a20260912` acrescenta as sessões e amplia o login. Todas as entidades são importadas pelo Alembic para comparar o esquema completo.
-
-Os testes usam PostgreSQL e transações isoladas. Crie uma base exclusiva uma vez, na raiz do projeto:
+O container de desenvolvimento do backend instala as dependências de teste. A suíte usa uma base PostgreSQL separada, que precisa ser criada uma vez. Com o Compose ativo, execute na raiz:
 
 ```powershell
-docker compose -p mindspace-backend exec -T db createdb -U postgres estudos_colaborativos_test
+docker compose exec -T db createdb -U postgres estudos_colaborativos_test
 ```
 
-Dentro de `server`:
+Se a base já existir, não é necessário criá-la novamente. Para executar todos os testes do backend:
 
 ```powershell
-$env:TEST_DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/estudos_colaborativos_test'
-.\venv\Scripts\python.exe -m pytest -q
-.\venv\Scripts\python.exe -m alembic check
+docker compose exec backend pytest -v
 ```
 
-A suíte exige `TEST_DATABASE_URL` explícita, com nome terminado em `_test`, e aplica as migrations nessa base. Ela cobre cadastro, hash, login, validação, duplicidade, rollback de conflito, contrato do frontend, CORS, expiração, revogação e bloqueio de usuário inativo. `alembic check`, executado separadamente, confere o banco indicado no `.env`.
-
-O downgrade da autenticação reduz novamente o limite de login a 50 caracteres. Se houver valores maiores, o PostgreSQL recusa a redução; não trunque os dados para forçar esse retorno.
-
-## Integração com develop
-
-A modelagem ([PR #8](https://github.com/juliaprianti06/Plataforma-Estudos/pull/8)),
-a autenticação do backend ([PR #10](https://github.com/juliaprianti06/Plataforma-Estudos/pull/10))
-e o login do frontend ([PR #9](https://github.com/juliaprianti06/Plataforma-Estudos/pull/9))
-já foram integrados. Este backend de perfil pode ser revisado diretamente contra
-`develop`, sem incluir as telas ou as features de grupos, tarefas e dashboard.
-
-## Perfil do usuário
-
-Os endpoints de perfil exigem o mesmo Bearer token da autenticação:
-
-| Método | Caminho | Resultado |
-| --- | --- | --- |
-| GET | `/api/v1/profile/me` | Perfil salvo ou valores iniciais, sem criar registros na leitura |
-| PUT | `/api/v1/profile/me` | Atualiza nome, apresentação, foto, interesses e preferências |
-| DELETE | `/api/v1/profile/me` | Restaura a personalização e retorna os valores iniciais |
-| GET | `/api/v1/profile/me/export` | JSON para download, acrescentando o e-mail da conta |
-
-Exemplo de corpo completo para o PUT:
-
-```json
-{
-  "name": "Ana Silva",
-  "bio": "Estudando Python",
-  "interests": ["Programação", "Design"],
-  "avatar": null,
-  "notifications": { "tasks": true, "groups": false }
-}
-```
-
-A resposta acrescenta `updatedAt` (data em UTC ou `null` para o perfil inicial).
-São permitidos nomes de 2 a 100 caracteres, apresentações de até 300 e até três
-interesses da lista da tela. Preferências exigem booleanos. Campos extras, incluindo
-ID do usuário, e-mail e atributos de acesso, são rejeitados; a conta é sempre obtida
-da sessão autenticada.
-
-A foto usa a data URL já preparada pelo frontend (320 × 320). A API aceita JPEG,
-PNG ou WebP estáticos, com até 300.000 caracteres na data URL e 1.024 pixels em cada
-dimensão. Pillow verifica o conteúdo, o formato declarado e a decodificação completa.
-URLs externas, SVG, conteúdo inválido e imagens animadas são rejeitados. Nesta etapa,
-a imagem pequena fica no PostgreSQL junto ao perfil, sem necessidade de um serviço
-de arquivos externo.
-
-A migration `c10a20260912` cria `perfis_usuarios`, com uma linha por usuário. A primeira
-gravação preserva o nome inicial; atualizações de nome também alteram `usuarios.nome`,
-portanto `/auth/me` e novos logins retornam o nome atualizado. Gravação e restauração
-usam transação e bloqueio da linha do usuário. A restauração remove somente a linha de
-personalização e recupera o nome inicial, mantendo conta, sessões e vínculos de grupos.
-
-A futura integração da tela de perfil usará estes endpoints quando
-`VITE_AUTH_MODE=api`. Perfis antigos do navegador não são importados automaticamente.
-As preferências são persistidas e retornadas pela API; esta entrega não implementa
-geração ou envio de notificações. O e-mail é somente leitura; alteração de senha,
-verificação de e-mail e exclusão de conta ficam fora deste contrato.
-
-A suíte inclui persistência, isolamento entre contas, exportação sem dados sensíveis,
-restauração com preservação de grupos e validação de fotos. Execute os testes conforme
-a seção anterior, sempre com a base exclusiva terminada em `_test`.
+O `TEST_DATABASE_URL` do container aponta para essa base. A suíte aplica as migrations nela e recusa URLs cujo nome não termine em `_test`, para reduzir o risco de executar testes no banco normal.
