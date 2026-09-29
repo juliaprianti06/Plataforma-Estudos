@@ -120,3 +120,37 @@ test('contrato de API: login, restauração, erros, autorização e logout', asy
     assert.equal(globalThis.window.localStorage.getItem('mindspace.auth.session.v1'), null)
   })
 })
+
+test('authError extrai mensagens de campo do 422 do backend', async () => {
+  const previousWindow = globalThis.window
+  globalThis.window = { localStorage: memoryStorage(), sessionStorage: memoryStorage() }
+  const server = await createServer({
+    configFile: false,
+    envDir: false,
+    define: { 'import.meta.env.VITE_AUTH_MODE': JSON.stringify('api') },
+    optimizeDeps: { noDiscovery: true, include: [] },
+    resolve: { alias: { '@': fileURLToPath(new URL('../src', import.meta.url)) } },
+    server: { middlewareMode: true, watch: null, ws: false },
+  })
+  const { authError } = await server.ssrLoadModule('/src/auth/auth.ts')
+
+  const erroDeCampo = new AxiosError('Request failed', 'ERR_BAD_REQUEST', {}, null, {
+    status: 422,
+    data: {
+      erro: 'DADOS_INVALIDOS',
+      mensagem: 'Verifique os campos informados.',
+      campos: [{ campo: 'email', tipo: 'value_error', mensagem: 'Informe um e-mail válido.' }],
+    },
+    config: {}, headers: {},
+  })
+  assert.equal(authError(erroDeCampo), 'Informe um e-mail válido.')
+
+  const semCampos = new AxiosError('Request failed', 'ERR_BAD_REQUEST', {}, null, {
+    status: 422, data: { erro: 'DADOS_INVALIDOS', mensagem: 'Verifique os campos informados.' },
+    config: {}, headers: {},
+  })
+  assert.equal(authError(semCampos), 'Verifique os campos informados.')
+
+  await server.close()
+  globalThis.window = previousWindow
+})

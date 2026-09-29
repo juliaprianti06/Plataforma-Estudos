@@ -49,10 +49,18 @@ export const auth = {
 export function authError(error: unknown): string {
   if (axios.isAxiosError(error)) {
     if (!error.response) return 'Não foi possível conectar ao servidor. Tente novamente.'
-    if (error.response.status === 401) return 'E-mail ou senha incorretos.'
-    if (error.response.status === 409) return 'Já existe uma conta com este e-mail.'
-    if (error.response.status === 422) return 'Confira os dados informados e tente novamente.'
-    if (error.response.status === 429) return 'Muitas tentativas. Aguarde um pouco e tente novamente.'
+    const { status, data } = error.response
+    if (status === 401) return 'E-mail ou senha incorretos.'
+    if (status === 409) return 'Já existe uma conta com este e-mail.'
+    if (status === 422) {
+      const campos = Array.isArray(data?.campos) ? data.campos : []
+      const mensagens = campos
+        .map((c: { mensagem?: string }) => c.mensagem)
+        .filter((m: unknown): m is string => typeof m === 'string' && m.length > 0)
+      if (mensagens.length > 0) return mensagens.join(' ')
+      return typeof data?.mensagem === 'string' ? data.mensagem : 'Confira os dados informados e tente novamente.'
+    }
+    if (status === 429) return 'Muitas tentativas. Aguarde um pouco e tente novamente.'
     return 'Não foi possível concluir a solicitação. Tente novamente.'
   }
   return error instanceof Error ? error.message : 'Ocorreu um erro. Tente novamente.'
