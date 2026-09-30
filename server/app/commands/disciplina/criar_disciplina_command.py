@@ -20,5 +20,5 @@ class CriarDisciplinaCommand(BaseCommand):
         )
         
         disciplina_criada = self.repository.salvar(nova_disciplina)
-        
+        self.repository.commit()
         return disciplina_criada

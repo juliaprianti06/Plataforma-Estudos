@@ -15,9 +15,10 @@ class AtualizarDisciplinaCommand(BaseCommand):
         if not disciplina:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Disciplina não encontrada")
 
-        dados_dicionario = self.dados_atualizacao.dict(exclude_unset=True)
+        dados_dicionario = self.dados_atualizacao.model_dump(exclude_unset=True)
         for chave, valor in dados_dicionario.items():
             setattr(disciplina, chave, valor)
 
         self.repository.update(disciplina)
+        self.repository.commit()
         return disciplina

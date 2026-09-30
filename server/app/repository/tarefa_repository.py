@@ -7,7 +7,7 @@ class TarefaRepository:
 
     def salvar(self, tarefa: Tarefa):
         self.db.add(tarefa)
-        self.db.commit()
+        self.db.flush()
         self.db.refresh(tarefa)
         return tarefa
 
@@ -25,10 +25,20 @@ class TarefaRepository:
         ).first()
 
     def update(self, tarefa: Tarefa):
-        self.db.commit()
+        self.db.flush()
         self.db.refresh(tarefa)
         return tarefa
 
     def deletar(self, tarefa: Tarefa):
         self.db.delete(tarefa)
-        self.db.commit()
+        self.db.flush()
+
+    def commit(self) -> None:
+        try:
+            self.db.commit()
+        except Exception:
+            self.db.rollback()
+            raise
+
+    def rollback(self) -> None:
+        self.db.rollback()

@@ -1,7 +1,23 @@
 import pytest
 import os
-from pathlib import Path
+from app.services import storage_service
 from fastapi.testclient import TestClient
+
+@pytest.fixture(autouse=True)
+def uploads_temporarios(tmp_path, monkeypatch):
+    monkeypatch.setattr(storage_service, 'UPLOAD_DIR', tmp_path)
+
+
+@pytest.fixture
+def material_criado(client, auth_token):
+    response = client.post('/api/v1/disciplinas/', json={'nome': 'Material de teste'}, headers=auth_token)
+    assert response.status_code == 201
+    response = client.post('/api/v1/materiais/', headers=auth_token,
+                           data={'titulo': 'Original', 'disciplina_id': response.json()['id']},
+                           files={'file': ('teste.txt', b'conteudo', 'text/plain')})
+    assert response.status_code == 201
+    return response.json()
+
 
 @pytest.fixture
 def auth_token(client: TestClient):
@@ -51,7 +67,8 @@ def test_upload_material_sucesso(client: TestClient, db, auth_token: dict):
         assert data["content_type"] == "text/plain"
         assert data["tamanho_bytes"] > 0
         
-        file_disk_path = Path("server") / data["url_arquivo"].lstrip("/")
+        file_disk_path = storage_service.UPLOAD_DIR / data["url_arquivo"].split("/")[-1]
+        assert file_disk_path.is_file()
     finally:
         if os.path.exists(test_file_path):
             os.remove(test_file_path)
@@ -61,13 +78,8 @@ def test_listar_materiais(client: TestClient, db, auth_token: dict):
     assert response.status_code == 200
     assert isinstance(response.json(), list)
 
-def test_atualizar_material(client: TestClient, db, auth_token: dict):
-    res = client.get("/api/v1/materiais/", headers=auth_token)
-    materiais = res.json()
-    if not materiais:
-        pytest.skip("No materials to test update")
-        
-    mat_id = materiais[0]["id_material"]
+def test_atualizar_material(client: TestClient, db, auth_token: dict, material_criado):
+    mat_id = material_criado["id_material"]
     response = client.put(
         f"/api/v1/materiais/{mat_id}",
         headers=auth_token,
@@ -76,16 +88,11 @@ def test_atualizar_material(client: TestClient, db, auth_token: dict):
     assert response.status_code == 200
     assert response.json()["titulo"] == "Título Atualizado"
 
-def test_deletar_material(client: TestClient, db, auth_token: dict):
-    res = client.get("/api/v1/materiais/", headers=auth_token)
-    materiais = res.json()
-    if not materiais:
-        pytest.skip("No materials to test delete")
-        
-    mat_id = materiais[0]["id_material"]
+def test_deletar_material(client: TestClient, db, auth_token: dict, material_criado):
+    mat_id = material_criado["id_material"]
     response = client.delete(
         f"/api/v1/materiais/{mat_id}",
-        headers=test_user_token
+        headers=auth_token
     )
     assert response.status_code == 204
 

@@ -1,24 +1,37 @@
+from datetime import datetime, timezone
+
+from fastapi import HTTPException
+
 from app.models.tarefa import Tarefa
 from app.schemas.tarefa_schema import TarefaCreate
 from app.commands.base_command import BaseCommand
 from app.repository.tarefa_repository import TarefaRepository
+from app.repository.disciplina_repository import DisciplinaRepository
 
 class CriarTarefaCommand(BaseCommand):
-    def __init__(self, repository: TarefaRepository, tarefa_data: TarefaCreate, usuario_id: int):
+    def __init__(self, repository: TarefaRepository, tarefa_data: TarefaCreate, usuario_id: int, disciplina_repository: DisciplinaRepository):
         self.repository = repository
+        self.disciplina_repository = disciplina_repository
         self.tarefa_data = tarefa_data
         self.usuario_id = usuario_id
 
     def execute(self) -> Tarefa:
+        disciplina = self.disciplina_repository.buscar_por_id(self.tarefa_data.disciplina_id, self.usuario_id)
+        if disciplina is None:
+            raise HTTPException(status_code=404, detail="Disciplina não encontrada")
+        agora = datetime.now(timezone.utc)
         nova_tarefa = Tarefa(
             id_coluna=self.tarefa_data.id_coluna,
             nome=self.tarefa_data.nome,
             prioridade=self.tarefa_data.prioridade,
             data_vencimento=self.tarefa_data.data_vencimento,
             status=self.tarefa_data.status,
+            criado_em=agora,
+            concluido_em=agora if self.tarefa_data.status == 'concluido' else None,
             disciplina_id=self.tarefa_data.disciplina_id,
             usuario_id=self.usuario_id
         )
         
         tarefa_criada = self.repository.salvar(nova_tarefa) 
+        self.repository.commit()
         return tarefa_criada

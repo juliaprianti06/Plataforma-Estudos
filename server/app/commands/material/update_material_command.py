@@ -12,16 +12,14 @@ class AtualizarMaterialCommand(BaseCommand):
         self.usuario_id = usuario_id
 
     def execute(self) -> Material:
-        material = self.repository.buscar_por_id(self.material_id)
+        material = self.repository.buscar_por_id(self.material_id, self.usuario_id)
         if not material:
             raise HTTPException(status_code=404, detail="Material não encontrado.")
-
-        if material.id_usuario != self.usuario_id:
-            raise HTTPException(status_code=403, detail="Você não tem permissão para atualizar este material.")
 
         dados_dicionario = self.dados_atualizacao.model_dump(exclude_unset=True)
         for campo, valor in dados_dicionario.items():
             setattr(material, campo, valor)
 
         self.repository.update(material)
+        self.repository.commit()
         return material

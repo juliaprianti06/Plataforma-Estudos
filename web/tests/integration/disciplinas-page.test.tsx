@@ -51,7 +51,6 @@ test('DisciplinasPage renders disciplines and can open create modal', async () =
   fireEvent.click(newBtn);
 
   await waitFor(() => {
-    // Both the button and the modal title will have 'Nova disciplina'
     expect(screen.getAllByText(/Nova disciplina/i).length).toBeGreaterThan(1);
   });
 });

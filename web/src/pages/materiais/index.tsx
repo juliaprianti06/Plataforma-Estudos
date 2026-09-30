@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search, Plus, Menu, ChevronDown } from 'lucide-react';
-import { useLayout } from '../../components/layout/app-layout';
+import { useLayout } from '../../components/layout/layout-context';
 import { MateriaisPanel } from './materiais-panel';
 import ModalMateriais from './modal-materiais';
 import { api } from '../../api/client';
@@ -11,18 +11,38 @@ interface Disciplina {
   cor: string;
 }
 
+interface MaterialTipo {
+  tipo: string | null;
+}
+
+async function buscarTiposMateriais() {
+  const { data } = await api.get<MaterialTipo[]>('/materiais/');
+  return [...new Set(data.map((material) => material.tipo?.trim()).filter((tipo): tipo is string => Boolean(tipo)))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+}
+
 export default function Materiais() {
   const { openMenu } = useLayout();
   const [busca, setBusca] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [disciplinas, setDisciplinas] = useState<Disciplina[]>([]);
+  const [tiposMateriais, setTiposMateriais] = useState<string[]>([]);
   const [filtroDisciplina, setFiltroDisciplina] = useState('');
   const [filtroGrupo, setFiltroGrupo] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     api.get('/disciplinas/').then(res => setDisciplinas(res.data)).catch(console.error);
+    buscarTiposMateriais().then(setTiposMateriais).catch(console.error);
   }, []);
+
+  const atualizarMateriais = async () => {
+    setRefreshKey((prev) => prev + 1);
+    try {
+      setTiposMateriais(await buscarTiposMateriais());
+    } catch (error) {
+      console.error('Erro ao atualizar tipos de materiais:', error);
+    }
+  };
 
   return (
     <div className="bg-background font-sans text-foreground w-full p-4 sm:p-8 md:p-12">
@@ -89,11 +109,10 @@ export default function Materiais() {
               onChange={(e) => setFiltroGrupo(e.target.value)}
               className="appearance-none flex items-center gap-1.5 pl-4 pr-10 py-1.5 rounded-full border border-border text-muted-foreground hover:bg-muted/50 text-sm font-medium bg-transparent focus:outline-none focus:border-accent cursor-pointer"
             >
-              <option value="">Grupo</option>
-              <option value="Provas">Provas</option>
-              <option value="Resumos">Resumos</option>
-              <option value="Trabalhos">Trabalhos</option>
-              <option value="Listas">Listas</option>
+              <option value="">Tipo</option>
+              {tiposMateriais.map((tipo) => (
+                <option key={tipo} value={tipo}>{tipo}</option>
+              ))}
             </select>
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
           </div>
@@ -104,13 +123,14 @@ export default function Materiais() {
             searchTerm={busca}
             filtroDisciplinaId={filtroDisciplina}
             filtroGrupo={filtroGrupo}
+            onMaterialsChange={atualizarMateriais}
           />
         </div>      
       </div>
       <ModalMateriais 
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSuccess={() => setRefreshKey(prev => prev + 1)}
+        onSuccess={atualizarMateriais}
       />
     </div>
   );

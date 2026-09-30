@@ -5,7 +5,7 @@ import { DashboardHeader } from './dashboard-header'
 import { KanbanBoard } from './kanban-board'
 import { StudyCard } from './study-card'
 import { UpcomingEvents } from './upcoming-events'
-import { useLayout } from '@/components/layout/app-layout'
+import { useLayout } from '@/components/layout/layout-context'
 
 export function Dashboard() {
   const { openMenu } = useLayout()

@@ -11,21 +11,25 @@ interface MaterialModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  material?: any;
+  material?: { id_material: number; titulo: string; descricao?: string | null; tipo?: string | null; disciplina_id: number; } | null;
   disciplinaId?: number;
 }
 
-export default function ModalMateriais({
-  isOpen,
+export default function ModalMateriais(props: MaterialModalProps) {
+  if (!(props.isOpen ?? false)) return null;
+  return <ModalMateriaisForm key={`${props.disciplinaId ?? "todas"}:${props.material?.id_material ?? "novo"}`} {...props} />;
+}
+
+function ModalMateriaisForm({
   onClose,
   onSuccess,
   material,
   disciplinaId,
 }: MaterialModalProps) {
-  const [titulo, setTitulo] = useState('');
-  const [descricao, setDescricao] = useState('');
-  const [selectedDisciplinaId, setSelectedDisciplinaId] = useState<number | ''>('');
-  const [tipo, setTipo] = useState('');
+  const [titulo, setTitulo] = useState(material?.titulo ?? '');
+  const [descricao, setDescricao] = useState(material?.descricao ?? '');
+  const [selectedDisciplinaId, setSelectedDisciplinaId] = useState<number | ''>(material?.disciplina_id ?? disciplinaId ?? '');
+  const [tipo, setTipo] = useState(material?.tipo ?? '');
   const [file, setFile] = useState<File | null>(null);
   const [isDragActive, setIsDragActive] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -34,29 +38,12 @@ export default function ModalMateriais({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (isOpen) {
-      if (material) {
-        setTitulo(material.titulo);
-        setDescricao(material.descricao || '');
-        setTipo(material.tipo || '');
-      } else {
-        setTitulo('');
-        setDescricao('');
-        setTipo('');
-        setSelectedDisciplinaId(disciplinaId || '');
-        setFile(null);
-      }
-
-      api
-        .get('/disciplinas/')
-        .then((res) => {
-          setDisciplinas(res.data);
-        })
-        .catch((err) => console.error('Erro ao carregar disciplinas', err));
-    }
-  }, [isOpen, material, disciplinaId]);
-
-  if (!isOpen) return null;
+    let active = true;
+    api.get<Disciplina[]>('/disciplinas/')
+      .then((res) => { if (active) setDisciplinas(res.data); })
+      .catch((err) => { if (active) console.error('Erro ao carregar disciplinas', err); });
+    return () => { active = false; };
+  }, []);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
