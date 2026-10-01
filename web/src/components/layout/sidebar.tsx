@@ -1,8 +1,18 @@
-import { LogOut, X, Brain } from 'lucide-react'
+import { useState } from 'react'
+import { Brain, LogOut, MonitorX, X } from 'lucide-react'
 import { useNavigate, useLocation } from '@tanstack/react-router'
 import { navigationItems } from './navigation'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { auth } from '@/auth/auth'
 import { useAuth } from '@/auth/use-auth'
 import { cn } from '@/lib/utils'
@@ -17,6 +27,8 @@ export function Sidebar({ open, onClose, onNavigate }: SidebarProps) {
   const pathname = useLocation({ select: (location) => location.pathname })
   const session = useAuth()
   const navigate = useNavigate()
+  const [logoutAllOpen, setLogoutAllOpen] = useState(false)
+  const [logoutAllPending, setLogoutAllPending] = useState(false)
   const initials = session?.user.name
     .split(' ')
     .map((n) => n[0])
@@ -27,7 +39,22 @@ export function Sidebar({ open, onClose, onNavigate }: SidebarProps) {
   async function handleLogout() {
     await auth.logout()
     navigate({ to: '/' })
-  }  
+  }
+
+  async function handleLogoutAll() {
+    setLogoutAllPending(true)
+    try {
+      await auth.logoutAll()
+    } catch {
+      window.alert(
+        'Sua sessão atual foi encerrada, mas não foi possível confirmar a saída dos outros dispositivos.',
+      )
+    } finally {
+      setLogoutAllPending(false)
+      setLogoutAllOpen(false)
+      navigate({ to: '/' })
+    }
+  }
 
 
   return (
@@ -115,8 +142,42 @@ export function Sidebar({ open, onClose, onNavigate }: SidebarProps) {
               </span>
             </span>
           </button>
+          <button
+            className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-sidebar-foreground/65 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring"
+            onClick={() => setLogoutAllOpen(true)}
+            type="button"
+          >
+            <MonitorX aria-hidden="true" className="size-3.5" />
+            Sair de todos os dispositivos
+          </button>
         </div>
       </aside>
+      <Dialog
+        onOpenChange={(isOpen) => {
+          if (!logoutAllPending) setLogoutAllOpen(isOpen)
+        }}
+        open={logoutAllOpen}
+      >
+        <DialogContent showCloseButton={!logoutAllPending}>
+          <DialogHeader>
+            <div className="mb-1 flex size-10 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+              <MonitorX aria-hidden="true" className="size-5" />
+            </div>
+            <DialogTitle>Sair de todos os dispositivos?</DialogTitle>
+            <DialogDescription>
+              Todas as sessões desta conta serão encerradas, incluindo esta. Será necessário entrar novamente.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button disabled={logoutAllPending} variant="outline">Cancelar</Button>
+            </DialogClose>
+            <Button disabled={logoutAllPending} onClick={handleLogoutAll} variant="destructive">
+              {logoutAllPending ? 'Saindo...' : 'Sair de todos'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
