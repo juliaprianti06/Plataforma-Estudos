@@ -52,6 +52,7 @@ test('contrato de API: login, restauração, erros, autorização e logout', asy
   await t.test('validates input before making requests', async () => {
     await assert.rejects(auth.login({ email: 'invalid', password: '123456' }, false))
     await assert.rejects(auth.register({ name: ' ', email: profile.email, password: '123456' }))
+    await assert.rejects(auth.register({ name: 'Ana Silva', email: profile.email, password: '1234567' }))
     assert.equal(calls.length, 0)
   })
 
@@ -75,9 +76,9 @@ test('contrato de API: login, restauração, erros, autorização e logout', asy
   })
 
   await t.test('registration uses the agreed contract', async () => {
-    await auth.register({ name: ' Ana Silva ', email: profile.email, password: '123456' })
+    await auth.register({ name: ' Ana Silva ', email: profile.email, password: '12345678' })
     assert.equal(calls.at(-1).url, '/auth/register')
-    assert.deepEqual(JSON.parse(calls.at(-1).data), { name: 'Ana Silva', email: profile.email, password: '123456' })
+    assert.deepEqual(JSON.parse(calls.at(-1).data), { name: 'Ana Silva', email: profile.email, password: '12345678' })
     assert.equal(globalThis.window.localStorage.getItem('mindspace.auth.session.v1'), null)
   })
 
