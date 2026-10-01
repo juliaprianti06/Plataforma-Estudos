@@ -26,6 +26,8 @@ app.add_middleware(
 @app.exception_handler(APIException)
 async def api_exception_handler(request: Request, exc: APIException):
     headers = {"WWW-Authenticate": "Bearer"} if exc.status_code == 401 else {}
+    if exc.status_code == 429:
+        headers["Retry-After"] = str(exc.retry_after)
     headers["Cache-Control"] = "no-store"
     return JSONResponse(
         status_code=exc.status_code,

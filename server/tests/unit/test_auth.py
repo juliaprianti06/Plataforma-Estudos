@@ -7,6 +7,8 @@ from sqlalchemy import select
 
 from app.config import get_settings
 from app.core.security import ALGORITHM, decode_access_token, verify_password
+from app.core.exceptions import MuitasTentativasError
+from app.core.rate_limit import LoginRateLimiter, login_rate_limiter
 from app.models.sessao_auth import SessaoAuth
 from app.models.usuario import Usuario
 from app.services import auth_service
@@ -19,6 +21,13 @@ def register(client, **changes):
     response = client.post(BASE + "/register", json=ACCOUNT | changes)
     assert response.status_code == 201, response.text
     return response.json()
+
+
+@pytest.fixture(autouse=True)
+def reset_login_rate_limiter():
+    login_rate_limiter.clear()
+    yield
+    login_rate_limiter.clear()
 
 
 def bearer(data):
@@ -67,6 +76,43 @@ def test_invalid_credentials_return_401_without_sensitive_data(client, email, pa
     assert response.headers["WWW-Authenticate"] == "Bearer"
     assert response.json()["erro"] == "NAO_AUTENTICADO"
     assert password not in response.text
+
+
+def test_login_rate_limit_is_scoped_by_account_and_returns_retry_after(client):
+    payload = {"email": "target@example.com", "password": "senha-incorreta"}
+
+    for _ in range(5):
+        assert client.post(BASE + "/login", json=payload).status_code == 401
+
+    blocked = client.post(BASE + "/login", json=payload)
+    assert blocked.status_code == 429
+    assert blocked.json() == {
+        "erro": "MUITAS_TENTATIVAS",
+        "mensagem": "Muitas tentativas de acesso. Aguarde e tente novamente.",
+    }
+    assert int(blocked.headers["Retry-After"]) > 0
+
+    other_account = client.post(
+        BASE + "/login",
+        json={"email": "other@example.com", "password": "senha-incorreta"},
+    )
+    assert other_account.status_code == 401
+
+
+def test_login_rate_limit_uses_an_independent_ip_bucket():
+    limiter = LoginRateLimiter(
+        account_limit=5,
+        account_window=300,
+        ip_limit=2,
+        ip_window=60,
+    )
+    limiter.record_failure(ip="192.0.2.10", email="first@example.com")
+    limiter.record_failure(ip="192.0.2.10", email="second@example.com")
+
+    with pytest.raises(MuitasTentativasError):
+        limiter.check(ip="192.0.2.10", email="third@example.com")
+
+    limiter.check(ip="192.0.2.11", email="third@example.com")
 
 
 def test_duplicate_email_is_case_insensitive(client):
