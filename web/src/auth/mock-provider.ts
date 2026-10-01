@@ -23,5 +23,6 @@ export function createMockProvider(): AuthProvider {
     },
     async restore(saved) { return saved },
     async logout() { /* No server session exists in demo mode. */ },
+    async logoutAll() { /* No server sessions exist in demo mode. */ },
   }
 }

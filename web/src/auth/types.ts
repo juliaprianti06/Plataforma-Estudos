@@ -13,4 +13,5 @@ export interface AuthProvider {
   register(input: Registration): Promise<AuthSession>
   restore(session: AuthSession): Promise<AuthSession>
   logout(): Promise<void>
+  logoutAll(): Promise<void>
 }

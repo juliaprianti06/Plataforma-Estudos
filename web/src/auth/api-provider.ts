@@ -35,4 +35,5 @@ export const apiProvider: AuthProvider = {
     return { ...session, user: validateUser(data) }
   },
   async logout() { await api.post('/auth/logout') },
+  async logoutAll() { await api.post('/auth/logout-all') },
 }
