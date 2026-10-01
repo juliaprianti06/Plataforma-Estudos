@@ -2,7 +2,7 @@ import { useState, type FormEvent, type ReactNode } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Eye, EyeOff, LockKeyhole, LogIn, Mail, User, UserPlus, X } from 'lucide-react'
 
-import { auth, authError } from '@/auth/auth'
+import { auth, authError, MIN_REGISTRATION_PASSWORD_LENGTH } from '@/auth/auth'
 import { DEMO_EMAIL } from '@/auth/mock-provider'
 import { useAuth } from '@/auth/use-auth'
 import { Button } from '@/components/ui/button'
@@ -204,7 +204,8 @@ function AuthDialog({ initialMode, trigger }: AuthDialogProps) {
                   type={showPassword ? 'text' : 'password'}
                   autoComplete={isSignup ? 'new-password' : 'current-password'}
                   placeholder={isSignup ? 'Crie uma senha' : 'Digite sua senha'}
-                  minLength={6}
+                  minLength={isSignup ? MIN_REGISTRATION_PASSWORD_LENGTH : 1}
+                  maxLength={128}
                   required
                   className="h-12 w-full rounded-xl border bg-background px-11 text-sm text-foreground outline-none transition placeholder:text-muted-foreground/70 focus:border-ring focus:ring-3 focus:ring-ring/15"
                 />
@@ -222,7 +223,9 @@ function AuthDialog({ initialMode, trigger }: AuthDialogProps) {
                 </button>
               </div>
               {isSignup && (
-                <p className="text-xs text-muted-foreground">Use pelo menos 6 caracteres.</p>
+                <p className="text-xs text-muted-foreground">
+                  Use pelo menos {MIN_REGISTRATION_PASSWORD_LENGTH} caracteres.
+                </p>
               )}
             </div>
 

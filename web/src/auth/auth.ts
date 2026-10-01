@@ -5,6 +5,8 @@ import { createMockProvider } from './mock-provider'
 import { sessionStore } from './session'
 import type { Credentials, Registration } from './types'
 
+export const MIN_REGISTRATION_PASSWORD_LENGTH = 8
+
 const provider = authMode === 'api' ? apiProvider : createMockProvider()
 let initialization: Promise<void> | undefined
 
@@ -12,7 +14,8 @@ function validate(input: Credentials) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email.trim())) {
     throw new Error('Informe um e-mail válido.')
   }
-  if (input.password.length < 6) throw new Error('A senha deve ter pelo menos 6 caracteres.')
+  if (!input.password.length) throw new Error('Informe sua senha.')
+  if (input.password.length > 128) throw new Error('A senha deve ter no máximo 128 caracteres.')
   return { ...input, email: input.email.trim().toLowerCase() }
 }
 
@@ -38,6 +41,9 @@ export const auth = {
   async register(input: Registration) {
     const credentials = validate(input)
     if (input.name.trim().length < 2) throw new Error('Informe seu nome com pelo menos 2 caracteres.')
+    if (input.password.length < MIN_REGISTRATION_PASSWORD_LENGTH) {
+      throw new Error(`A senha deve ter pelo menos ${MIN_REGISTRATION_PASSWORD_LENGTH} caracteres.`)
+    }
     const session = await provider.register({ ...credentials, name: input.name.trim() })
     sessionStore.save(session, false)
   },

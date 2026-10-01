@@ -7,7 +7,7 @@ class LoginRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     email: EmailStr = Field(max_length=100)
-    password: SecretStr = Field(min_length=6, max_length=128)
+    password: SecretStr = Field(min_length=1, max_length=128)
 
     @field_validator("email", mode="before")
     @classmethod
@@ -17,6 +17,7 @@ class LoginRequest(BaseModel):
 
 class RegisterRequest(LoginRequest):
     name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=2, max_length=100)]
+    password: SecretStr = Field(min_length=8, max_length=128)
 
 
 class AuthUser(BaseModel):

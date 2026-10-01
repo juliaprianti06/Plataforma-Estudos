@@ -134,7 +134,7 @@ def test_unique_constraint_race_rolls_back_and_connection_remains_usable(client,
 @pytest.mark.parametrize("changes", [
     {"name": " "}, {"name": "a" * 101}, {"email": "invalid"},
     {"email": "a" * 64 + "@" + "b" * 30 + ".example.com"},
-    {"password": "12345"}, {"password": "x" * 129}, {"ativo": True},
+    {"password": "x" * 7}, {"password": "x" * 129}, {"ativo": True},
 ])
 def test_registration_validation_does_not_echo_password(client, changes):
     payload = ACCOUNT | changes
@@ -142,6 +142,25 @@ def test_registration_validation_does_not_echo_password(client, changes):
     assert response.status_code == 422
     assert payload["password"] not in response.text
     assert "input" not in response.text
+
+
+def test_login_accepts_legacy_password_below_current_registration_minimum(client, db):
+    legacy_password = "123456"
+    user = Usuario(
+        nome="Conta antiga",
+        email="legacy@example.com",
+        login="legacy@example.com",
+        senha_hash=auth_service.hash_password(legacy_password),
+        ativo=True,
+    )
+    db.add(user)
+    db.commit()
+
+    response = client.post(
+        BASE + "/login",
+        json={"email": "legacy@example.com", "password": legacy_password},
+    )
+    assert response.status_code == 200
 
 
 def test_email_longer_than_original_login_limit_is_supported(client):
