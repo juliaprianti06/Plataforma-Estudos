@@ -68,6 +68,33 @@ def test_login_normalizes_email_and_logout_revokes_only_current_session(client, 
     assert db.get(SessaoAuth, decode_access_token(first["access_token"])["jti"]).revogado_em is not None
 
 
+def test_logout_all_revokes_every_user_session_without_affecting_other_users(client, db):
+    first = register(client)
+    second = client.post(
+        BASE + "/login",
+        json={"email": ACCOUNT["email"], "password": ACCOUNT["password"]},
+    ).json()
+    third = client.post(
+        BASE + "/login",
+        json={"email": ACCOUNT["email"], "password": ACCOUNT["password"]},
+    ).json()
+    other = register(
+        client,
+        name="Outra Pessoa",
+        email="outra@example.com",
+    )
+
+    response = client.post(BASE + "/logout-all", headers=bearer(second))
+
+    assert response.status_code == 204
+    assert response.headers["Cache-Control"] == "no-store"
+    for session in (first, second, third):
+        assert client.get(BASE + "/me", headers=bearer(session)).status_code == 401
+        stored = db.get(SessaoAuth, decode_access_token(session["access_token"])["jti"])
+        assert stored.revogado_em is not None
+    assert client.get(BASE + "/me", headers=bearer(other)).status_code == 200
+
+
 @pytest.mark.parametrize("email,password", [(ACCOUNT["email"], "senha-errada"), ("unknown@example.com", ACCOUNT["password"])])
 def test_invalid_credentials_return_401_without_sensitive_data(client, email, password):
     register(client)
@@ -173,6 +200,7 @@ def test_missing_or_malformed_bearer_is_rejected(client, header):
     headers = {"Authorization": header} if header else {}
     assert client.get(BASE + "/me", headers=headers).status_code == 401
     assert client.post(BASE + "/logout", headers=headers).status_code == 401
+    assert client.post(BASE + "/logout-all", headers=headers).status_code == 401
 
 
 @pytest.mark.parametrize("change", ["expired", "wrong_signature", "wrong_audience", "unknown_session", "wrong_user", "missing_exp"])

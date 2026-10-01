@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
 from jwt import InvalidTokenError
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -92,4 +92,16 @@ def authenticate(db: Session, token: str) -> AuthContext:
 
 def logout(db: Session, auth: AuthContext) -> None:
     auth.session.revogado_em = datetime.now(timezone.utc)
+    db.commit()
+
+
+def logout_all(db: Session, auth: AuthContext) -> None:
+    db.execute(
+        update(SessaoAuth)
+        .where(
+            SessaoAuth.id_usuario == auth.user.id_usuario,
+            SessaoAuth.revogado_em.is_(None),
+        )
+        .values(revogado_em=datetime.now(timezone.utc))
+    )
     db.commit()
