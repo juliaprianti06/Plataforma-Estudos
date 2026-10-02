@@ -1,8 +1,12 @@
 import axios from 'axios'
 import { sessionStore } from '@/auth/session'
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
+
+export const storageBaseUrl = API_URL.replace('/api/v1', '')
+
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1',
+  baseURL: API_URL,
   timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
 })

@@ -1,8 +1,8 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { Eye, EyeOff, LockKeyhole, LogIn, Mail, User, UserPlus } from 'lucide-react'
+import { Eye, EyeOff, LockKeyhole, LogIn, Mail, User, UserPlus, X } from 'lucide-react'
 
-import { auth, authError } from '@/auth/auth'
+import { auth, authError, MIN_REGISTRATION_PASSWORD_LENGTH } from '@/auth/auth'
 import { DEMO_EMAIL } from '@/auth/mock-provider'
 import { useAuth } from '@/auth/use-auth'
 import { Button } from '@/components/ui/button'
@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from '@/components/ui/dialog'
 
 type AuthMode = 'login' | 'signup'
@@ -89,8 +90,11 @@ function AuthDialog({ initialMode, trigger }: AuthDialogProps) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-
-      <DialogContent className="max-h-[calc(100vh-2rem)] overflow-y-auto border-0 p-0 shadow-2xl sm:max-w-md">
+      <DialogContent showCloseButton={false} className="max-h-[calc(100vh-2rem)] overflow-y-auto border-0 p-0 shadow-2xl sm:max-w-md">
+        <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none text-white hover:bg-transparent">
+          <X className="size-5" />
+          <span className="sr-only">Close</span>
+        </DialogClose>
         <div className="bg-primary px-8 pb-7 pt-8 text-primary-foreground">
           <div className="mb-5 flex size-12 items-center justify-center rounded-2xl bg-primary-foreground/12 ring-1 ring-primary-foreground/15">
             {isSignup ? (
@@ -200,7 +204,8 @@ function AuthDialog({ initialMode, trigger }: AuthDialogProps) {
                   type={showPassword ? 'text' : 'password'}
                   autoComplete={isSignup ? 'new-password' : 'current-password'}
                   placeholder={isSignup ? 'Crie uma senha' : 'Digite sua senha'}
-                  minLength={6}
+                  minLength={isSignup ? MIN_REGISTRATION_PASSWORD_LENGTH : 1}
+                  maxLength={128}
                   required
                   className="h-12 w-full rounded-xl border bg-background px-11 text-sm text-foreground outline-none transition placeholder:text-muted-foreground/70 focus:border-ring focus:ring-3 focus:ring-ring/15"
                 />
@@ -218,21 +223,13 @@ function AuthDialog({ initialMode, trigger }: AuthDialogProps) {
                 </button>
               </div>
               {isSignup && (
-                <p className="text-xs text-muted-foreground">Use pelo menos 6 caracteres.</p>
+                <p className="text-xs text-muted-foreground">
+                  Use pelo menos {MIN_REGISTRATION_PASSWORD_LENGTH} caracteres.
+                </p>
               )}
             </div>
 
-            {isSignup ? (
-              <label className="flex cursor-pointer items-start gap-2.5 text-xs leading-relaxed text-muted-foreground">
-                <input
-                  type="checkbox"
-                  name="terms"
-                  required
-                  className="mt-0.5 size-4 shrink-0 rounded border-border accent-primary"
-                />
-                Li e concordo com os Termos de Uso e a Política de Privacidade.
-              </label>
-            ) : (
+            {!isSignup && (
               <label className="flex w-fit cursor-pointer items-center gap-2.5 text-sm text-muted-foreground">
                 <input
                   type="checkbox"
@@ -271,7 +268,6 @@ function AuthDialog({ initialMode, trigger }: AuthDialogProps) {
     </Dialog>
   )
 }
-
 export function LoginDialog() {
   return (
     <AuthDialog

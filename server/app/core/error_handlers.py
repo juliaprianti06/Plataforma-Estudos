@@ -54,10 +54,13 @@ def _nome_campo(loc: tuple) -> str:
 
 def registrar_handlers(app: FastAPI) -> None:
     @app.exception_handler(APIException)
+        @app.exception_handler(APIException)
     async def api_exception_handler(request: Request, exc: APIException):
         headers = dict(NO_STORE)
         if exc.status_code == 401:
             headers["WWW-Authenticate"] = "Bearer"
+        if exc.status_code == 429:
+            headers["Retry-After"] = str(getattr(exc, "retry_after", 60))
         return JSONResponse(
             status_code=exc.status_code,
             content={"erro": exc.error_code, "mensagem": exc.message},

@@ -23,3 +23,13 @@ class SemPermissaoError(APIException):
 class ConflitoError(APIException):
     def __init__(self, message: str):
         super().__init__(message=message, status_code=409, error_code="CONFLITO")
+
+
+class MuitasTentativasError(APIException):
+    def __init__(self, retry_after: int):
+        super().__init__(
+            message="Muitas tentativas de acesso. Aguarde e tente novamente.",
+            status_code=429,
+            error_code="MUITAS_TENTATIVAS",
+        )
+        self.retry_after = retry_after

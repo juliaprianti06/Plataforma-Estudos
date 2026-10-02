@@ -1,105 +1,79 @@
-# MindSpace — frontend
+# Frontend
 
-Plataforma em React, TypeScript e Vite.
+Interface web da Plataforma de Estudos Colaborativos, desenvolvida com React, TypeScript e Vite. O frontend consome a API do backend e oferece autenticação em modo de demonstração (`mock`).
 
-## Executar sem banco de dados
+## Tecnologias
 
-```sh
-npm install
-npm run dev
+- **React** e **TypeScript** para construir a interface por componentes.
+- **Vite** para desenvolvimento e build de produção.
+- **TanStack Router** para as rotas da aplicação.
+- **Axios** para chamadas HTTP à API.
+- **Tailwind CSS** para estilos responsivos.
+- **Radix UI**, componentes baseados em shadcn/ui e **Lucide** para ícones.
+- **Vitest**, **Testing Library** e o runner de testes nativo do Node.js para verificação.
+
+## Estrutura
+
+```text
+src/
+├── api/         # cliente HTTP e funções de acesso à API
+├── auth/        # provedores e estado da autenticação
+├── components/  # layout e componentes compartilhados
+├── data/        # dados usados pelas telas
+├── lib/         # funções utilitárias
+├── pages/       # telas organizadas por funcionalidade
+├── routes/      # rotas e proteção de navegação
+└── styles/      # estilos globais
 ```
 
-O modo padrão é `mock` e funciona sem servidor. Abra Login ou Criar Conta e
-clique em **Entrar na demonstração**, ou use um e-mail fictício e qualquer senha
-com pelo menos 6 caracteres.
+As páginas montam as telas usando componentes. A pasta `api` isola as chamadas ao backend. A proteção de navegação no frontend controla o acesso às páginas, mas a autorização dos dados é responsabilidade do backend.
 
-O cadastro simula uma sessão com o nome informado. **Não cria uma conta real e
-não verifica nem salva senhas.** Depois de sair, um novo login simulado usa a
-parte anterior ao @ como nome. O usuário de demonstração é
-`demo@mindspace.test`.
+## Configuração
 
-A sessão dura 24 horas. Sem “Lembrar de mim”, fica no `sessionStorage` da aba;
-com a opção, fica no `localStorage`, até expirar ou sair. O cadastro usa uma sessão
-temporária. Se o armazenamento estiver bloqueado, a sessão funciona apenas em
-memória. Recarregar preserva uma sessão válida; acesso direto a
-`/dashboard` sem sessão retorna à página inicial. Isso é controle de navegação
-para demonstração, não uma barreira de segurança.
-
-## Conectar ao backend depois
-
-Copie `.env.example` para `.env` e configure:
+Na raiz do repositório, crie `server/.env` conforme as instruções do [README do backend](../server/README.md). O arquivo `web/.env` é opcional; para usar a API, crie-o e configure:
 
 ```dotenv
 VITE_AUTH_MODE=api
 VITE_API_URL=http://localhost:8000/api/v1
 ```
 
-Reinicie o Vite após alterar essas variáveis. Elas são públicas no bundle;
-credenciais de banco e segredos pertencem somente ao servidor.
 
-A interface `src/auth/types.ts` separa as telas do provedor de autenticação.
-`mock-provider.ts` simula o fluxo; `api-provider.ts` usa a API HTTP.
-Não há fallback automático para demonstração quando a API falha.
-Sessões mock não são aceitas no modo API.
+## Iniciar a aplicação
 
-**Esta branch entrega o frontend de autenticação.** O backend foi
-implementado separadamente em `feature/backend-autenticacao` e aguarda a
-integração da modelagem. Enquanto essa entrega não entrar em `develop`,
-o modo `mock` permite revisar o frontend sem banco. Para testar o modo `api`,
-execute o backend da branch correspondente em uma cópia de trabalho separada.
+Com o Docker Desktop aberto, execute na raiz do repositório:
 
-Contrato esperado, relativo a `VITE_API_URL`:
-
-| Método | Rota | Corpo / resposta |
-| --- | --- | --- |
-| POST | /auth/register | Recebe `{ name, email, password }`; retorna sessão |
-| POST | /auth/login | Recebe `{ email, password }`; retorna sessão |
-| GET | /auth/me | Recebe Bearer token; retorna `{ id, name, email }` |
-| POST | /auth/logout | Recebe Bearer token; invalida a sessão; retorna 204 |
-
-Login e cadastro devem responder com:
-
-```json
-{
-  "access_token": "token-emitido-pelo-servidor",
-  "expires_in": 3600,
-  "user": {
-    "id": "identificador-em-string",
-    "name": "Ana Silva",
-    "email": "ana@example.test"
-  }
-}
+```powershell
+docker compose up
 ```
 
-`expires_in` é a validade em segundos. O frontend envia
-`Authorization: Bearer <access_token>` nas chamadas autenticadas,
-consulta `/auth/me` ao restaurar a sessão e encerra o acesso em caso de
-expiração ou HTTP 401 de uma chamada autenticada. O logout sempre remove a
-sessão local; se a API estiver indisponível, a revogação no servidor dependerá
-da expiração do token.
+A interface fica disponível em `http://localhost:5173`
 
-Erros tratados: 401 (credenciais inválidas), 409 (e-mail já cadastrado),
-422 (dados inválidos), 429 (excesso de tentativas), timeout e falha de rede.
-Recuperação de senha ainda não foi implementada; o botão informa isso.
+## Rotas
 
-A entrega do backend deve manter validação, hash de senha, unicidade de
-e-mail, expiração e revogação de tokens e autorização nas rotas privadas.
-O CORS deve permitir a origem do frontend. A proteção de navegação no React
-não substitui essas verificações no servidor.
+| Caminho | Tela |
+| --- | --- |
+| `/` | Página inicial e acesso à autenticação |
+| `/dashboard` | Área principal protegida |
+| `/disciplinas` | Disciplinas e tarefas associadas |
+| `/materiais` | Materiais de estudo |
+| `/progresso` | Indicadores e gráficos de progresso |
 
-O adaptador atual espera tokens Bearer guardados conforme “Lembrar de mim”.
-Se o backend adotar cookies HttpOnly, adapte o cliente e o provedor para
-credenciais por cookie, com as proteções de CSRF correspondentes.
+As tarefas são acessadas pelo contexto das disciplinas. A página de progresso permite selecionar período semanal ou mensal. O card de tempo de estudo informa que o registro de sessões ainda não está disponível.
 
-## Verificação
+## Testes
 
-```sh
-npm test
-npm run lint
-npm run build
+O container do frontend instala as dependências necessárias. Execute os comandos na raiz do repositório, com o Compose ativo:
+
+```powershell
+docker compose exec frontend npm run test
+docker compose exec frontend npm run test:unit
 ```
 
-Os testes usam Node.js 24, o runner nativo e o Vite já instalado. Cobrem
-persistência, expiração, armazenamento indisponível, separação mock/API,
-contratos HTTP, erros e logout. As chamadas HTTP são simuladas nos testes;
-não exigem banco de dados nem backend ativo.
+`npm run test` executa os testes de integração com Vitest e Testing Library. `npm run test:unit` executa os testes unitários pelo runner nativo do Node.js.
+
+Para verificar estilo e build:
+
+```powershell
+docker compose exec frontend npm run lint
+docker compose exec frontend npm run build
+```

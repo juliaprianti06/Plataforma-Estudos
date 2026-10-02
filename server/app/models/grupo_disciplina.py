@@ -7,4 +7,4 @@ class GrupoDisciplina(Base):
     __tablename__ = "grupos_disciplinas"
 
     id_grupo = Column(Integer, ForeignKey("grupos.id_grupo"), primary_key=True)
-    id_disciplina = Column(Integer, ForeignKey("disciplinas.id_disciplina"), primary_key=True)
+    id_disciplina = Column(Integer, ForeignKey("disciplinas.id"), primary_key=True)

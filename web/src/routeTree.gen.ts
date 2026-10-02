@@ -11,6 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as DisciplinasRouteImport } from './routes/disciplinas'
+import { Route as MateriaisRouteImport } from './routes/materiais'
+import { Route as ProgressoRouteImport } from './routes/progresso'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +25,64 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DisciplinasRoute = DisciplinasRouteImport.update({
+  id: '/disciplinas',
+  path: '/disciplinas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MateriaisRoute = MateriaisRouteImport.update({
+  id: '/materiais',
+  path: '/materiais',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProgressoRoute = ProgressoRouteImport.update({
+  id: '/progresso',
+  path: '/progresso',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/disciplinas': typeof DisciplinasRoute
+  '/materiais': typeof MateriaisRoute
+  '/progresso': typeof ProgressoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/disciplinas': typeof DisciplinasRoute
+  '/materiais': typeof MateriaisRoute
+  '/progresso': typeof ProgressoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/disciplinas': typeof DisciplinasRoute
+  '/materiais': typeof MateriaisRoute
+  '/progresso': typeof ProgressoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard'
+  fullPaths: '/' | '/dashboard' | '/disciplinas' | '/materiais' | '/progresso'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard'
-  id: '__root__' | '/' | '/dashboard'
+  to: '/' | '/dashboard' | '/disciplinas' | '/materiais' | '/progresso'
+  id:
+    | '__root__'
+    | '/'
+    | '/dashboard'
+    | '/disciplinas'
+    | '/materiais'
+    | '/progresso'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
+  DisciplinasRoute: typeof DisciplinasRoute
+  MateriaisRoute: typeof MateriaisRoute
+  ProgressoRoute: typeof ProgressoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +101,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/disciplinas': {
+      id: '/disciplinas'
+      path: '/disciplinas'
+      fullPath: '/disciplinas'
+      preLoaderRoute: typeof DisciplinasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/materiais': {
+      id: '/materiais'
+      path: '/materiais'
+      fullPath: '/materiais'
+      preLoaderRoute: typeof MateriaisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/progresso': {
+      id: '/progresso'
+      path: '/progresso'
+      fullPath: '/progresso'
+      preLoaderRoute: typeof ProgressoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
+  DisciplinasRoute: DisciplinasRoute,
+  MateriaisRoute: MateriaisRoute,
+  ProgressoRoute: ProgressoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

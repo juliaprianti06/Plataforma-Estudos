@@ -1,10 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import NaoAutenticadoError
+from app.core.rate_limit import login_rate_limiter
 from app.database import get_db
 from app.schemas.auth_schema import AuthUser, LoginRequest, RegisterRequest, TokenResponse
 from app.services import auth_service
@@ -33,9 +34,18 @@ def register(data: RegisterRequest, db: Database, response: Response):
 
 
 @router.post("/login", response_model=TokenResponse)
-def login(data: LoginRequest, db: Database, response: Response):
+def login(data: LoginRequest, db: Database, request: Request, response: Response):
     response.headers["Cache-Control"] = "no-store"
-    return auth_service.login(db, data)
+    ip = request.client.host if request.client else "unknown"
+    email = str(data.email)
+    login_rate_limiter.check(ip=ip, email=email)
+    try:
+        session = auth_service.login(db, data)
+    except NaoAutenticadoError:
+        login_rate_limiter.record_failure(ip=ip, email=email)
+        raise
+    login_rate_limiter.record_success(email=email)
+    return session
 
 
 @router.get("/me", response_model=AuthUser)

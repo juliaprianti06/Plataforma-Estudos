@@ -1,6 +1,6 @@
 import { createRootRoute } from '@tanstack/react-router'
 import { auth } from '@/auth/auth'
-import { RootLayout } from '@/components/root-layout'
+import { RootLayout } from '@/components/layout/root-layout'
 
 export const Route = createRootRoute({
   beforeLoad: () => auth.restore(),

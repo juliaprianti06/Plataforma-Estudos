@@ -32,7 +32,7 @@ def test_422_senha_curta_nao_vaza_senha(client):
     payload = {"name": "Ana Silva", "email": "ana@example.com", "password": "12345"}
     response = client.post(BASE + "/register", json=payload)
     assert response.status_code == 422
-    assert _campos(response)["password"]["mensagem"] == "Deve ter no mínimo 6 caracteres."
+    assert _campos(response)["password"]["mensagem"] == "Deve ter no mínimo 8 caracteres."
     assert "12345" not in response.text
 
 def test_login_sem_campos_retorna_422_padronizado(client):
