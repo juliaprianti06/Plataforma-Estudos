@@ -130,7 +130,7 @@ test('authError extrai mensagens de campo do 422 do backend', async () => {
     envDir: false,
     define: { 'import.meta.env.VITE_AUTH_MODE': JSON.stringify('api') },
     optimizeDeps: { noDiscovery: true, include: [] },
-    resolve: { alias: { '@': fileURLToPath(new URL('../src', import.meta.url)) } },
+    resolve: { alias: { '@': fileURLToPath(new URL('../../src', import.meta.url)) } },
     server: { middlewareMode: true, watch: null, ws: false },
   })
   const { authError } = await server.ssrLoadModule('/src/auth/auth.ts')
