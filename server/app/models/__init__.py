@@ -14,3 +14,4 @@ from app.models.tarefa_responsavel import TarefaResponsavel
 from app.models.usuario import Usuario
 from app.models.sessao_auth import SessaoAuth
 from app.models.perfil_usuario import PerfilUsuario
+from app.models.evento_grupo import EventoGrupo
