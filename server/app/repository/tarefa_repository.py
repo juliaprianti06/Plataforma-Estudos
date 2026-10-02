@@ -1,5 +1,7 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import delete
 from app.models.tarefa import Tarefa
+from app.models.tarefa_responsavel import TarefaResponsavel
 
 class TarefaRepository:
     def __init__(self, db: Session):
@@ -14,6 +16,7 @@ class TarefaRepository:
     def listar_por_disciplina(self, disciplina_id: int, usuario_id: int):
         return self.db.query(Tarefa).filter(
             Tarefa.disciplina_id == disciplina_id,
+            Tarefa.id_coluna.is_(None),
             Tarefa.usuario_id == usuario_id
         ).all()
    
@@ -21,6 +24,7 @@ class TarefaRepository:
     def buscar_por_id(self, tarefa_id: int, usuario_id: int):
         return self.db.query(Tarefa).filter(
             Tarefa.id == tarefa_id,
+            Tarefa.id_coluna.is_(None),
             Tarefa.usuario_id == usuario_id
         ).first()
 
@@ -30,6 +34,7 @@ class TarefaRepository:
         return tarefa
 
     def deletar(self, tarefa: Tarefa):
+        self.db.execute(delete(TarefaResponsavel).where(TarefaResponsavel.id_tarefa == tarefa.id))
         self.db.delete(tarefa)
         self.db.flush()
 
