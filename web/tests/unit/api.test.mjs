@@ -120,4 +120,16 @@ test('contrato de API: login, restauração, erros, autorização e logout', asy
     assert.equal(sessionStore.getSnapshot(), null)
     assert.equal(globalThis.window.localStorage.getItem('mindspace.auth.session.v1'), null)
   })
+
+  await t.test('logout from all devices uses its endpoint and clears the local session', async () => {
+    status = 200
+    await auth.login({ email: profile.email, password: '123456' }, true)
+
+    await auth.logoutAll()
+
+    assert.equal(calls.at(-1).url, '/auth/logout-all')
+    assert.equal(calls.at(-1).headers.Authorization, 'Bearer server-token')
+    assert.equal(sessionStore.getSnapshot(), null)
+    assert.equal(globalThis.window.localStorage.getItem('mindspace.auth.session.v1'), null)
+  })
 })

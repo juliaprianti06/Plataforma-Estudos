@@ -58,3 +58,9 @@ def me(auth: CurrentAuth, response: Response):
 def logout(db: Database, auth: CurrentAuth):
     auth_service.logout(db, auth)
     return Response(status_code=status.HTTP_204_NO_CONTENT, headers={"Cache-Control": "no-store"})
+
+
+@router.post("/logout-all", status_code=status.HTTP_204_NO_CONTENT)
+def logout_all(db: Database, auth: CurrentAuth):
+    auth_service.logout_all(db, auth)
+    return Response(status_code=status.HTTP_204_NO_CONTENT, headers={"Cache-Control": "no-store"})

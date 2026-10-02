@@ -1,6 +1,7 @@
-import { LogOut, X, Brain } from 'lucide-react'
+import { Brain, LogOut, X } from 'lucide-react'
 import { useNavigate, useLocation } from '@tanstack/react-router'
 import { navigationItems } from './navigation'
+import { LogoutAllAction } from '@/components/logout-all-action'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { auth } from '@/auth/auth'
@@ -27,8 +28,7 @@ export function Sidebar({ open, onClose, onNavigate }: SidebarProps) {
   async function handleLogout() {
     await auth.logout()
     navigate({ to: '/' })
-  }  
-
+  }
 
   return (
     <>
@@ -115,6 +115,7 @@ export function Sidebar({ open, onClose, onNavigate }: SidebarProps) {
               </span>
             </span>
           </button>
+          <LogoutAllAction />
         </div>
       </aside>
     </>

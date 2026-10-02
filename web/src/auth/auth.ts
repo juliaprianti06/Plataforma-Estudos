@@ -50,6 +50,9 @@ export const auth = {
   async logout() {
     try { await provider.logout() } finally { sessionStore.clear() }
   },
+  async logoutAll() {
+    try { await provider.logoutAll() } finally { sessionStore.clear() }
+  },
 }
 
 export function authError(error: unknown): string {
