@@ -17,8 +17,17 @@ class TaskCreate(TaskFields):
     groupId: int = Field(gt=0)
 
 
-class TaskResponse(TaskFields):
+class TaskResponse(BaseModel):
+    # Persisted personal tasks follow the existing /tarefas contract, whose
+    # names have no maximum length and may contain fewer than three characters.
+    # Input constraints must not prevent reading those records.
     id: int
+    title: str
+    description: str
+    priority: Literal["high", "medium", "low"]
+    status: Literal["todo", "progress", "done"]
+    dueAt: AwareDatetime | None = None
+    disciplineId: int | None = None
     groupId: str
     groupName: str
     detail: str

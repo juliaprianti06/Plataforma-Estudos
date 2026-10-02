@@ -131,3 +131,29 @@ def test_dashboard_reads_current_personal_tasks_and_updates_progress(client, db)
     db.refresh(task)
     assert task.status == "concluido" and task.concluido_em is not None
     assert client.get("/api/v1/dashboard", headers=owner).json()["summary"]["progress"] == 100
+
+
+@pytest.mark.parametrize("title", ["A", "AB", "A" * 151])
+def test_dashboard_accepts_titles_from_personal_task_api(client, db, title):
+    from app.models.disciplinas import Disciplina
+    from app.models.usuario import Usuario
+
+    owner = account(client, "legacy-title@example.com")
+    stranger = account(client, "other-title@example.com")
+    user = db.scalar(select(Usuario).where(Usuario.email == "legacy-title@example.com"))
+    discipline = Disciplina(nome="Python", usuario_id=user.id_usuario)
+    db.add(discipline)
+    db.commit()
+    created = client.post("/api/v1/tarefas/", headers=owner, json={
+        "nome": title, "prioridade": "alta", "disciplina_id": discipline.id,
+    })
+    assert created.status_code == 200, created.text
+
+    dashboard = client.get("/api/v1/dashboard", headers=owner)
+    assert dashboard.status_code == 200, dashboard.text
+    assert dashboard.json()["tasks"][0]["title"] == title
+    assert dashboard.json()["summary"]["activeTask"]["title"] == title
+    tasks = client.get("/api/v1/tasks", headers=owner)
+    assert tasks.status_code == 200, tasks.text
+    assert tasks.json()[0]["title"] == title
+    assert client.get("/api/v1/dashboard", headers=stranger).json()["tasks"] == []
