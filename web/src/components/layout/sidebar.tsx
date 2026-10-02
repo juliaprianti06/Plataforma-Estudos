@@ -1,7 +1,8 @@
 import { LogOut, X, Brain } from 'lucide-react'
 import { useNavigate, useLocation } from '@tanstack/react-router'
 import { navigationItems } from './navigation'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { useProfile } from '@/profile/use-profile'
 import { Button } from '@/components/ui/button'
 import { auth } from '@/auth/auth'
 import { useAuth } from '@/auth/use-auth'
@@ -16,6 +17,7 @@ type SidebarProps = {
 export function Sidebar({ open, onClose, onNavigate }: SidebarProps) {
   const pathname = useLocation({ select: (location) => location.pathname })
   const session = useAuth()
+  const profile = useProfile()
   const navigate = useNavigate()
   const initials = session?.user.name
     .split(' ')
@@ -101,6 +103,7 @@ export function Sidebar({ open, onClose, onNavigate }: SidebarProps) {
             type="button"
           >
             <Avatar className="size-10 border border-sidebar-border">
+              {profile?.avatar && <AvatarImage src={profile.avatar} alt={`Foto de ${profile.name}`} />}
               <AvatarFallback className="bg-sidebar-accent text-sidebar-accent-foreground text-xs font-bold">
                 {initials}
               </AvatarFallback>

@@ -2,7 +2,7 @@ import { useEffect, useSyncExternalStore } from 'react'
 import { useAuth } from '@/auth/use-auth'
 import { sessionStore } from '@/auth/session'
 import type { AuthSession } from '@/auth/types'
-import { createProfileStore } from './store'
+import { createProfileStore, type ProfileInput, type UserProfile } from './store'
 import { createRemoteProfileStore } from './api-provider'
 
 const readyStatus = { loading: false, error: null }
@@ -17,10 +17,19 @@ function makeStore(session: AuthSession) {
     setItem: (key, value) => window.localStorage.setItem(key, value),
     removeItem: (key) => window.localStorage.removeItem(key),
   })
+  function syncName(profile: UserProfile) {
+    const current = sessionStore.getSnapshot()
+    if (current?.mode === session.mode && current.user.id === session.user.id && current.user.name !== profile.name) {
+      sessionStore.save({ ...current, user: { ...current.user, name: profile.name } })
+    }
+    return profile
+  }
   return {
     ...local,
+    save: (input: ProfileInput) => syncName(local.save(input)),
+    reset: () => syncName(local.reset()),
     getStatusSnapshot: emptyStatus,
-    load: async () => local.getSnapshot(),
+    load: async () => syncName(local.getSnapshot()),
     export: async () => ({ ...local.getSnapshot(), email: session.user.email }),
   }
 }
