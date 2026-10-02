@@ -3,7 +3,7 @@ import { Home, Users, BookOpen, ClipboardList, Trophy, Calendar, Timer, UserRoun
 export const navigationItems = [
   { label: 'Perfil', icon: UserRound, to: '/profile' },
   { label: 'Início', icon: Home, to: '/dashboard' },
-  { label: 'Grupos', icon: Users },
+  { label: 'Grupos', icon: Users, to: '/groups' },
   { label: 'Materiais', icon: BookOpen, to: '/materiais' },
   { label: 'Disciplinas', icon: ClipboardList, to: '/disciplinas' },
   { label: 'Progresso', icon: Trophy, to: '/progresso' },

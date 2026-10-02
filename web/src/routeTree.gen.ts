@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as DisciplinasRouteImport } from './routes/disciplinas'
+import { Route as GroupsRouteImport } from './routes/groups'
 import { Route as MateriaisRouteImport } from './routes/materiais'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ProgressoRouteImport } from './routes/progresso'
@@ -29,6 +30,11 @@ const DashboardRoute = DashboardRouteImport.update({
 const DisciplinasRoute = DisciplinasRouteImport.update({
   id: '/disciplinas',
   path: '/disciplinas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GroupsRoute = GroupsRouteImport.update({
+  id: '/groups',
+  path: '/groups',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MateriaisRoute = MateriaisRouteImport.update({
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/disciplinas': typeof DisciplinasRoute
+  '/groups': typeof GroupsRoute
   '/materiais': typeof MateriaisRoute
   '/profile': typeof ProfileRoute
   '/progresso': typeof ProgressoRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/disciplinas': typeof DisciplinasRoute
+  '/groups': typeof GroupsRoute
   '/materiais': typeof MateriaisRoute
   '/profile': typeof ProfileRoute
   '/progresso': typeof ProgressoRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/disciplinas': typeof DisciplinasRoute
+  '/groups': typeof GroupsRoute
   '/materiais': typeof MateriaisRoute
   '/profile': typeof ProfileRoute
   '/progresso': typeof ProgressoRoute
@@ -78,6 +87,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/disciplinas'
+    | '/groups'
     | '/materiais'
     | '/profile'
     | '/progresso'
@@ -86,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/disciplinas'
+    | '/groups'
     | '/materiais'
     | '/profile'
     | '/progresso'
@@ -94,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/disciplinas'
+    | '/groups'
     | '/materiais'
     | '/profile'
     | '/progresso'
@@ -103,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
   DisciplinasRoute: typeof DisciplinasRoute
+  GroupsRoute: typeof GroupsRoute
   MateriaisRoute: typeof MateriaisRoute
   ProfileRoute: typeof ProfileRoute
   ProgressoRoute: typeof ProgressoRoute
@@ -129,6 +142,13 @@ declare module '@tanstack/react-router' {
       path: '/disciplinas'
       fullPath: '/disciplinas'
       preLoaderRoute: typeof DisciplinasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/groups': {
+      id: '/groups'
+      path: '/groups'
+      fullPath: '/groups'
+      preLoaderRoute: typeof GroupsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/materiais': {
@@ -159,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
   DisciplinasRoute: DisciplinasRoute,
+  GroupsRoute: GroupsRoute,
   MateriaisRoute: MateriaisRoute,
   ProfileRoute: ProfileRoute,
   ProgressoRoute: ProgressoRoute,
