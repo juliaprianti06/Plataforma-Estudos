@@ -20,6 +20,9 @@ class AtualizarTarefaCommand(BaseCommand):
             raise HTTPException(status_code=404, detail="Tarefa não encontrada")
         
         dados_dicionario = self.dados_atualizacao.model_dump(exclude_unset=True)
+        # A date-only edit supersedes the dashboard's optional time component.
+        if 'data_vencimento' in dados_dicionario:
+            tarefa.data_prazo = None
         if 'disciplina_id' in dados_dicionario:
             disciplina = self.disciplina_repository.buscar_por_id(dados_dicionario['disciplina_id'], self.usuario_id)
             if disciplina is None:

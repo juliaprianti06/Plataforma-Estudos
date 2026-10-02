@@ -2,9 +2,9 @@ import { Bell, Menu, Search, X } from 'lucide-react'
 
 import { useAuth } from '@/auth/use-auth'
 import { Button } from '@/components/ui/button'
-import { dashboardSummary } from '@/data/dashboard'
 
 type DashboardHeaderProps = {
+  notifications?: string[]
   query: string
   onQueryChange: (query: string) => void
   onMenuOpen: () => void
@@ -13,6 +13,7 @@ type DashboardHeaderProps = {
 }
 
 export function DashboardHeader({
+  notifications: remoteNotifications,
   query,
   onQueryChange,
   onMenuOpen,
@@ -20,6 +21,10 @@ export function DashboardHeader({
   onNotificationsToggle,
 }: DashboardHeaderProps) {
   const session = useAuth()
+  const notifications = remoteNotifications ?? [
+    'Sua atividade “Revisar cap. 5 de React” vence amanhã.',
+    'Workshop de React: confira a data nos próximos eventos.',
+  ]
   return (
     <header className="relative flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
       <div className="flex items-start gap-3">
@@ -71,14 +76,14 @@ export function DashboardHeader({
         <div className="relative">
           <Button
             aria-expanded={notificationsOpen}
-            aria-label={`${dashboardSummary.notifications} notificações`}
+            aria-label={`${notifications.length} notificações`}
             className="relative text-muted-foreground hover:bg-card"
             onClick={onNotificationsToggle}
             size="icon"
             variant="ghost"
           >
             <Bell />
-            <span className="absolute right-1.5 top-1.5 size-2 rounded-full border-2 border-background bg-destructive" />
+            {notifications.length > 0 && <span className="absolute right-1.5 top-1.5 size-2 rounded-full border-2 border-background bg-destructive" />}
           </Button>
 
           {notificationsOpen && (
@@ -86,15 +91,14 @@ export function DashboardHeader({
               <div className="mb-3 flex items-center justify-between">
                 <p className="font-semibold text-primary">Notificações</p>
                 <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-primary">
-                  {dashboardSummary.notifications} novas
+                  {notifications.length} novas
                 </span>
               </div>
-              <p className="border-t border-border py-3 text-muted-foreground">
-                Sua atividade “Revisar cap. 5 de React” vence amanhã.
-              </p>
-              <p className="border-t border-border pt-3 text-muted-foreground">
-                Workshop de React: confira a data nos próximos eventos.
-              </p>
+              {notifications.length ? notifications.map((notification) => (
+                <p key={notification} className="border-t border-border py-3 text-muted-foreground">{notification}</p>
+              )) : (
+                <p className="border-t border-border pt-3 leading-relaxed text-muted-foreground">Nenhuma notificação no momento. Confira suas preferências no perfil.</p>
+              )}
             </div>
           )}
         </div>
