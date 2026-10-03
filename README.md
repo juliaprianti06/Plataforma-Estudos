@@ -28,6 +28,7 @@ O projeto apoia estudantes na organização de disciplinas, tarefas e materiais.
 - Criação, edição, conclusão e exclusão de tarefas;
 - Quadro Kanban com movimentação de tarefas por drag-and-drop;
 - Upload, consulta e gerenciamento de materiais de estudo;
+- Grupos de estudo, participação por convite e controle de permissões;
 - Acompanhamento do progresso por disciplina e períodos semanal ou mensal;
 - Interface responsiva para desktop, tablets e telas menores.
 
