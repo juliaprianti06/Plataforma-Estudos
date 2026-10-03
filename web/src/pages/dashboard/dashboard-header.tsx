@@ -1,4 +1,4 @@
-import { Bell, Menu, Search, X } from 'lucide-react'
+import { Bell, Menu, Search } from 'lucide-react'
 
 import { useAuth } from '@/auth/use-auth'
 import { Button } from '@/components/ui/button'
@@ -63,22 +63,12 @@ export function DashboardHeader({
             className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
           />
           <input
-            className="h-9 w-full rounded-full border border-border bg-card py-2 pl-9 pr-9 text-xs text-primary shadow-sm outline-none transition focus:border-ring focus:ring-3 focus:ring-ring/15"
+            className="h-9 w-full rounded-full border border-border bg-card py-2 pl-9 pr-3 text-xs text-primary shadow-sm outline-none transition focus:border-ring focus:ring-3 focus:ring-ring/15"
             onChange={(event) => onQueryChange(event.target.value)}
             placeholder="Buscar..."
             type="search"
             value={query}
           />
-          {query && (
-            <button
-              aria-label="Limpar busca"
-              className="absolute right-2 top-1/2 grid size-6 -translate-y-1/2 place-items-center rounded-full text-muted-foreground hover:bg-muted"
-              onClick={() => onQueryChange('')}
-              type="button"
-            >
-              <X aria-hidden="true" className="size-3.5" />
-            </button>
-          )}
         </label>
 
         <div className="relative">
