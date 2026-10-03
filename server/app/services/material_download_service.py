@@ -7,6 +7,7 @@ from app.core.exceptions import NaoEncontradoError
 from app.models.material import Material
 from app.models.material_grupo import MaterialGrupo
 from app.models.membro_grupo import MembroGrupo
+from app.services.storage_service import UPLOAD_DIR
 
 
 def accessible_file(db, user_id, filename):
@@ -26,7 +27,7 @@ def accessible_file(db, user_id, filename):
 
 
 def file_response(material):
-    root = Path('uploads').resolve()
+    root = UPLOAD_DIR.resolve()
     path = (root / Path(material.url_arquivo).name).resolve()
     if path.parent != root or not path.is_file():
         raise NaoEncontradoError('Arquivo indisponível.')

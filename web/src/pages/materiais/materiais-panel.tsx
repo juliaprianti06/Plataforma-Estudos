@@ -52,6 +52,7 @@ export function MateriaisPanel({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [materialParaExcluir, setMaterialParaExcluir] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   const carregarMateriais = () => {
     setRefresh((value) => value + 1);
@@ -69,16 +70,21 @@ export function MateriaisPanel({
   const handleExcluir = async () => {
     if (materialParaExcluir === null) return;
     setIsDeleting(true);
+    setDeleteError('');
     try {
       await api.delete(`/materiais/${materialParaExcluir}`);
       carregarMateriais();
       onMaterialsChange?.();
-    } catch (error) {
-      console.error('Erro ao excluir material:', error);
-    } finally {
-      setIsDeleting(false);
       setConfirmOpen(false);
       setMaterialParaExcluir(null);
+    } catch (error) {
+      console.error('Erro ao excluir material:', error);
+      const detail = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { detail?: unknown } } }).response?.data?.detail
+        : undefined;
+      setDeleteError(typeof detail === 'string' ? detail : error instanceof Error ? error.message : 'Não foi possível excluir o material. Tente novamente.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -160,7 +166,7 @@ export function MateriaisPanel({
               <div className="hidden md:flex items-center justify-between py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b border-border/50 bg-muted/20 rounded-t-xl">
                 <div className="w-[30%]">Arquivo</div>
                 {!disciplinaId && <div className="w-[20%]">Disciplina</div>}
-                <div className={`${!disciplinaId ? 'w-[15%]' : 'w-[25%]'} text-center`}>Grupo/Tipo</div>
+                <div className={`${!disciplinaId ? 'w-[15%]' : 'w-[25%]'} text-center`}>Tipo</div>
                 <div className={`${!disciplinaId ? 'w-[15%]' : 'w-[20%]'} text-center`}>Data</div>
                 <div className={`${!disciplinaId ? 'w-[10%]' : 'w-[15%]'} text-center`}>Tamanho</div>
                 <div className="w-[10%] text-right pr-4">Ações</div>
@@ -251,11 +257,12 @@ export function MateriaisPanel({
       
       <ConfirmDialog
         isOpen={confirmOpen}
-        onClose={() => setConfirmOpen(false)}
+        onClose={() => { if (!isDeleting) { setConfirmOpen(false); setDeleteError(''); setMaterialParaExcluir(null); } }}
         onConfirm={handleExcluir}
         title="Excluir material"
         description="Deseja realmente excluir este material? Esta ação não pode ser desfeita e o arquivo será apagado do servidor."
         isLoading={isDeleting}
+        error={deleteError}
       />
     </>
   );

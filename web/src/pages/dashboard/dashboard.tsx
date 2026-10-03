@@ -36,7 +36,7 @@ function DashboardContent({ session }: { session: AuthSession }) {
   const [revision, setRevision] = useState(0)
   const [busy, setBusy] = useState(false)
   const mutation = useRef(false)
-  const [taskDialog, setTaskDialog] = useState<{ task: ApiTask | null } | null>(null)
+  const [taskDialog, setTaskDialog] = useState<ApiTask | null>(null)
   const [eventDialog, setEventDialog] = useState<{ event: ApiEvent | null } | null>(null)
   const navigate = useNavigate()
 
@@ -78,7 +78,7 @@ function DashboardContent({ session }: { session: AuthSession }) {
   function openNotification(item: DashboardNotification) {
     const task = data?.tasks.find(task => task.id === item.taskId)
     const event = data?.events.find(event => event.id === item.eventId)
-    if (task?.canEdit) setTaskDialog({ task })
+    if (task?.canEdit) setTaskDialog(task)
     else if (event?.canEdit) setEventDialog({ event })
     else if (item.groupId !== 'personal') void navigate({ to: '/groups/$groupId', params: { groupId: item.groupId } })
     if (!item.read) run(() => repository.readNotification(item.id))
@@ -110,16 +110,12 @@ function DashboardContent({ session }: { session: AuthSession }) {
             query={query}
           />
 
-          {remote && <div className="mt-5 flex flex-wrap items-center gap-2">
-            <Button title={groups.length === 0 && disciplines.length === 0 ? 'Crie uma disciplina ou participe de um grupo para adicionar tarefas.' : undefined} disabled={loading || busy || !!error || (groups.length === 0 && disciplines.length === 0)} onClick={() => setTaskDialog({ task: null })}>Nova tarefa</Button>
-            <Button title={adminGroups.length === 0 ? 'Você precisa administrar um grupo para agendar eventos.' : undefined} variant="outline" disabled={loading || busy || !!error || adminGroups.length === 0} onClick={() => setEventDialog({ event: null })}>Novo evento</Button>
-          </div>}
           {error && <div role="alert" className="mt-4 rounded-lg border border-border bg-card p-4 text-sm text-destructive">{error} <Button variant="outline" onClick={refresh}>Tentar novamente</Button></div>}
           {remote && loading ? <p role="status" className="mt-5 text-sm text-muted-foreground">Carregando seus estudos...</p> : (!remote || (data && !error)) && (
             <div className="mt-5 grid min-h-0 flex-1 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
               <KanbanBoard searching={query.trim().length > 0} tasks={filteredTasks} busy={busy} onMove={remote ? (task, status) => { void move(task, status) } : undefined} onEdit={remote ? task => {
                 const selected = data?.tasks.find(item => item.id === task.id)
-                if (selected?.canEdit && !busy) setTaskDialog({ task: selected })
+                if (selected?.canEdit && !busy) setTaskDialog(selected)
               } : undefined} />
               <aside aria-label="Resumo dos estudos" className="space-y-4 xl:pt-[25px]">
                 <StudyCard summary={remote ? data?.summary : undefined} busy={busy} onResume={remote ? () => {
@@ -130,10 +126,7 @@ function DashboardContent({ session }: { session: AuthSession }) {
               </aside>
             </div>
           )}
-          {taskDialog && <TaskDialog task={taskDialog.task} groups={groups} disciplines={disciplines} onClose={() => setTaskDialog(null)} onSave={input => {
-            const { groupId, ...fields } = input
-            return mutate(() => taskDialog.task ? repository.updateTask(taskDialog.task.id, fields) : repository.createTask({ ...fields, groupId }))
-          }} onDelete={() => mutate(() => repository.deleteTask(taskDialog.task!.id))} />}
+          {taskDialog && <TaskDialog task={taskDialog} groups={groups} disciplines={disciplines} onClose={() => setTaskDialog(null)} onSave={input => mutate(() => repository.updateTask(taskDialog.id, input))} onDelete={() => mutate(() => repository.deleteTask(taskDialog.id))} />}
           {eventDialog && <EventDialog groups={adminGroups} event={eventDialog.event ?? undefined} onClose={() => setEventDialog(null)} onSave={input => mutate(() => eventDialog.event ? repository.updateEvent(eventDialog.event.id, { title: input.title, startsAt: input.startsAt }) : repository.createEvent(input))} />}
 
         </div>

@@ -8,6 +8,7 @@ interface ConfirmDialogProps {
   description?: string;
   confirmLabel?: string;
   isLoading?: boolean;
+  error?: string;
 }
 
 export default function ConfirmDialog({
@@ -18,6 +19,7 @@ export default function ConfirmDialog({
   description = 'Deseja realmente excluir esse item? Essa ação não pode ser desfeita.',
   confirmLabel = 'Excluir',
   isLoading = false,
+  error,
 }: ConfirmDialogProps) {
   if (!isOpen) return null;
 
@@ -33,6 +35,8 @@ export default function ConfirmDialog({
             <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
           </div>
         </div>
+
+        {error && <p role="alert" className="mt-4 text-center text-sm text-destructive">{error}</p>}
 
         <div className="flex items-center justify-end gap-6 pt-8">
           <button
