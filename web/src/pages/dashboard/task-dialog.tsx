@@ -10,9 +10,9 @@ function localDate(value: string | null) {
   const date = new Date(value)
   return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
 }
-export function TaskDialog({ task, groups, disciplines = [], allowPersonal = true, onSave, onClose }: {
+export function TaskDialog({ task, groups, disciplines = [], allowPersonal = true, onSave, onDelete, onClose }: {
   task: ApiTask | null; groups: StudyGroup[]; disciplines?: { id: number; nome: string }[]; onSave: (input: TaskInput & { groupId: string | null }) => Promise<void>
-  onClose: () => void; allowPersonal?: boolean
+  onDelete: () => Promise<void>; onClose: () => void; allowPersonal?: boolean
 }) {
   const [title, setTitle] = useState(task?.title ?? '')
   const [description, setDescription] = useState(task?.description ?? '')
@@ -24,6 +24,7 @@ export function TaskDialog({ task, groups, disciplines = [], allowPersonal = tru
   const [dueAt, setDueAt] = useState(localDate(task?.dueAt ?? null))
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [confirmDelete, setConfirmDelete] = useState(false)
   async function perform(action: () => Promise<void>) {
     setBusy(true); setError('')
     try { await action(); onClose() } catch (cause) { setError(cause instanceof Error ? cause.message : 'N\u00e3o foi poss\u00edvel salvar.') }
@@ -44,7 +45,10 @@ export function TaskDialog({ task, groups, disciplines = [], allowPersonal = tru
             <label>Prioridade<select className={field} value={priority} onChange={e => setPriority(e.target.value as TaskInput['priority'])}><option value="high">Alta</option><option value="medium">Média</option><option value="low">Baixa</option></select></label>
           </div>
           <label className="block">Prazo (opcional)<input className={field} type="datetime-local" value={dueAt} onChange={e => setDueAt(e.target.value)} /></label>
+          {error && <p role="alert" className="text-destructive">{error}</p>}
+          {confirmDelete && <p role="alert">Excluir esta tarefa?</p>}
           <div className="flex flex-wrap justify-end gap-2">
+            {task && <Button type="button" variant="destructive" onClick={() => confirmDelete ? void perform(onDelete) : setConfirmDelete(true)}>{confirmDelete ? 'Confirmar exclusão' : 'Excluir'}</Button>}
             <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
             <Button type="submit" disabled={(personal ? !disciplineId : !groupId) || title.trim().length < (personal ? 1 : 3)}>{busy ? 'Salvando...' : 'Salvar tarefa'}</Button>
           </div>
