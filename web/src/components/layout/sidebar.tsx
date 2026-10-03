@@ -1,7 +1,8 @@
 import { LogOut, X, Brain } from 'lucide-react'
-import { useNavigate, useLocation } from '@tanstack/react-router'
+import { Link, useNavigate, useLocation } from '@tanstack/react-router'
 import { navigationItems } from './navigation'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { useProfile } from '@/profile/use-profile'
 import { Button } from '@/components/ui/button'
 import { auth } from '@/auth/auth'
 import { useAuth } from '@/auth/use-auth'
@@ -16,7 +17,9 @@ type SidebarProps = {
 export function Sidebar({ open, onClose, onNavigate }: SidebarProps) {
   const pathname = useLocation({ select: (location) => location.pathname })
   const session = useAuth()
+  const profile = useProfile()
   const navigate = useNavigate()
+  const displayName = session?.user.name ?? 'Usuário'
   const initials = session?.user.name
     .split(' ')
     .map((n) => n[0])
@@ -95,26 +98,34 @@ export function Sidebar({ open, onClose, onNavigate }: SidebarProps) {
         </nav>
         <div className="flex-1"></div>
         <div className="border-t border-dotted border-white/20 p-4">
-          <button
-            className="group flex w-full items-center gap-3 rounded-xl p-2 text-left transition-colors hover:bg-sidebar-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring"
-            onClick={handleLogout}
-            type="button"
-          >
+          <div className="flex w-full items-center gap-3 rounded-xl p-2">
             <Avatar className="size-10 border border-sidebar-border">
+              {profile?.avatar && <AvatarImage src={profile.avatar} alt={`Foto de ${profile.name}`} />}
               <AvatarFallback className="bg-sidebar-accent text-sidebar-accent-foreground text-xs font-bold">
                 {initials}
               </AvatarFallback>
             </Avatar>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-semibold text-sidebar-foreground">
-                {session?.user.name ?? 'Usuário'}
-              </span>
-              <span className="flex items-center gap-1 text-[11px] text-sidebar-foreground/60">
+            <div className="min-w-0 flex-1">
+              <Link
+                to="/profile"
+                aria-label={`Abrir perfil de ${displayName}`}
+                aria-current={pathname === '/profile' ? 'page' : undefined}
+                title={displayName}
+                onClick={onClose}
+                className="block truncate rounded-sm text-sm font-semibold text-sidebar-foreground hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring"
+              >
+                {displayName}
+              </Link>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="mt-1 flex items-center gap-1 rounded-sm text-[11px] text-sidebar-foreground/60 transition-colors hover:text-sidebar-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring"
+              >
                 <LogOut aria-hidden="true" className="size-3" />
                 Sair
-              </span>
-            </span>
-          </button>
+              </button>
+            </div>
+          </div>
         </div>
       </aside>
     </>
