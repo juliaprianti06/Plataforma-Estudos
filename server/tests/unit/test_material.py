@@ -90,6 +90,8 @@ def test_atualizar_material(client: TestClient, db, auth_token: dict, material_c
 
 def test_deletar_material(client: TestClient, db, auth_token: dict, material_criado):
     mat_id = material_criado["id_material"]
+    file_path = storage_service.UPLOAD_DIR / material_criado["url_arquivo"].split("/")[-1]
+    assert file_path.is_file()
     response = client.delete(
         f"/api/v1/materiais/{mat_id}",
         headers=auth_token
@@ -99,3 +101,29 @@ def test_deletar_material(client: TestClient, db, auth_token: dict, material_cri
     res_verify = client.get("/api/v1/materiais/", headers=auth_token)
     ids = [m["id_material"] for m in res_verify.json()]
     assert mat_id not in ids
+    assert not file_path.exists()
+
+
+def test_falha_no_commit_restaura_arquivo(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    from app.commands.material.delete_material_command import DeletarMaterialCommand
+
+    monkeypatch.setattr(storage_service, "UPLOAD_DIR", tmp_path / "uploads")
+    storage_service.UPLOAD_DIR.mkdir()
+    file_path = storage_service.UPLOAD_DIR / "material.pdf"
+    file_path.write_bytes(b"arquivo")
+
+    class Repository:
+        def buscar_por_id(self, material_id, usuario_id):
+            return SimpleNamespace(url_arquivo="/uploads/material.pdf")
+
+        def deletar(self, material):
+            pass
+
+        def commit(self):
+            raise RuntimeError("falha simulada no commit")
+
+    command = DeletarMaterialCommand(Repository(), material_id=1, usuario_id=1)
+    with pytest.raises(RuntimeError, match="falha simulada"):
+        command.execute()
+    assert file_path.read_bytes() == b"arquivo"

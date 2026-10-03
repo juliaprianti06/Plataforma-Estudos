@@ -32,6 +32,7 @@ const mockDisciplinas = [
 ];
 
 test('MateriaisPanel renders materials and handles delete interaction', async () => {
+  vi.clearAllMocks();
   vi.mocked(api.get).mockResolvedValue({ data: mockMateriais });
   vi.mocked(api.delete).mockResolvedValue({ data: { mensagem: "Material deletado" } });
 
@@ -69,4 +70,19 @@ test('MateriaisPanel renders materials and handles delete interaction', async ()
     expect(api.delete).toHaveBeenCalledWith('/materiais/1');
     expect(api.get).toHaveBeenCalledTimes(2);
   });
+});
+
+test('mantém confirmação aberta e informa erro quando a exclusão falha', async () => {
+  vi.clearAllMocks();
+  vi.mocked(api.get).mockResolvedValue({ data: mockMateriais });
+  vi.mocked(api.delete).mockRejectedValue(new Error('Falha ao excluir material'));
+
+  render(<MateriaisPanel disciplinaId={1} disciplinas={mockDisciplinas} />);
+  await screen.findByText('Resumo de Física');
+  fireEvent.click(screen.getByTitle('Excluir'));
+  fireEvent.click(screen.getByText('Excluir', { selector: 'button' }));
+
+  expect(await screen.findByRole('alert')).toHaveTextContent('Falha ao excluir material');
+  expect(screen.getByText('Excluir material')).toBeInTheDocument();
+  expect(api.get).toHaveBeenCalledTimes(1);
 });
