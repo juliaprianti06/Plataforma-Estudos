@@ -1,306 +1,211 @@
 # Plataforma de Estudos Colaborativos
 
-Plataforma web para organização acadêmica e colaboração entre estudantes. O sistema reúne gerenciamento de disciplinas e tarefas, quadro Kanban, acompanhamento de progresso, armazenamento de materiais e grupos de estudo em um único ambiente.
+Plataforma web para ajudar estudantes a organizar suas atividades acadêmicas, acompanhar o progresso nos estudos e colaborar em grupos. O sistema combina uma interface em React, uma API em FastAPI e um banco de dados PostgreSQL.
 
-> **Status:** em desenvolvimento — planejamento organizado em quatro sprints.
+> **Status:** em desenvolvimento. O planejamento do projeto está organizado em quatro sprints.
 
 ## Sumário
 
 - [Visão geral](#visão-geral)
+- [Funcionalidades](#funcionalidades)
+- [Documentação](#documentação)
 - [Tecnologias](#tecnologias)
 - [Como executar](#como-executar)
-- [Product Backlog](#product-backlog)
-- [Padrões de projeto](#padrões-de-projeto)
-- [Critérios de priorização](#critérios-de-priorização)
+- [Testes](#testes)
+- [Arquitetura e padrões](#arquitetura-e-padrões)
 
 ## Visão geral
 
-O projeto tem como objetivo apoiar estudantes na organização de sua rotina acadêmica e facilitar a troca de conhecimento. A evolução da plataforma está dividida em quatro sprints, definidas conforme a prioridade, as dependências técnicas e o valor entregue ao usuário.
+O projeto apoia estudantes na organização de disciplinas, tarefas e materiais. Também oferece recursos para acompanhar o progresso acadêmico e realizar atividades em conjunto com outros estudantes.
 
-### Principais funcionalidades planejadas
+## Funcionalidades
 
-- Cadastro, autenticação e gerenciamento de perfil;
-- Organização de disciplinas e tarefas;
-- Quadro Kanban com movimentação por *drag-and-drop*;
-- Dashboard e acompanhamento de progresso;
-- Upload e compartilhamento de materiais;
-- Criação e administração de grupos de estudo;
-- Calendário, notificações, busca e estatísticas.
+### Implementadas
+
+- Cadastro, login e logout com autenticação por token;
+- Visualização e atualização do perfil;
+- Cadastro e gerenciamento de disciplinas;
+- Criação, edição, conclusão e exclusão de tarefas;
+- Quadro Kanban com movimentação de tarefas por drag-and-drop;
+- Upload, consulta e gerenciamento de materiais de estudo;
+- Acompanhamento do progresso por disciplina e períodos semanal ou mensal;
+- Interface responsiva para desktop, tablets e telas menores.
+
+
+## Documentação
+
+- [Diagrama da arquitetura](docs/diagrama-arquitetura.png)
+- [Product Backlog](docs/Product_Backlog_Plataforma_Estudos_Colaborativos.pdf)
+
+## Links do projeto
+
+- [Jira](https://estudos-colaborativos.atlassian.net/jira/software/projects/SCRUM/boards/1?filter=&groupBy=none)
+- [Figma](https://www.figma.com/design/gI4AUtMlPlB6n6QBDqOA0G/Untitled?node-id=90-441&t=1XHIkw3FU81ihzXi-0-)
 
 ## Tecnologias
 
 | Camada | Tecnologias |
-|---|---|
-| Frontend | React, TypeScript, Vite, Tailwind CSS, TanStack Router e DnD Kit|
-| Backend | Python, FastAPI, SQLAlchemy e Alembic |
+| --- | --- |
+| Frontend | React, TypeScript, Vite, Tailwind CSS, TanStack Router, Axios, Radix UI e Lucide |
+| Backend | Python, FastAPI, Pydantic, SQLAlchemy e Alembic |
 | Banco de dados | PostgreSQL |
-| Autenticação | JWT e hash seguro de senhas |
+| Autenticação | JWT e hash de senhas com Argon2 |
 | Infraestrutura | Docker e Docker Compose |
+| Testes | pytest, Vitest, Testing Library e Node.js Test Runner |
 
 ## Como executar
 
 ### Pré-requisitos
 
-- [Docker](https://www.docker.com/) com Docker Compose;
+- [Docker Desktop](https://www.docker.com/) com Docker Compose;
 - Git.
 
 ### Configuração
 
-1. Clone o repositório e acesse a pasta do projeto:
+1. Clone o repositório e acesse a pasta:
 
    ```bash
    git clone https://github.com/juliaprianti06/Lab-Engenharia-Software.git
    cd Lab-Engenharia-Software
    ```
 
-2. Crie os arquivos de ambiente a partir dos exemplos:
+2. Crie o arquivo de ambiente do backend:
 
-   ```bash
-   cp server/.env.example server/.env
-   cp web/.env.example web/.env
+   ```powershell
+   Copy-Item server/.env.example server/.env
    ```
 
-3. Revise as variáveis de ambiente e inicie os serviços:
+3. Gere uma chave para `JWT_SECRET` e coloque o valor em `server/.env`:
 
-   ```bash
-   docker compose up --build
+   ```powershell
+   python -c "import secrets; print(secrets.token_urlsafe(48))"
    ```
 
-4. Acesse os serviços:
+   Não versione arquivos `.env` nem compartilhe o segredo.
 
-   - Aplicação web: <http://localhost:5173>
+4. Inicie os serviços na raiz do projeto:
+
+   ```powershell
+   docker compose up
+   ```
+
+   O Docker Compose inicia o PostgreSQL, o backend e o frontend. O backend aplica as migrações do banco ao iniciar.
+
+5. Acesse a aplicação:
+
+   - Frontend: <http://localhost:5173>
    - API: <http://localhost:8000>
-   - Documentação da API: <http://localhost:8000/docs>
+   - Documentação interativa da API: <http://localhost:8000/docs>
 
-## Product Backlog
+Por padrão, o frontend usa autenticação em modo `mock`. Para conectá-lo à API, crie `web/.env` com estas configurações e reinicie os serviços:
 
-O Product Backlog reúne as funcionalidades planejadas para o projeto. Cada sprint contém um conjunto de histórias selecionadas de acordo com prioridade, dependências e evolução esperada do sistema.
-
-### Níveis de prioridade
-
-| Nível | Descrição |
-|---|---|
-| 🔴 **Crítica** | Essencial para a proposta principal ou para o funcionamento do sistema. |
-| 🟠 **Alta** | Importante, mas sua ausência temporária não impede completamente o uso da plataforma. |
-| 🟡 **Média** | Melhora significativamente a experiência, podendo ser implementada após o núcleo do sistema. |
-| 🟢 **Baixa** | Complementar e condicionada à disponibilidade no cronograma. |
-
-### Resumo das sprints
-
-| Sprint | Foco |
-|---|---|
-| Sprint 1 | Autenticação, segurança, responsividade, disciplinas e tarefas |
-| Sprint 2 | Kanban, dashboard, progresso, filtros e materiais |
-| Sprint 3 | Grupos, membros, permissões e compartilhamento |
-| Sprint 4 | Calendário, notificações, busca, estatísticas, testes e documentação |
-
----
-
-### Sprint 1 — Fundação da plataforma
-
-#### Objetivo
-
-Construir a base funcional da aplicação, permitindo que usuários criem uma conta, realizem autenticação e organizem disciplinas e tarefas. Desde a primeira entrega, a aplicação deverá oferecer mecanismos de segurança e uma interface responsiva.
-
-| ID | História de usuário | Prioridade | Pontos |
-|---|---|:---:|---:|
-| US01 | Como estudante, quero me cadastrar para criar minha conta na plataforma. | 🔴 Crítica | 5 |
-| US02 | Como estudante, quero fazer login e logout para acessar minha área pessoal com segurança. | 🔴 Crítica | 5 |
-| US03 | Como estudante, quero cadastrar e visualizar disciplinas para organizar meus estudos por matéria. | 🟠 Alta | 5 |
-| US04 | Como estudante, quero criar e visualizar tarefas relacionadas às disciplinas para organizar minhas atividades acadêmicas. | 🔴 Crítica | 8 |
-| US05 | Como estudante, quero editar, excluir e concluir minhas tarefas para manter minha organização atualizada. | 🟠 Alta | 5 |
-| US06 | Como estudante, quero que meus dados e recursos sejam protegidos contra acessos não autorizados. | 🔴 Crítica | 8 |
-| US07 | Como estudante, quero utilizar uma interface responsiva para acessar corretamente a plataforma em desktop e tablet. | 🟠 Alta | 5 |
-| US08 | Como estudante, quero visualizar e editar meu perfil para manter meus dados atualizados. | 🟡 Média | 3 |
-
-#### Requisitos técnicos
-
-- Estruturas iniciais do frontend em React e do backend em FastAPI;
-- Configuração do PostgreSQL e modelagem inicial das entidades;
-- API REST com validação de dados e tratamento padronizado de erros;
-- Autenticação JWT, hash seguro de senhas e proteção de rotas;
-- Controle de acesso aos recursos;
-- Repository Pattern e conexão centralizada com o banco de dados;
-- Layout principal, componentes reutilizáveis e responsividade para desktop e tablet.
-
-#### Resultado esperado
-
-Ao final da Sprint 1, deverá ser possível executar o fluxo:
-
-```text
-Cadastro → Login → Disciplinas → Tarefas → Perfil → Logout
+```dotenv
+VITE_AUTH_MODE=api
+VITE_API_URL=http://localhost:8000/api/v1
 ```
 
----
+## Testes
 
-### Sprint 2 — Organização acadêmica e materiais
+Execute os comandos na raiz do projeto, com os containers em execução. A base de testes do backend precisa ser criada uma vez:
 
-#### Objetivo
-
-Expandir as ferramentas de organização acadêmica e implementar o armazenamento de materiais, uma das funcionalidades centrais da plataforma.
-
-| ID | História de usuário | Prioridade | Pontos |
-|---|---|:---:|---:|
-| US09 | Como estudante, quero organizar minhas tarefas em um quadro Kanban para acompanhar seu andamento. | 🔴 Crítica | 8 |
-| US10 | Como estudante, quero movimentar tarefas entre as etapas do Kanban utilizando *drag-and-drop*. | 🟠 Alta | 5 |
-| US11 | Como estudante, quero enviar materiais de estudo para armazenar conteúdos acadêmicos na plataforma. | 🔴 Crítica | 8 |
-| US12 | Como estudante, quero visualizar e baixar materiais armazenados para acessá-los posteriormente. | 🟠 Alta | 5 |
-| US13 | Como estudante, quero visualizar um dashboard com um resumo das minhas atividades acadêmicas. | 🟠 Alta | 8 |
-| US14 | Como estudante, quero filtrar e ordenar minhas tarefas para encontrar atividades importantes com maior facilidade. | 🟡 Média | 5 |
-| US15 | Como estudante, quero acompanhar meu progresso por disciplina para visualizar minha evolução acadêmica. | 🟡 Média | 5 |
-
-#### Quadro Kanban
-
-O quadro terá inicialmente as colunas **A fazer**, **Em andamento** e **Concluído**. Ao mover uma tarefa, seu status deverá ser atualizado e persistido no banco de dados.
-
-O recurso de *drag-and-drop* será implementado com DnD Kit. O Command Pattern poderá ser aplicado às operações realizadas sobre os cartões.
-
-#### Filtros e ordenação
-
-As tarefas poderão ser filtradas por disciplina, status, prioridade, atraso e conclusão. A ordenação estará disponível por prazo mais próximo, prazo mais distante, maior prioridade e data de criação.
-
-#### Gerenciamento de materiais
-
-O sistema aceitará arquivos PDF, DOCX, PPTX, TXT e imagens. Cada material deverá registrar:
-
-- Nome, tipo e tamanho;
-- Usuário responsável e data de envio;
-- Disciplina relacionada;
-- Localização ou URL do arquivo.
-
-O módulo deverá oferecer validação de extensão e tamanho, upload, download, consulta, exclusão e associação entre material e disciplina.
-
-#### Dashboard
-
-O dashboard apresentará quantidade de disciplinas, tarefas pendentes, concluídas e atrasadas, próximos prazos e progresso acadêmico.
-
-#### Resultado esperado
-
-Ao final da Sprint 2, o usuário deverá conseguir organizar tarefas visualmente, acompanhar sua situação acadêmica e armazenar materiais relacionados às disciplinas.
-
----
-
-### Sprint 3 — Colaboração entre usuários
-
-#### Objetivo
-
-Adicionar recursos colaborativos à plataforma, permitindo que estudantes participem de grupos e compartilhem materiais.
-
-| ID | História de usuário | Prioridade | Pontos |
-|---|---|:---:|---:|
-| US16 | Como estudante, quero criar grupos de estudo para colaborar com outros usuários. | 🔴 Crítica | 5 |
-| US17 | Como estudante, quero entrar e sair de grupos de estudo para participar de comunidades relacionadas aos meus estudos. | 🟠 Alta | 5 |
-| US18 | Como administrador, quero gerenciar os membros do meu grupo. | 🟠 Alta | 5 |
-| US19 | Como administrador, quero controlar as permissões dos integrantes do grupo. | 🟠 Alta | 5 |
-| US20 | Como estudante, quero compartilhar materiais armazenados com os integrantes dos meus grupos. | 🔴 Crítica | 5 |
-| US21 | Como estudante, quero acessar e baixar materiais compartilhados pelos demais membros. | 🟠 Alta | 3 |
-| US22 | Como estudante, quero comentar em materiais para discutir conteúdos com outros integrantes. | 🟢 Baixa | 5 |
-
-#### Grupos de estudo
-
-Cada grupo deverá possuir nome, descrição, administrador, membros, disciplina ou tema relacionado, materiais compartilhados e data de criação.
-
-O ingresso poderá ocorrer por código, link ou convite enviado por outro usuário.
-
-#### Permissões
-
-| Perfil | Permissões |
-|---|---|
-| **Administrador** | Editar o grupo, adicionar ou remover membros, gerenciar convites, materiais e permissões. |
-| **Membro** | Visualizar o grupo, compartilhar, visualizar e baixar materiais e, quando disponível, comentar. |
-
-#### Compartilhamento de materiais
-
-O upload criado na Sprint 2 será expandido para permitir o compartilhamento com membros autorizados:
-
-```text
-Usuário → Upload do material → Grupo → Membros autorizados
+```powershell
+docker compose exec -T db createdb -U postgres estudos_colaborativos_test
 ```
 
-#### Resultado esperado
+Se o banco já existir, não é necessário criá-lo novamente. Execute as suítes:
 
-Ao final da Sprint 3, a aplicação evoluirá de um organizador acadêmico individual para uma plataforma com recursos efetivos de estudo colaborativo.
+```powershell
+docker compose exec backend pytest -v
+docker compose exec frontend npm run test
+docker compose exec frontend npm run test:unit
+```
 
----
 
-### Sprint 4 — Recursos complementares e finalização
+Para verificar o lint e gerar o build do frontend:
 
-#### Objetivo
+```powershell
+docker compose exec frontend npm run lint
+docker compose exec frontend npm run build
+```
 
-Adicionar funcionalidades secundárias, melhorar a experiência de uso e preparar a aplicação para entrega e apresentação.
+## Arquitetura e padrões
 
-| ID | História de usuário | Prioridade | Pontos |
-|---|---|:---:|---:|
-| US23 | Como estudante, quero visualizar um calendário com meus compromissos acadêmicos. | 🟡 Média | 8 |
-| US24 | Como estudante, quero receber notificações sobre prazos e acontecimentos importantes. | 🟡 Média | 5 |
-| US25 | Como estudante, quero pesquisar tarefas, disciplinas, grupos e materiais. | 🟢 Baixa | 3 |
-| US26 | Como estudante, quero visualizar estatísticas sobre minhas atividades acadêmicas. | 🟢 Baixa | 5 |
-| US27 | Como equipe de desenvolvimento, queremos testar os principais fluxos da aplicação para garantir seu funcionamento. | 🟠 Alta | 8 |
-| US28 | Como equipe de desenvolvimento, queremos documentar a API e o projeto para facilitar manutenção, execução e apresentação. | 🟠 Alta | 5 |
+O backend tem uma organização em camadas:
 
-#### Calendário e notificações
+- **Routers** recebem as requisições HTTP;
+- **Schemas** validam os dados de entrada e saída;
+- **Commands** encapsulam operações específicas de escrita, incluindo a movimentação de tarefas no Kanban;
+- **Services** coordenam regras de negócio e operações que envolvem várias etapas;
+- **Repositories** concentram consultas e gravações;
+- **Models** representam as entidades persistidas no banco.
 
-O calendário poderá exibir tarefas, provas, trabalhos, apresentações e eventos acadêmicos. As notificações serão inicialmente internas e poderão alertar sobre prazos próximos, atrasos, convites para grupos e novos materiais compartilhados.
-
-#### Busca e estatísticas
-
-A busca localizará disciplinas, tarefas, grupos e materiais. As estatísticas poderão apresentar tarefas concluídas, pendentes e atrasadas, taxa de conclusão e progresso por disciplina.
-
-#### Qualidade e testes
-
-Antes da entrega final, deverão ser testados os principais fluxos da aplicação:
-
-- Cadastro, login, logout e controle de acesso;
-- Disciplinas, tarefas e Kanban;
-- Upload e download de materiais;
-- Grupos, permissões e compartilhamento;
-- Responsividade da interface.
-
-#### Documentação
-
-A documentação deverá conter descrição e arquitetura do projeto, tecnologias, integrantes, estrutura do banco de dados, instalação, execução, variáveis de ambiente, API, funcionalidades, organização das pastas e padrões de projeto.
-
-#### Resultado esperado
-
-Ao final da Sprint 4, a plataforma deverá estar testada, documentada e preparada para entrega, demonstração e continuidade do desenvolvimento.
-
-## Funcionalidades críticas
-
-As funcionalidades críticas representam o produto mínimo esperado e têm precedência sobre recursos complementares:
-
-1. Cadastro de usuários;
-2. Login e autenticação;
-3. Gerenciamento básico de tarefas;
-4. Segurança e controle de acesso;
-5. Quadro Kanban;
-6. Upload de materiais;
-7. Criação de grupos de estudo;
-8. Compartilhamento de materiais entre usuários.
-
-## Padrões de projeto
+No frontend, as rotas encaminham para páginas, as páginas compõem a interface com componentes reutilizáveis e a pasta `api` centraliza as chamadas HTTP.
 
 ### Repository Pattern
 
-Separa o acesso ao banco de dados (consultas e leituras) das regras de negócio e rotas da API, facilitando a manutenção e a criação de testes isolados.
+O Repository Pattern separa o acesso ao banco das rotas e de parte das regras de negócio. Isso concentra consultas e gravações e facilita a manutenção.
 
 ### Command Pattern
 
-Aplicado para encapsular operações de escrita e regras de negócio complexas, como a criação de disciplinas e a movimentação de cartões no Kanban (alteração de status das tarefas). Isso garante rastreabilidade e isola a lógica de negócio dos *controllers*.
+Commands encapsulam operações de escrita, como criar, atualizar e excluir disciplinas, tarefas e materiais. A movimentação de tarefas no Kanban também usa um comando próprio, que valida o acesso, atualiza a coluna e o status e registra a data de conclusão quando necessário.
 
-### Injeção de Dependência (Dependency Injection) e Connection Pool
+### Injeção de dependência e pool de conexões
 
-Em substituição ao padrão Singleton clássico, o projeto utiliza a injeção de dependência nativa do FastAPI (`Depends`) aliada ao gerenciamento de *Pool* de conexões do SQLAlchemy. Isso garante que as conexões com o banco de dados sejam distribuídas, abertas e fechadas de forma altamente escalável e segura durante o ciclo de vida das requisições, sem sobrecarregar o banco.
+O FastAPI usa `Depends` para fornecer recursos, como a sessão do banco, às rotas. O SQLAlchemy mantém um `engine` compartilhado pela aplicação e administra um pool de conexões reutilizáveis. Ao encerrar uma sessão, a conexão pode retornar ao pool.
 
-## Critérios de priorização
 
-A equipe deverá desenvolver as funcionalidades na seguinte ordem:
+### Resumo das sprints
 
-1. Funcionalidades críticas não concluídas;
-2. Funcionalidades de alta prioridade;
-3. Funcionalidades de média prioridade;
-4. Funcionalidades de baixa prioridade.
+| Sprint | Foco | Situação |
+| --- | --- | --- |
+| Sprint 1 | Autenticação, segurança, disciplinas, tarefas e perfil | Funcionalidades principais implementadas |
+| Sprint 2 | Kanban, dashboard, progresso, filtros e materiais | Parcialmente implementada |
+| Sprint 3 | Grupos, membros, permissões e compartilhamento | Recursos de grupos e tarefas colaborativas implementados; compartilhamento de materiais e comentários planejados |
+| Sprint 4 | Calendário, notificações, busca, estatísticas, testes e documentação | Parcialmente implementada |
 
-Funcionalidades complementares não deverão ser priorizadas enquanto houver funcionalidades críticas incompletas.
+### Sprint 1 — Fundação da plataforma
+
+- **US01:** Cadastro de conta;
+- **US02:** Login e logout seguros;
+- **US03:** Cadastro e visualização de disciplinas;
+- **US04:** Criação e visualização de tarefas vinculadas a disciplinas;
+- **US05:** Edição, exclusão e conclusão de tarefas;
+- **US06:** Proteção dos dados e controle de acesso;
+- **US07:** Interface responsiva;
+- **US08:** Visualização e edição de perfil.
+
+### Sprint 2 — Organização acadêmica e materiais
+
+- **US09:** Organização de tarefas em quadro Kanban;
+- **US10:** Movimentação de tarefas entre as etapas do Kanban;
+- **US11:** Envio de materiais de estudo;
+- **US12:** Visualização e download dos materiais;
+- **US13:** Dashboard com resumo das atividades acadêmicas;
+- **US14:** Filtros e ordenação de tarefas;
+- **US15:** Acompanhamento do progresso por disciplina.
+
+O progresso oferece indicadores por período semanal ou mensal. O registro de sessões de estudo ainda não está implementado, por isso os indicadores de tempo estudado dependem de uma etapa futura.
+
+### Sprint 3 — Colaboração entre usuários
+
+- **US16:** Criação de grupos de estudo;
+- **US17:** Entrada e saída de grupos;
+- **US18:** Gerenciamento de membros pelo administrador;
+- **US19:** Controle de permissões dos integrantes;
+- **US20:** Compartilhamento de materiais com grupos;
+- **US21:** Acesso e download de materiais compartilhados;
+- **US22:** Comentários em materiais.
+
+### Sprint 4 — Recursos complementares e finalização
+
+- **US23:** Calendário de compromissos acadêmicos;
+- **US24:** Notificações sobre prazos e atividades;
+- **US25:** Busca por tarefas, disciplinas, grupos e materiais;
+- **US26:** Estatísticas de atividades acadêmicas;
+- **US27:** Testes dos principais fluxos;
+- **US28:** Documentação do projeto e da API.
+
+
 
 ---
 
