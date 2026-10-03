@@ -11,18 +11,24 @@ from app.services.groups_service import require_member, ACTIVE
 def response(db, event, user_id):
     member = require_member(db, event.id_grupo, user_id)
     return EventResponse(id=str(event.id_evento), title=event.titulo, startsAt=event.inicio_em,
-        groupId=str(event.id_grupo), groupName=db.get(Grupo, event.id_grupo).nome, canEdit=member.status == "admin")
+        groupId=str(event.id_grupo), groupName=db.get(Grupo, event.id_grupo).nome, canEdit=member.status == "admin" and not db.get(Grupo, event.id_grupo).arquivado)
 
 
-def list_events(db, user_id):
-    events = db.scalars(select(EventoGrupo).join(MembroGrupo, MembroGrupo.id_grupo == EventoGrupo.id_grupo).where(
+def list_events(db, user_id, group_id=None):
+    query = select(EventoGrupo).join(MembroGrupo, MembroGrupo.id_grupo == EventoGrupo.id_grupo).join(Grupo, Grupo.id_grupo == EventoGrupo.id_grupo).where(
         MembroGrupo.id_usuario == user_id, MembroGrupo.status.in_(ACTIVE), EventoGrupo.inicio_em >= datetime.now(timezone.utc),
-    ).order_by(EventoGrupo.inicio_em, EventoGrupo.id_evento).limit(100))
+    )
+    if group_id is None:
+        query = query.where(Grupo.arquivado.is_(False))
+    else:
+        require_member(db, group_id, user_id)
+        query = query.where(EventoGrupo.id_grupo == group_id)
+    events = db.scalars(query.order_by(EventoGrupo.inicio_em, EventoGrupo.id_evento).limit(100))
     return [response(db, event, user_id) for event in events]
 
 
 def create(db, user_id, data):
-    require_member(db, data.groupId, user_id, admin=True)
+    require_member(db, data.groupId, user_id, admin=True, write=True)
     if data.startsAt <= datetime.now(timezone.utc):
         raise RegraNegocioError("Escolha uma data futura para o evento.")
     event = EventoGrupo(id_grupo=data.groupId, id_criador=user_id, titulo=data.title, inicio_em=data.startsAt)
@@ -35,6 +41,18 @@ def remove(db, user_id, event_id):
     event = db.get(EventoGrupo, event_id)
     if event is None:
         raise NaoEncontradoError("Evento n\u00e3o encontrado.")
-    require_member(db, event.id_grupo, user_id, admin=True)
+    require_member(db, event.id_grupo, user_id, admin=True, write=True)
     db.delete(event)
     db.commit()
+
+
+def update(db, user_id, event_id, data):
+    event = db.get(EventoGrupo, event_id)
+    if event is None:
+        raise NaoEncontradoError('Evento não encontrado.')
+    require_member(db, event.id_grupo, user_id, admin=True, write=True)
+    if data.startsAt <= datetime.now(timezone.utc):
+        raise RegraNegocioError('Escolha uma data futura para o evento.')
+    event.titulo, event.inicio_em = data.title, data.startsAt
+    db.commit()
+    return response(db, event, user_id)

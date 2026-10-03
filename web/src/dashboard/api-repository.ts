@@ -10,7 +10,8 @@ export type ApiTask = DashboardTask & TaskInput & { groupId: string; groupName: 
 export type ApiEvent = { id: string; title: string; startsAt: string; groupId: string; groupName: string; canEdit: boolean }
 export type EventInput = Pick<ApiEvent, 'title' | 'startsAt' | 'groupId'>
 export type StudySummary = { total: number; completed: number; progress: number; activeTask: ApiTask | null }
-export type DashboardData = { tasks: ApiTask[]; events: ApiEvent[]; notifications: string[]; summary: StudySummary }
+export type DashboardNotification = { id: string; message: string; read: boolean; groupId: string; taskId: number | null; eventId: string | null }
+export type DashboardData = { tasks: ApiTask[]; events: ApiEvent[]; notifications: string[]; notificationItems?: DashboardNotification[]; summary: StudySummary }
 
 function invalid(): never { throw new Error('Dados inv\u00e1lidos recebidos do servidor.') }
 function object(value: unknown): Record<string, unknown> {
@@ -44,15 +45,24 @@ export function createDashboardRepository(session: AuthSession) {
       const data = object(await request('get', '/dashboard'))
       if (!Array.isArray(data.tasks) || !Array.isArray(data.events) || !Array.isArray(data.notifications) || data.notifications.some(item => typeof item !== 'string')) invalid()
       const summary = object(data.summary)
+      if (data.notificationItems !== undefined && (!Array.isArray(data.notificationItems) || data.notificationItems.some(item => {
+        const value = object(item)
+        return typeof value.id !== 'string' || typeof value.message !== 'string' || typeof value.read !== 'boolean' || typeof value.groupId !== 'string'
+      }))) invalid()
       if (![summary.total, summary.completed, summary.progress].every(Number.isInteger) || Number(summary.total) < 0 || Number(summary.completed) < 0 ||
         Number(summary.completed) > Number(summary.total) || Number(summary.progress) < 0 || Number(summary.progress) > 100) invalid()
       return { tasks: data.tasks.map(parseTask), events: data.events.map(parseEvent), notifications: data.notifications as string[],
+        ...(data.notificationItems !== undefined ? { notificationItems: data.notificationItems as DashboardNotification[] } : {}),
         summary: { total: Number(summary.total), completed: Number(summary.completed), progress: Number(summary.progress), activeTask: summary.activeTask === null ? null : parseTask(summary.activeTask) } }
     },
-    createTask: async (input: TaskInput & { groupId: string }) => parseTask(await request('post', '/tasks', input)),
+    createTask: async (input: TaskInput & { groupId: string | null }) => parseTask(await request('post', '/tasks', input)),
     updateTask: async (id: number, input: TaskInput) => parseTask(await request('put', `/tasks/${id}`, input)),
     deleteTask: async (id: number) => { await request('delete', `/tasks/${id}`) },
+    moveTask: async (id: number, status: ApiTask['status']) => parseTask(await request('put', `/tasks/${id}/status`, { status })),
+    readNotification: async (id: string) => { await request('post', `/dashboard/notifications/${encodeURIComponent(id)}/read`) },
+    disciplines: () => request<{ id: number; nome: string }[]>('get', '/disciplinas/'),
     createEvent: async (input: EventInput) => parseEvent(await request('post', '/events', input)),
+    updateEvent: async (id: string, input: Omit<EventInput, 'groupId'>) => parseEvent(await request('put', `/events/${id}`, input)),
     deleteEvent: async (id: string) => { await request('delete', `/events/${encodeURIComponent(id)}`) },
   }
 }

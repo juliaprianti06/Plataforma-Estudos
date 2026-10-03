@@ -1,11 +1,11 @@
 from datetime import datetime
 from typing import Annotated, Literal
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints, AwareDatetime
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, AwareDatetime, model_validator
 
 
 class TaskFields(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    title: Annotated[str, StringConstraints(strip_whitespace=True, min_length=3, max_length=150)]
+    title: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
     description: str = Field(default="", max_length=2000)
     priority: Literal["high", "medium", "low"] = "medium"
     status: Literal["todo", "progress", "done"] = "todo"
@@ -14,7 +14,20 @@ class TaskFields(BaseModel):
 
 
 class TaskCreate(TaskFields):
-    groupId: int = Field(gt=0)
+    groupId: int | None = Field(default=None, gt=0)
+
+    @model_validator(mode='after')
+    def validate_context(self):
+        if self.groupId is not None and not 3 <= len(self.title) <= 150:
+            raise ValueError('Tarefas de grupo precisam de títulos entre 3 e 150 caracteres.')
+        if self.groupId is None and self.disciplineId is None:
+            raise ValueError('Selecione uma disciplina para a tarefa pessoal.')
+        return self
+
+
+class TaskMove(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    status: Literal['todo', 'progress', 'done']
 
 
 class TaskResponse(BaseModel):
@@ -34,10 +47,13 @@ class TaskResponse(BaseModel):
     canEdit: bool
 
 
-class EventInput(BaseModel):
+class EventFields(BaseModel):
     model_config = ConfigDict(extra="forbid")
     title: Annotated[str, StringConstraints(strip_whitespace=True, min_length=3, max_length=150)]
     startsAt: AwareDatetime
+
+
+class EventInput(EventFields):
     groupId: int = Field(gt=0)
 
 
