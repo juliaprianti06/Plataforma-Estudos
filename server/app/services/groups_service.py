@@ -12,18 +12,21 @@ from app.schemas.groups_schema import GroupCreate, GroupInput, GroupPreview, Gro
 ACTIVE = ("admin", "ativo")
 
 
-def require_member(db: Session, group_id: int, user_id: int, admin: bool = False):
+def require_member(db: Session, group_id: int, user_id: int, admin: bool = False, write: bool = False):
+    group = db.get(Grupo, group_id)
     member = db.get(MembroGrupo, (group_id, user_id))
-    if member is None or member.status not in ACTIVE:
+    if group is None or member is None or member.status not in ACTIVE:
         raise NaoEncontradoError("Grupo n\u00e3o encontrado para esta conta.")
     if admin and member.status != "admin":
         raise SemPermissaoError("Apenas administradores podem editar este grupo.")
+    if write and group.arquivado:
+        raise ConflitoError('Este grupo está arquivado. Um administrador pode reativá-lo.')
     return member
 
 
 def preview(db: Session, group: Grupo) -> GroupPreview:
     count = db.scalar(select(func.count()).select_from(MembroGrupo).where(MembroGrupo.id_grupo == group.id_grupo, MembroGrupo.status.in_(ACTIVE)))
-    return GroupPreview(id=str(group.id_grupo), name=group.nome, description=group.descricao or "", category=group.categoria, icon=group.icone, members=count)
+    return GroupPreview(id=str(group.id_grupo), name=group.nome, description=group.descricao or "", category=group.categoria, icon=group.icone, members=count, archived=group.arquivado)
 
 
 def response(db: Session, group: Grupo, member: MembroGrupo) -> GroupResponse:

@@ -5,6 +5,7 @@ from app.models.coluna_kanban import ColunaKanban
 from app.models.membro_grupo import MembroGrupo
 from app.models.tarefa import Tarefa
 from app.models.tarefa_responsavel import TarefaResponsavel
+from app.models.grupo import Grupo
 
 
 class DashboardRepository:
@@ -19,6 +20,8 @@ class DashboardRepository:
             MembroGrupo.id_usuario == user_id,
             MembroGrupo.status.in_(("admin", "ativo")),
         )
+        if group_id is None:
+            membership = membership.where(Grupo.id_grupo == MembroGrupo.id_grupo, Grupo.arquivado.is_(False))
         query = select(Tarefa).outerjoin(
             ColunaKanban, Tarefa.id_coluna == ColunaKanban.id_coluna,
         ).where(or_(

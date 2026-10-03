@@ -38,6 +38,7 @@ class GroupPreview(BaseModel):
     category: str
     icon: str
     members: int
+    archived: bool = False
 
 
 class GroupResponse(GroupPreview):
