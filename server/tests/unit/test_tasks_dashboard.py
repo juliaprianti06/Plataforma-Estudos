@@ -51,6 +51,49 @@ def test_member_cannot_edit_another_responsibles_task(client):
     assert client.get("/api/v1/tasks?groupId=" + group["id"], headers=stranger).status_code == 404
 
 
+def test_kanban_move_command_updates_column_status_and_completion_date(client, db):
+    owner, _, _, group = setup_group(client)
+    fields = {"title": "Revisar arquitetura", "groupId": group["id"]}
+    task = client.post("/api/v1/tasks", headers=owner, json=fields).json()
+    path = f"/api/v1/tasks/{task['id']}/status"
+
+    for status, persisted_status, column_order in [
+        ("progress", "em_andamento", 1),
+        ("done", "concluido", 2),
+        ("todo", "a_fazer", 0),
+    ]:
+        response = client.put(path, headers=owner, json={"status": status})
+        assert response.status_code == 200, response.text
+        assert response.json()["status"] == status
+
+        db.expire_all()
+        saved_task = db.get(Tarefa, task["id"])
+        saved_column = db.get(ColunaKanban, saved_task.id_coluna)
+        assert saved_task.status == persisted_status
+        assert saved_column.ordem == column_order
+        assert (saved_task.concluido_em is not None) == (status == "done")
+
+
+def test_kanban_move_rejects_missing_and_unauthorized_tasks(client):
+    owner, member, _, group = setup_group(client)
+    task = client.post(
+        "/api/v1/tasks",
+        headers=owner,
+        json={"title": "Tarefa de outra pessoa", "groupId": group["id"]},
+    ).json()
+
+    assert client.put(
+        f"/api/v1/tasks/{task['id']}/status",
+        headers=member,
+        json={"status": "done"},
+    ).status_code == 403
+    assert client.put(
+        "/api/v1/tasks/999999/status",
+        headers=owner,
+        json={"status": "done"},
+    ).status_code == 404
+
+
 @pytest.mark.parametrize("change", [{"title": "a"}, {"status": "invalid"}, {"priority": "invalid"}, {"dueAt": "2026-01-01T10:00:00"}, {"id_usuario": 4}])
 def test_invalid_task_does_not_persist(client, db, change):
     owner, _, _, group = setup_group(client)
