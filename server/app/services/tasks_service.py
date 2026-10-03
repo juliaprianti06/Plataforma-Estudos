@@ -2,7 +2,7 @@ from datetime import datetime, time, timezone
 
 from sqlalchemy import select
 
-from app.core.exceptions import NaoEncontradoError, SemPermissaoError
+from app.core.exceptions import NaoEncontradoError
 from app.models.coluna_kanban import ColunaKanban
 from app.models.disciplinas import Disciplina
 from app.models.grupo import Grupo
@@ -13,6 +13,8 @@ from app.repository.tarefa_repository import TarefaRepository
 from app.schemas.tasks_api_schema import TaskResponse
 from app.services.groups_service import require_member
 from app.core.exceptions import RegraNegocioError
+from app.commands.tarefa.mover_tarefa_kanban_command import MoverTarefaKanbanCommand
+from app.services.task_context import get_task_context
 from zoneinfo import ZoneInfo
 
 STATUS = {"todo": "a_fazer", "progress": "em_andamento", "done": "concluido"}
@@ -22,21 +24,6 @@ PRIORITY = {"high": "alta", "medium": "media", "low": "baixa"}
 def normalized_priority(value):
     import unicodedata
     return ''.join(c for c in unicodedata.normalize('NFD', value.strip().lower()) if not unicodedata.combining(c))
-
-
-def context(db, user_id, task_id, edit=False):
-    task = db.get(Tarefa, task_id)
-    if task is None:
-        raise NaoEncontradoError("Tarefa não encontrada.")
-    if task.id_coluna is None:
-        if task.usuario_id != user_id:
-            raise NaoEncontradoError("Tarefa não encontrada.")
-        return task, None
-    column = db.get(ColunaKanban, task.id_coluna)
-    member = require_member(db, column.id_grupo, user_id, write=edit)
-    if edit and member.status != "admin" and not DashboardRepository(db).responsible(task_id, user_id):
-        raise SemPermissaoError("Apenas responsáveis e administradores podem alterar a tarefa.")
-    return task, column.id_grupo
 
 
 def fields(db, user_id, group_id, data):
@@ -66,7 +53,7 @@ def fields(db, user_id, group_id, data):
 
 
 def response(db, task, user_id):
-    _, group_id = context(db, user_id, task.id)
+    _, group_id = get_task_context(db, user_id, task.id)
     if group_id is None:
         group_name = task.disciplina.nome if task.disciplina else "Estudos pessoais"
         can_edit = True
@@ -114,7 +101,7 @@ def create(db, user_id, data):
 
 
 def update(db, user_id, task_id, data):
-    task, group_id = context(db, user_id, task_id, edit=True)
+    task, group_id = get_task_context(db, user_id, task_id, edit=True)
     values = fields(db, task.usuario_id, group_id, data)
     if values["status"] != task.status:
         task.concluido_em = datetime.now(timezone.utc) if data.status == "done" else None
@@ -125,7 +112,7 @@ def update(db, user_id, task_id, data):
 
 
 def remove(db, user_id, task_id):
-    task, _ = context(db, user_id, task_id, edit=True)
+    task, _ = get_task_context(db, user_id, task_id, edit=True)
     repo = TarefaRepository(db)
     try:
         repo.deletar(task)
@@ -136,14 +123,10 @@ def remove(db, user_id, task_id):
 
 
 def move(db, user_id, task_id, status):
-    task, group_id = context(db, user_id, task_id, edit=True)
-    if group_id is not None:
-        column = db.scalar(select(ColunaKanban).where(ColunaKanban.id_grupo == group_id, ColunaKanban.ordem == ['todo', 'progress', 'done'].index(status)))
-        if column is None:
-            raise NaoEncontradoError('Coluna não encontrada.')
-        task.id_coluna = column.id_coluna
-    if task.status != STATUS[status]:
-        task.status = STATUS[status]
-        task.concluido_em = datetime.now(timezone.utc) if status == 'done' else None
-    TarefaRepository(db).commit()
-    return response(db, task, user_id)
+    command = MoverTarefaKanbanCommand(
+        repository=TarefaRepository(db),
+        user_id=user_id,
+        task_id=task_id,
+        status=status,
+    )
+    return response(db, command.execute(), user_id)
