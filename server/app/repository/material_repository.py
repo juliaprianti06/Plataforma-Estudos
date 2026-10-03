@@ -2,6 +2,8 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 from app.models.material import Material
 from app.models.disciplinas import Disciplina
+from app.models.material_grupo import MaterialGrupo
+from sqlalchemy import delete
 
 class MaterialRepository:
     def __init__(self, db: Session):
@@ -40,6 +42,7 @@ class MaterialRepository:
         return material
 
     def deletar(self, material: Material) -> None:
+        self.db.execute(delete(MaterialGrupo).where(MaterialGrupo.id_material == material.id_material))
         self.db.delete(material)
         self.db.flush()
 
