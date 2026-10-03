@@ -12,9 +12,16 @@ from app.repository.dashboard_repository import DashboardRepository
 from app.repository.tarefa_repository import TarefaRepository
 from app.schemas.tasks_api_schema import TaskResponse
 from app.services.groups_service import require_member
+from app.core.exceptions import RegraNegocioError
+from zoneinfo import ZoneInfo
 
 STATUS = {"todo": "a_fazer", "progress": "em_andamento", "done": "concluido"}
 PRIORITY = {"high": "alta", "medium": "media", "low": "baixa"}
+
+
+def normalized_priority(value):
+    import unicodedata
+    return ''.join(c for c in unicodedata.normalize('NFD', value.strip().lower()) if not unicodedata.combining(c))
 
 
 def context(db, user_id, task_id, edit=False):
@@ -26,13 +33,15 @@ def context(db, user_id, task_id, edit=False):
             raise NaoEncontradoError("Tarefa não encontrada.")
         return task, None
     column = db.get(ColunaKanban, task.id_coluna)
-    member = require_member(db, column.id_grupo, user_id)
+    member = require_member(db, column.id_grupo, user_id, write=edit)
     if edit and member.status != "admin" and not DashboardRepository(db).responsible(task_id, user_id):
         raise SemPermissaoError("Apenas responsáveis e administradores podem alterar a tarefa.")
     return task, column.id_grupo
 
 
 def fields(db, user_id, group_id, data):
+    if group_id is not None and not 3 <= len(data.title) <= 150:
+        raise RegraNegocioError('Tarefas de grupo precisam de títulos entre 3 e 150 caracteres.')
     if data.disciplineId is not None:
         discipline = db.get(Disciplina, data.disciplineId)
         if discipline is None or discipline.usuario_id != user_id:
@@ -51,7 +60,7 @@ def fields(db, user_id, group_id, data):
     return dict(
         nome=data.title, descricao=data.description.strip(), prioridade=PRIORITY[data.priority],
         status=STATUS[data.status], data_prazo=data.dueAt,
-        data_vencimento=data.dueAt.date() if data.dueAt else None,
+        data_vencimento=data.dueAt.astimezone(ZoneInfo('America/Sao_Paulo')).date() if data.dueAt else None,
         disciplina_id=data.disciplineId, id_coluna=column_id,
     )
 
@@ -63,14 +72,15 @@ def response(db, task, user_id):
         can_edit = True
     else:
         group_name = db.get(Grupo, group_id).nome
-        can_edit = (require_member(db, group_id, user_id).status == "admin"
-                    or DashboardRepository(db).responsible(task.id, user_id))
+        can_edit = (not db.get(Grupo, group_id).arquivado and
+                    (require_member(db, group_id, user_id).status == "admin"
+                     or DashboardRepository(db).responsible(task.id, user_id)))
     due_at = task.data_prazo
     if due_at is None and task.data_vencimento:
-        due_at = datetime.combine(task.data_vencimento, time.max, tzinfo=timezone.utc)
+        due_at = datetime.combine(task.data_vencimento, time.max, tzinfo=ZoneInfo('America/Sao_Paulo'))
     return TaskResponse(
         id=task.id, title=task.nome, description=task.descricao or "",
-        priority=next((k for k, v in PRIORITY.items() if v == task.prioridade), "medium"),
+        priority=next((k for k, v in PRIORITY.items() if v == normalized_priority(task.prioridade)), "medium"),
         status=next((k for k, v in STATUS.items() if v == task.status), "todo"),
         dueAt=due_at, disciplineId=task.disciplina_id,
         groupId=str(group_id) if group_id is not None else "personal",
@@ -85,7 +95,8 @@ def list_tasks(db, user_id, group_id=None):
 
 
 def create(db, user_id, data):
-    require_member(db, data.groupId, user_id)
+    if data.groupId is not None:
+        require_member(db, data.groupId, user_id, write=True)
     values = fields(db, user_id, data.groupId, data)
     task = Tarefa(**values, usuario_id=user_id)
     if data.status == "done":
@@ -93,7 +104,8 @@ def create(db, user_id, data):
     repo = TarefaRepository(db)
     try:
         repo.salvar(task)
-        db.add(TarefaResponsavel(id_tarefa=task.id, id_usuario=user_id))
+        if data.groupId is not None:
+            db.add(TarefaResponsavel(id_tarefa=task.id, id_usuario=user_id))
         repo.commit()
     except Exception:
         repo.rollback()
@@ -121,3 +133,17 @@ def remove(db, user_id, task_id):
     except Exception:
         repo.rollback()
         raise
+
+
+def move(db, user_id, task_id, status):
+    task, group_id = context(db, user_id, task_id, edit=True)
+    if group_id is not None:
+        column = db.scalar(select(ColunaKanban).where(ColunaKanban.id_grupo == group_id, ColunaKanban.ordem == ['todo', 'progress', 'done'].index(status)))
+        if column is None:
+            raise NaoEncontradoError('Coluna não encontrada.')
+        task.id_coluna = column.id_coluna
+    if task.status != STATUS[status]:
+        task.status = STATUS[status]
+        task.concluido_em = datetime.now(timezone.utc) if status == 'done' else None
+    TarefaRepository(db).commit()
+    return response(db, task, user_id)

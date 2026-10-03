@@ -1,10 +1,14 @@
-import { Bell, Menu, Search, X } from 'lucide-react'
+import { Bell, Menu, Search } from 'lucide-react'
 
 import { useAuth } from '@/auth/use-auth'
 import { Button } from '@/components/ui/button'
+import type { DashboardNotification } from '@/dashboard/api-repository'
 
 type DashboardHeaderProps = {
   notifications?: string[]
+  notificationItems?: DashboardNotification[]
+  onNotification?: (item: DashboardNotification) => void
+  onRead?: (item: DashboardNotification) => void
   query: string
   onQueryChange: (query: string) => void
   onMenuOpen: () => void
@@ -14,6 +18,9 @@ type DashboardHeaderProps = {
 
 export function DashboardHeader({
   notifications: remoteNotifications,
+  notificationItems,
+  onNotification,
+  onRead,
   query,
   onQueryChange,
   onMenuOpen,
@@ -25,6 +32,7 @@ export function DashboardHeader({
     'Sua atividade “Revisar cap. 5 de React” vence amanhã.',
     'Workshop de React: confira a data nos próximos eventos.',
   ]
+  const unread = notificationItems ? notificationItems.filter(item => !item.read).length : notifications.length
   return (
     <header className="relative flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
       <div className="flex items-start gap-3">
@@ -55,35 +63,25 @@ export function DashboardHeader({
             className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
           />
           <input
-            className="h-9 w-full rounded-full border border-border bg-card py-2 pl-9 pr-9 text-xs text-primary shadow-sm outline-none transition focus:border-ring focus:ring-3 focus:ring-ring/15"
+            className="h-9 w-full rounded-full border border-border bg-card py-2 pl-9 pr-3 text-xs text-primary shadow-sm outline-none transition focus:border-ring focus:ring-3 focus:ring-ring/15"
             onChange={(event) => onQueryChange(event.target.value)}
             placeholder="Buscar..."
             type="search"
             value={query}
           />
-          {query && (
-            <button
-              aria-label="Limpar busca"
-              className="absolute right-2 top-1/2 grid size-6 -translate-y-1/2 place-items-center rounded-full text-muted-foreground hover:bg-muted"
-              onClick={() => onQueryChange('')}
-              type="button"
-            >
-              <X aria-hidden="true" className="size-3.5" />
-            </button>
-          )}
         </label>
 
         <div className="relative">
           <Button
             aria-expanded={notificationsOpen}
-            aria-label={`${notifications.length} notificações`}
+            aria-label={`${unread} notificações não lidas`}
             className="relative text-muted-foreground hover:bg-card"
             onClick={onNotificationsToggle}
             size="icon"
             variant="ghost"
           >
             <Bell />
-            {notifications.length > 0 && <span className="absolute right-1.5 top-1.5 size-2 rounded-full border-2 border-background bg-destructive" />}
+            {unread > 0 && <span className="absolute right-1.5 top-1.5 size-2 rounded-full border-2 border-background bg-destructive" />}
           </Button>
 
           {notificationsOpen && (
@@ -91,10 +89,10 @@ export function DashboardHeader({
               <div className="mb-3 flex items-center justify-between">
                 <p className="font-semibold text-primary">Notificações</p>
                 <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-primary">
-                  {notifications.length} novas
+                  {unread} novas
                 </span>
               </div>
-              {notifications.length ? notifications.map((notification) => (
+              {notificationItems?.length ? notificationItems.map(item => <div key={item.id} className="space-y-2 border-t py-3"><button type="button" className="text-left text-muted-foreground hover:text-primary" onClick={() => onNotification?.(item)}>{item.message}</button>{!item.read ? <button type="button" className="block text-xs text-accent" onClick={() => onRead?.(item)}>Marcar como lida</button> : <span className="block text-xs text-muted-foreground">Lida</span>}</div>) : notifications.length ? notifications.map((notification) => (
                 <p key={notification} className="border-t border-border py-3 text-muted-foreground">{notification}</p>
               )) : (
                 <p className="border-t border-border pt-3 leading-relaxed text-muted-foreground">Nenhuma notificação no momento. Confira suas preferências no perfil.</p>

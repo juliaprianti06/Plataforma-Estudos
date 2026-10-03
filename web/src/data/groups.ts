@@ -12,6 +12,7 @@ export type StudyGroup = {
   icon: GroupIcon
   members: number
   role: 'admin' | 'member'
+  archived?: boolean
 }
 export type GroupInput = Pick<StudyGroup, 'name' | 'category' | 'description' | 'icon'>
 

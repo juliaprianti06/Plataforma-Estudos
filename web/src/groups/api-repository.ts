@@ -6,6 +6,7 @@ import type { GroupsRepository } from './repository'
 function parseGroup(value: unknown, preview = false): StudyGroup {
   if (!value || typeof value !== 'object') throw new Error('Grupo inv\u00e1lido recebido do servidor.')
   const group = value as StudyGroup
+  if (group.archived !== undefined && typeof group.archived !== 'boolean') throw new Error('Grupo inválido recebido do servidor.')
   if (typeof group.id !== 'string' || !group.id || typeof group.name !== 'string' || !group.name.trim() ||
       typeof group.description !== 'string' || !groupCategories.includes(group.category) || !groupIcons.includes(group.icon) ||
       !Number.isInteger(group.members) || group.members < 0 || (!preview &&
@@ -13,7 +14,8 @@ function parseGroup(value: unknown, preview = false): StudyGroup {
     throw new Error('Grupo inv\u00e1lido recebido do servidor.')
   }
   return { id: group.id, name: group.name, description: group.description, category: group.category,
-    icon: group.icon, members: group.members, role: preview ? 'member' : group.role, inviteCode: preview ? '' : group.inviteCode }
+    icon: group.icon, members: group.members, role: preview ? 'member' : group.role, inviteCode: preview ? '' : group.inviteCode,
+    ...(group.archived !== undefined ? { archived: group.archived } : {}) }
 }
 
 function parseList(value: unknown, preview = false) {

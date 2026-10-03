@@ -5,7 +5,7 @@ import { CalendarClock } from 'lucide-react'
 import { upcomingEvents } from '@/data/dashboard'
 import { formatEventDate } from '@/lib/event-date'
 
-export function UpcomingEvents({ events, onDelete, busy = false }: { events?: ApiEvent[]; onDelete?: (id: string) => void; busy?: boolean }) {
+export function UpcomingEvents({ events, onDelete, onEdit, busy = false }: { events?: ApiEvent[]; onDelete?: (id: string) => void; onEdit?: (event: ApiEvent) => void; busy?: boolean }) {
   const [confirmId, setConfirmId] = useState<string | null>(null)
   return (
     <section className="rounded-xl border border-border bg-card p-4 shadow-sm shadow-primary/5">
@@ -35,6 +35,7 @@ export function UpcomingEvents({ events, onDelete, busy = false }: { events?: Ap
                   {date.schedule}
                 </p>
                 {'groupName' in event && <p className="mt-1 text-[9px] text-muted-foreground">{event.groupName}</p>}
+                {'canEdit' in event && event.canEdit && onEdit && <button type="button" disabled={busy} className="mt-1 mr-2 text-xs text-accent" onClick={() => onEdit(event)}>Editar evento</button>}
                 {'canEdit' in event && event.canEdit && onDelete && <button type="button" disabled={busy} className="mt-1 rounded text-[10px] text-destructive focus-visible:outline-ring" onClick={() => {
                   if (confirmId === event.id) { onDelete(event.id); setConfirmId(null) } else setConfirmId(event.id)
                 }}>{confirmId === event.id ? 'Confirmar exclusão' : 'Excluir evento'}</button>}

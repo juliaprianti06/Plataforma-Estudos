@@ -19,13 +19,18 @@ type KanbanBoardProps = {
   tasks: DashboardTask[]
   searching: boolean
   onEdit?: (task: DashboardTask) => void
+  onMove?: (task: DashboardTask, status: TaskStatus) => void
+  busy?: boolean
 }
 
-function TaskCard({ task, onEdit }: { task: DashboardTask; onEdit?: (task: DashboardTask) => void }) {
+function TaskCard({ task, onEdit, onMove, busy }: { task: DashboardTask; onEdit?: (task: DashboardTask) => void; onMove?: KanbanBoardProps['onMove']; busy?: boolean }) {
   const completed = task.status === 'done'
+  const editable = 'canEdit' in task && task.canEdit === true
 
   return (
     <article
+      draggable={!!onMove && editable && !busy}
+      onDragStart={event => { event.dataTransfer.setData('text/plain', String(task.id)); event.dataTransfer.effectAllowed = 'move' }}
       className={cn(
         'rounded-lg border border-border bg-card px-3 py-2.5 shadow-xs shadow-primary/5 transition hover:-translate-y-0.5 hover:border-ring/50 hover:shadow-md',
         completed && 'bg-card/65',
@@ -61,11 +66,11 @@ function TaskCard({ task, onEdit }: { task: DashboardTask; onEdit?: (task: Dashb
           {'dueAt' in task && typeof task.dueAt === 'string' && <p className="mt-1 text-[9px] text-muted-foreground">Prazo: <time dateTime={task.dueAt}>{new Date(task.dueAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' })}</time></p>}
         </div>
       </div>
-      {onEdit && 'canEdit' in task && task.canEdit === true && <button type="button" className="mt-2 rounded text-xs font-semibold text-accent focus-visible:outline-ring" onClick={() => onEdit(task)}>Editar tarefa</button>}
+      {onEdit && editable && <button type="button" disabled={busy} className="mt-2 rounded text-xs font-semibold text-accent focus-visible:outline-ring" onClick={() => onEdit(task)}>Editar tarefa</button>}
     </article>
   )
 }
-export function KanbanBoard({ tasks, searching, onEdit }: KanbanBoardProps) {
+export function KanbanBoard({ tasks, searching, onEdit, onMove, busy }: KanbanBoardProps) {
   const [showAll, setShowAll] = useState(false)
 
   const groupedTasks = useMemo(
@@ -80,7 +85,7 @@ export function KanbanBoard({ tasks, searching, onEdit }: KanbanBoardProps) {
   const hasTasks = tasks.length > 0
 
   return (
-    <section aria-labelledby="kanban-title" className="flex min-h-0 flex-1 flex-col">
+    <section aria-labelledby="kanban-title" className="flex min-h-0 min-w-0 flex-1 flex-col">
       <div className="mb-2.5 flex items-center justify-between">
         <h2 id="kanban-title" className="text-[13px] font-bold text-primary">
           Kanban
@@ -106,6 +111,12 @@ export function KanbanBoard({ tasks, searching, onEdit }: KanbanBoardProps) {
 
               return (
                 <section
+                  onDragOver={event => { if (onMove && !busy) event.preventDefault() }}
+                  onDrop={event => {
+                    event.preventDefault()
+                    const task = tasks.find(task => String(task.id) === event.dataTransfer.getData('text/plain'))
+                    if (task && 'canEdit' in task && task.canEdit === true && !busy && task.status !== column.status) onMove?.(task, column.status)
+                  }}
                   aria-labelledby={`column-${column.status}`}
                   className="self-start rounded-xl bg-muted p-2.5"
                   key={column.status}
@@ -121,7 +132,7 @@ export function KanbanBoard({ tasks, searching, onEdit }: KanbanBoardProps) {
 
                   <div className="space-y-2">
                     {displayedTasks.map((task) => (
-                      <TaskCard key={task.id} task={task} onEdit={onEdit} />
+                      <TaskCard key={task.id} task={task} onEdit={onEdit} onMove={onMove} busy={busy} />
                     ))}
                     {displayedTasks.length === 0 && (
                       <div className="grid min-h-20 place-items-center rounded-lg border border-dashed border-border text-center text-[10px] text-muted-foreground">
