@@ -160,7 +160,7 @@ export function MateriaisPanel({
               <div className="hidden md:flex items-center justify-between py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b border-border/50 bg-muted/20 rounded-t-xl">
                 <div className="w-[30%]">Arquivo</div>
                 {!disciplinaId && <div className="w-[20%]">Disciplina</div>}
-                <div className={`${!disciplinaId ? 'w-[15%]' : 'w-[25%]'} text-center`}>Grupo/Tipo</div>
+                <div className={`${!disciplinaId ? 'w-[15%]' : 'w-[25%]'} text-center`}>Tipo</div>
                 <div className={`${!disciplinaId ? 'w-[15%]' : 'w-[20%]'} text-center`}>Data</div>
                 <div className={`${!disciplinaId ? 'w-[10%]' : 'w-[15%]'} text-center`}>Tamanho</div>
                 <div className="w-[10%] text-right pr-4">Ações</div>

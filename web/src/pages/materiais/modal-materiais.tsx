@@ -258,7 +258,7 @@ function ModalMateriaisForm({
             )}
             <div>
               <label className="block text-sm font-medium mb-1 text-foreground">
-                Tipo/Grupo (opcional)
+                Tipo(opcional)
               </label>
               <input
                 type="text"
