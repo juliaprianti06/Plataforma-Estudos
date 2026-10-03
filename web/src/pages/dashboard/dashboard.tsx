@@ -80,7 +80,7 @@ function DashboardContent({ session }: { session: AuthSession }) {
     const event = data?.events.find(event => event.id === item.eventId)
     if (task?.canEdit) setTaskDialog({ task })
     else if (event?.canEdit) setEventDialog({ event })
-    else if (item.groupId !== 'personal') void navigate({ to: '/groups' })
+    else if (item.groupId !== 'personal') void navigate({ to: '/groups/$groupId', params: { groupId: item.groupId } })
     if (!item.read) run(() => repository.readNotification(item.id))
     setNotificationsOpen(false)
   }
@@ -133,7 +133,7 @@ function DashboardContent({ session }: { session: AuthSession }) {
           {taskDialog && <TaskDialog task={taskDialog.task} groups={groups} disciplines={disciplines} onClose={() => setTaskDialog(null)} onSave={input => {
             const { groupId, ...fields } = input
             return mutate(() => taskDialog.task ? repository.updateTask(taskDialog.task.id, fields) : repository.createTask({ ...fields, groupId }))
-          }} />}
+          }} onDelete={() => mutate(() => repository.deleteTask(taskDialog.task!.id))} />}
           {eventDialog && <EventDialog groups={adminGroups} event={eventDialog.event ?? undefined} onClose={() => setEventDialog(null)} onSave={input => mutate(() => eventDialog.event ? repository.updateEvent(eventDialog.event.id, { title: input.title, startsAt: input.startsAt }) : repository.createEvent(input))} />}
 
         </div>

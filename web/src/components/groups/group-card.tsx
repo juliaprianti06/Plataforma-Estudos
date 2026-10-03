@@ -1,4 +1,4 @@
-import { Info, Pencil } from 'lucide-react'
+import { Info } from 'lucide-react'
 import type { StudyGroup } from '@/data/groups'
 import { cn } from '@/lib/utils'
 import { GroupIcon } from './group-icon'
@@ -27,15 +27,16 @@ export function GroupCard({ group, onOpen }: { group: StudyGroup; onOpen: (group
         </div>
         <button
           type="button"
-          aria-label={`${group.role === 'admin' ? 'Editar' : 'Ver detalhes de'} ${group.name}`}
-          title={group.role === 'admin' ? 'Editar grupo' : 'Ver detalhes do grupo'}
+          aria-label={`Abrir ${group.name}`}
+          title="Abrir grupo"
           className="-mr-1 grid size-7 shrink-0 place-items-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-primary focus-visible:outline-2 focus-visible:outline-ring"
           onClick={() => onOpen(group)}
         >
-          {group.role === 'admin' ? <Pencil className="size-3.5" /> : <Info className="size-3.5" />}
+          <Info className="size-3.5" />
         </button>
       </div>
       <p className="mb-3 mt-3 line-clamp-3 flex-1 text-[11px] leading-[1.5] text-muted-foreground">{group.description}</p>
+      {(group.private || group.archived) && <p className="mb-2 text-xs text-muted-foreground">{group.archived ? 'Arquivado' : 'Privado'}</p>}
       <div aria-hidden="true" className="mb-3 flex -space-x-2">
         {['bg-chart-2/40', 'bg-success/40', 'bg-accent/40', 'bg-warning/40'].slice(0, Math.min(4, group.members)).map((color) => (
           <span key={color} className={cn('size-5 rounded-full border-2 border-card', color)} />

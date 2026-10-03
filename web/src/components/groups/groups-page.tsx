@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Navigate } from '@tanstack/react-router'
+import { Navigate, useNavigate } from '@tanstack/react-router'
 import { Menu, Plus, Search, Users, X } from 'lucide-react'
 import { useAuth } from '@/auth/use-auth'
 import { matchesGroup, type GroupInput, type StudyGroup } from '@/data/groups'
@@ -19,6 +19,8 @@ export function GroupsPage() {
 
 function GroupsContent({ session }: { session: AuthSession }) {
   const { openMenu } = useLayout()
+  const navigate = useNavigate()
+  const [showArchived, setShowArchived] = useState(false)
   const [groups, setGroups] = useState<StudyGroup[]>([])
   const [query, setQuery] = useState('')
   const [message, setMessage] = useState('')
@@ -59,7 +61,7 @@ function GroupsContent({ session }: { session: AuthSession }) {
     setMessage('Grupo adicionado aos seus estudos.')
   }
 
-  const filtered = groups.filter((group) => matchesGroup(group, query))
+  const filtered = groups.filter((group) => matchesGroup(group, query) && (showArchived || !group.archived))
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="min-w-0">
@@ -83,12 +85,13 @@ function GroupsContent({ session }: { session: AuthSession }) {
               <Button disabled={loading} className="h-9 flex-1 rounded-full bg-primary px-4 text-[11px] sm:flex-none" onClick={() => setEditor('new')}>Criar grupo</Button>
             </div>
           </header>
+          {session.mode === 'api' && <label className="mb-4 flex items-center gap-2 text-xs text-muted-foreground"><input type="checkbox" checked={showArchived} onChange={e => setShowArchived(e.target.checked)} /> Mostrar grupos arquivados</label>}
           {error && <p role="alert" className="mb-4 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive-text">{error}</p>}
           {loading ? (
             <p role="status" className="py-16 text-center text-sm text-muted-foreground">Carregando seus grupos...</p>
           ) : filtered.length ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="Seus grupos de estudo">
-              {filtered.map((group) => <GroupCard key={group.id} group={group} onOpen={setEditor} />)}
+              {filtered.map((group) => <GroupCard key={group.id} group={group} onOpen={session.mode === 'api' ? group => { void navigate({ to: '/groups/$groupId', params: { groupId: group.id } }) } : setEditor} />)}
             </div>
           ) : (
             <div className="flex flex-col items-center rounded-2xl border border-dashed border-border bg-card/60 px-6 py-16 text-center">

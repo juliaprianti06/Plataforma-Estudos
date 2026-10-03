@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 
 from app.config import get_settings
 from app.core.error_handlers import registrar_handlers
@@ -14,6 +13,7 @@ from app.routers import (
     progresso_router,
     tarefa_router,
     tasks_router,
+    uploads_router,
 )
 
 app = FastAPI(title="Estudos Colaborativos API", version="1.0.0")
@@ -38,7 +38,7 @@ app.include_router(tarefa_router.router, prefix="/api/v1")
 app.include_router(material_router.router, prefix="/api/v1")
 app.include_router(progresso_router.router, prefix="/api/v1")
 
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+app.include_router(uploads_router.router, prefix="/uploads", tags=["Arquivos"])
 
 
 @app.get("/", tags=["Health"])

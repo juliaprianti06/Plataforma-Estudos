@@ -35,6 +35,7 @@ export function GroupDialog({ group, onClose, onSave }: GroupDialogProps) {
         description: String(data.get('description') ?? ''),
         category: String(data.get('category')) as GroupCategory,
         icon,
+        private: data.get('private') === 'on',
       }, group?.id, inviteCode)
       onClose()
     } catch (cause) {
@@ -88,6 +89,7 @@ export function GroupDialog({ group, onClose, onSave }: GroupDialogProps) {
                 <p className="text-[10px] text-muted-foreground">Entre 10 e 240 caracteres.</p>
               </div>
               <InviteCode code={inviteCode} draft={!group} />
+              <label className="flex items-center gap-2 text-sm"><input name="private" type="checkbox" defaultChecked={group?.private} /> Grupo privado (entrada apenas por convite)</label>
               {error && <p role="alert" className="text-xs text-destructive-text">{error}</p>}
               <div className="flex justify-end gap-2 pt-2">
                 <Button type="button" variant="outline" className="rounded-full px-4" onClick={onClose}>Cancelar</Button>

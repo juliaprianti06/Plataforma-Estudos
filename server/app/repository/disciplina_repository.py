@@ -1,5 +1,10 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import delete, select
 from app.models.disciplinas import Disciplina
+from app.models.material import Material
+from app.models.material_grupo import MaterialGrupo
+from app.models.tarefa import Tarefa
+from app.models.tarefa_responsavel import TarefaResponsavel
 
 class DisciplinaRepository:
     def __init__(self, db: Session):
@@ -23,6 +28,10 @@ class DisciplinaRepository:
 
    
     def deletar(self, disciplina: Disciplina):
+        material_ids = select(Material.id_material).where(Material.disciplina_id == disciplina.id)
+        task_ids = select(Tarefa.id).where(Tarefa.disciplina_id == disciplina.id)
+        self.db.execute(delete(MaterialGrupo).where(MaterialGrupo.id_material.in_(material_ids)))
+        self.db.execute(delete(TarefaResponsavel).where(TarefaResponsavel.id_tarefa.in_(task_ids)))
         self.db.delete(disciplina)
         self.db.flush()
         

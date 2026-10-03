@@ -8,12 +8,12 @@ export function createSessionRequest(session: AuthSession) {
     const current = sessionStore.getSnapshot()
     return current?.mode === 'api' && current.user.id === session.user.id && current.accessToken === session.accessToken
   }
-  return async function request<T>(method: 'get' | 'post' | 'put' | 'delete', url: string, data?: unknown): Promise<T> {
+  return async function request<T>(method: 'get' | 'post' | 'put' | 'delete', url: string, data?: unknown, responseType: 'json' | 'blob' = 'json'): Promise<T> {
     if (!matches()) throw new Error('Sua sess\u00e3o mudou. Entre novamente.')
     const controller = new AbortController()
     const unsubscribe = sessionStore.subscribe(() => { if (!matches()) controller.abort() })
     try {
-      const response = await api.request<T>({ method, url, data, signal: controller.signal })
+      const response = await api.request<T>({ method, url, data, responseType, signal: controller.signal })
       if (!matches()) throw new Error('Sua sess\u00e3o mudou. Entre novamente.')
       return response.data
     } catch (cause) {

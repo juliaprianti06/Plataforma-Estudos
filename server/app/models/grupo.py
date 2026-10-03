@@ -17,3 +17,4 @@ class Grupo(Base):
     codigo_convite = Column(String(6), nullable=False, unique=True, default=new_invite_code)
     privado = Column(Boolean, nullable=False, server_default=false(), default=False)
     arquivado = Column(Boolean, nullable=False, server_default=false(), default=False)
+    excluido_em = Column(DateTime(timezone=True), nullable=True)

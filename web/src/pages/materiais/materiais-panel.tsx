@@ -84,8 +84,8 @@ export function MateriaisPanel({
 
   const handleDownload = async (url_arquivo: string, titulo: string, content_type: string) => {
     try {
-      const response = await fetch(`${storageBaseUrl}${url_arquivo}`);
-      const blob = await response.blob();
+      const response = await api.get<Blob>(`${storageBaseUrl}${url_arquivo}`, { responseType: 'blob' });
+      const blob = response.data;
       const blobUrl = window.URL.createObjectURL(blob);
       
       let ext = url_arquivo.split('.').pop() || '';

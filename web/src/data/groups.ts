@@ -12,9 +12,10 @@ export type StudyGroup = {
   icon: GroupIcon
   members: number
   role: 'admin' | 'member'
+  private?: boolean
   archived?: boolean
 }
-export type GroupInput = Pick<StudyGroup, 'name' | 'category' | 'description' | 'icon'>
+export type GroupInput = Pick<StudyGroup, 'name' | 'category' | 'description' | 'icon' | 'private'>
 
 export const initialGroups: StudyGroup[] = [
   { id: 'react', inviteCode: 'REACT8', name: 'React Avançado', category: 'Programação', description: 'Estudos aprofundados sobre hooks, context API e padrões de projeto em React.', icon: 'react', members: 8, role: 'admin' },
