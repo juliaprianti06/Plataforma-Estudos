@@ -55,6 +55,11 @@ export function createDashboardRepository(session: AuthSession) {
         ...(data.notificationItems !== undefined ? { notificationItems: data.notificationItems as DashboardNotification[] } : {}),
         summary: { total: Number(summary.total), completed: Number(summary.completed), progress: Number(summary.progress), activeTask: summary.activeTask === null ? null : parseTask(summary.activeTask) } }
     },
+    async calendarTasks(): Promise<ApiTask[]> {
+      const data = await request('get', '/calendar/tasks')
+      if (!Array.isArray(data)) invalid()
+      return data.map(parseTask)
+    },
     createTask: async (input: TaskInput & { groupId: string | null }) => parseTask(await request('post', '/tasks', input)),
     updateTask: async (id: number, input: TaskInput) => parseTask(await request('put', `/tasks/${id}`, input)),
     deleteTask: async (id: number) => { await request('delete', `/tasks/${id}`) },
