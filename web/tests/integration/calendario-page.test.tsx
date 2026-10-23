@@ -3,14 +3,14 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import Calendario from '@/pages/calendario'
 
-const { calendarTasks } = vi.hoisted(() => ({ calendarTasks: vi.fn() }))
+const { calendarTasks, calendarEvents } = vi.hoisted(() => ({ calendarTasks: vi.fn(), calendarEvents: vi.fn() }))
 
 vi.mock('@/auth/use-auth', () => ({
   useAuth: () => ({ user: { id: '1', name: 'Julia', email: 'julia@example.com' }, accessToken: 'token', expiresAt: Date.now() + 60_000, mode: 'api' }),
 }))
 
 vi.mock('@/dashboard/api-repository', () => ({
-  createDashboardRepository: () => ({ calendarTasks }),
+  createDashboardRepository: () => ({ calendarTasks, calendarEvents }),
 }))
 
 function taskForDay(day: number) {
@@ -25,6 +25,7 @@ function taskForDay(day: number) {
 describe('calendar page', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    calendarEvents.mockResolvedValue([])
   })
 
   test('loads tasks, navigates between months, and selects a date', async () => {

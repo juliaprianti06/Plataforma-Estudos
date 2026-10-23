@@ -8,7 +8,7 @@ export type TaskInput = {
 }
 export type ApiTask = DashboardTask & TaskInput & { groupId: string; groupName: string; canEdit: boolean }
 export type ApiEvent = { id: string; title: string; startsAt: string; groupId: string; groupName: string; canEdit: boolean }
-export type EventInput = Pick<ApiEvent, 'title' | 'startsAt' | 'groupId'>
+export type EventInput = { title: string; startsAt: string; groupId: string | null }
 export type StudySummary = { total: number; completed: number; progress: number; activeTask: ApiTask | null }
 export type DashboardNotification = { id: string; message: string; read: boolean; groupId: string; taskId: number | null; eventId: string | null }
 export type DashboardData = { tasks: ApiTask[]; events: ApiEvent[]; notifications: string[]; notificationItems?: DashboardNotification[]; summary: StudySummary }
@@ -59,6 +59,11 @@ export function createDashboardRepository(session: AuthSession) {
       const data = await request('get', '/calendar/tasks')
       if (!Array.isArray(data)) invalid()
       return data.map(parseTask)
+    },
+    async calendarEvents(): Promise<ApiEvent[]> {
+      const data = await request('get', '/events')
+      if (!Array.isArray(data)) invalid()
+      return data.map(parseEvent)
     },
     createTask: async (input: TaskInput & { groupId: string | null }) => parseTask(await request('post', '/tasks', input)),
     updateTask: async (id: number, input: TaskInput) => parseTask(await request('put', `/tasks/${id}`, input)),

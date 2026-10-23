@@ -142,6 +142,28 @@ def test_events_dashboard_progress_and_preferences(client):
     assert client.get("/api/v1/events", headers=owner).json() == []
 
 
+def test_personal_event_is_visible_only_to_its_owner(client):
+    owner = account(client, "personal-event-owner@example.com")
+    stranger = account(client, "personal-event-stranger@example.com")
+    starts_at = (datetime.now(timezone.utc) + timedelta(days=3)).isoformat()
+
+    created = client.post("/api/v1/events", headers=owner, json={
+        "title": "Revisão individual", "startsAt": starts_at,
+    })
+    assert created.status_code == 201, created.text
+    event = created.json()
+    assert event["groupId"] == "personal" and event["groupName"] == "Eventos pessoais"
+    assert [item["id"] for item in client.get("/api/v1/events", headers=owner).json()] == [event["id"]]
+    assert client.get("/api/v1/events", headers=stranger).json() == []
+
+    updated = client.put(f"/api/v1/events/{event['id']}", headers=owner, json={
+        "title": "Revisão atualizada", "startsAt": starts_at,
+    })
+    assert updated.status_code == 200 and updated.json()["title"] == "Revisão atualizada"
+    assert client.delete(f"/api/v1/events/{event['id']}", headers=stranger).status_code == 404
+    assert client.delete(f"/api/v1/events/{event['id']}", headers=owner).status_code == 204
+
+
 @pytest.mark.parametrize("path", ["tasks", "calendar/tasks", "events", "dashboard"])
 def test_requires_authentication(client, path):
     assert client.get("/api/v1/" + path).status_code == 401
