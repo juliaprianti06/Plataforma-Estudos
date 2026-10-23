@@ -6,6 +6,7 @@ import { useLayout } from '@/components/layout/layout-context'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
+import ConfirmDialog from '@/components/ui/confirm-dialog'
 
 const weekdays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
 const monthFormatter = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' })
@@ -28,9 +29,13 @@ function taskColor(task: ApiTask) {
   return 'bg-indigo-500'
 }
 
-function PersonalEventDialog({ onSave, onClose }: { onSave: (title: string, startsAt: string) => Promise<void>; onClose: () => void }) {
-  const [title, setTitle] = useState('')
+function PersonalEventDialog({ event, onSave, onClose }: { event?: ApiEvent; onSave: (title: string, startsAt: string) => Promise<void>; onClose: () => void }) {
+  const [title, setTitle] = useState(event?.title ?? '')
   const [startsAt, setStartsAt] = useState(() => {
+    if (event) {
+      const date = new Date(event.startsAt)
+      return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+    }
     const date = new Date(Date.now() + 60 * 60 * 1000)
     date.setMinutes(0, 0, 0)
     return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
@@ -40,7 +45,7 @@ function PersonalEventDialog({ onSave, onClose }: { onSave: (title: string, star
   const field = 'mt-1 w-full rounded-md border border-border bg-background p-2 text-foreground focus:outline-ring'
 
   return <Dialog open onOpenChange={open => { if (!open && !busy) onClose() }}><DialogContent showCloseButton={!busy}>
-    <DialogTitle>Novo evento pessoal</DialogTitle>
+    <DialogTitle>{event ? 'Editar evento pessoal' : 'Novo evento pessoal'}</DialogTitle>
     <DialogDescription>Adicione um compromisso que ficará visível somente para você.</DialogDescription>
     <form onSubmit={async event => {
       event.preventDefault(); setError('')
@@ -54,7 +59,7 @@ function PersonalEventDialog({ onSave, onClose }: { onSave: (title: string, star
         <label className="block">Título<input className={field} value={title} onChange={event => setTitle(event.target.value)} minLength={3} maxLength={150} required /></label>
         <label className="block">Data e horário<input className={field} type="datetime-local" value={startsAt} onChange={event => setStartsAt(event.target.value)} required /></label>
         {error && <p role="alert" className="text-destructive">{error}</p>}
-        <div className="flex justify-end gap-2"><Button type="button" variant="outline" onClick={onClose}>Cancelar</Button><Button type="submit" disabled={title.trim().length < 3}>{busy ? 'Salvando...' : 'Criar evento'}</Button></div>
+        <div className="flex justify-end gap-2"><Button type="button" variant="outline" onClick={onClose}>Cancelar</Button><Button type="submit" disabled={title.trim().length < 3}>{busy ? 'Salvando...' : event ? 'Salvar alterações' : 'Criar evento'}</Button></div>
       </fieldset>
     </form>
   </DialogContent></Dialog>
@@ -71,7 +76,10 @@ export default function Calendario() {
   const [loading, setLoading] = useState(Boolean(repository))
   const [error, setError] = useState('')
   const [refresh, setRefresh] = useState(0)
-  const [newEventOpen, setNewEventOpen] = useState(false)
+  const [editingEvent, setEditingEvent] = useState<ApiEvent | null | undefined>(undefined)
+  const [deleteEventTarget, setDeleteEventTarget] = useState<ApiEvent | null>(null)
+  const [deletingEvent, setDeletingEvent] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
 
   useEffect(() => {
     if (!repository) return
@@ -103,7 +111,7 @@ export default function Calendario() {
           <div><h1 className="text-2xl font-semibold tracking-tight">Calendário</h1><p className="text-sm text-muted-foreground">Organize suas tarefas e compromissos acadêmicos</p></div>
         </div>
         <div className="flex items-center gap-2">
-          <Button onClick={() => setNewEventOpen(true)}>Novo evento pessoal</Button>
+          <Button onClick={() => setEditingEvent(null)}>Novo evento pessoal</Button>
           <Button aria-label="Mês anterior" onClick={() => changeMonth(-1)} size="icon" variant="outline"><ChevronLeft aria-hidden="true" /></Button>
           <span className="min-w-36 text-center text-sm font-semibold capitalize">{monthFormatter.format(month)}</span>
           <Button aria-label="Próximo mês" onClick={() => changeMonth(1)} size="icon" variant="outline"><ChevronRight aria-hidden="true" /></Button>
@@ -124,12 +132,29 @@ export default function Calendario() {
           })}</div>}
       </CardContent></Card>
       <section aria-live="polite" className="mt-5"><h2 className="text-base font-semibold">Atividades em {dateFormatter.format(new Date(`${selectedDate}T12:00:00`))}</h2>
-        {selectedTasks.length === 0 && selectedEvents.length === 0 ? <p className="mt-2 text-sm text-muted-foreground">Nenhuma atividade nesta data.</p> : <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{selectedTasks.map(task => <Card key={task.id}><CardContent className="p-4"><p className="font-medium">{task.title}</p><p className="mt-1 text-sm text-muted-foreground">{task.groupName}</p></CardContent></Card>)}{selectedEvents.map(event => <Card key={`event-card-${event.id}`}><CardContent className="p-4"><p className="font-medium">{event.title}</p><p className="mt-1 text-sm text-muted-foreground">{event.groupId === 'personal' ? 'Evento pessoal' : event.groupName}</p></CardContent></Card>)}</div>}
+        {selectedTasks.length === 0 && selectedEvents.length === 0 ? <p className="mt-2 text-sm text-muted-foreground">Nenhuma atividade nesta data.</p> : <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{selectedTasks.map(task => <Card key={task.id}><CardContent className="p-4"><p className="font-medium">{task.title}</p><p className="mt-1 text-sm text-muted-foreground">{task.groupName}</p></CardContent></Card>)}{selectedEvents.map(event => <Card key={`event-card-${event.id}`}><CardContent className="p-4"><p className="font-medium">{event.title}</p><p className="mt-1 text-sm text-muted-foreground">{event.groupId === 'personal' ? 'Evento pessoal' : event.groupName}</p>{event.groupId === 'personal' && <div className="mt-3 flex gap-2"><Button onClick={() => setEditingEvent(event)} size="sm" variant="outline">Editar</Button><Button onClick={() => { setDeleteError(''); setDeleteEventTarget(event) }} size="sm" variant="destructive">Excluir</Button></div>}</CardContent></Card>)}</div>}
       </section>
-      {newEventOpen && repository && <PersonalEventDialog onClose={() => setNewEventOpen(false)} onSave={async (title, startsAt) => {
-        await repository.createEvent({ title, startsAt, groupId: null })
+      {editingEvent !== undefined && repository && <PersonalEventDialog event={editingEvent ?? undefined} onClose={() => setEditingEvent(undefined)} onSave={async (title, startsAt) => {
+        if (editingEvent) await repository.updateEvent(editingEvent.id, { title, startsAt })
+        else await repository.createEvent({ title, startsAt, groupId: null })
         setRefresh(value => value + 1)
       }} />}
+      <ConfirmDialog
+        isOpen={deleteEventTarget !== null}
+        onClose={() => { if (!deletingEvent) setDeleteEventTarget(null) }}
+        onConfirm={() => {
+          if (!deleteEventTarget || !repository) return
+          setDeletingEvent(true)
+          void repository.deleteEvent(deleteEventTarget.id).then(() => {
+            setDeleteEventTarget(null)
+            setRefresh(value => value + 1)
+          }).catch(cause => setDeleteError(cause instanceof Error ? cause.message : 'Não foi possível excluir o evento.')).finally(() => setDeletingEvent(false))
+        }}
+        title="Excluir evento pessoal?"
+        description="Este evento será removido da sua agenda e essa ação não pode ser desfeita."
+        isLoading={deletingEvent}
+        error={deleteError}
+      />
     </div>
   )
 }

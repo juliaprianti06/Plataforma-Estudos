@@ -160,6 +160,9 @@ def test_personal_event_is_visible_only_to_its_owner(client):
         "title": "Revisão atualizada", "startsAt": starts_at,
     })
     assert updated.status_code == 200 and updated.json()["title"] == "Revisão atualizada"
+    assert client.put(f"/api/v1/events/{event['id']}", headers=stranger, json={
+        "title": "Alteração indevida", "startsAt": starts_at,
+    }).status_code == 404
     assert client.delete(f"/api/v1/events/{event['id']}", headers=stranger).status_code == 404
     assert client.delete(f"/api/v1/events/{event['id']}", headers=owner).status_code == 204
 
@@ -211,7 +214,7 @@ def test_calendar_tasks_returns_personal_and_responsible_group_tasks_only(client
         json={"userIds": [member_id]},
     )
     assert assigned.status_code == 204
-    assert client.get("/api/v1/calendar/tasks", headers=owner).json() == []
+    assert [item["id"] for item in client.get("/api/v1/calendar/tasks", headers=owner).json()] == [personal.id]
     assert [item["id"] for item in client.get("/api/v1/calendar/tasks", headers=member).json()] == [group_task["id"]]
 
 
