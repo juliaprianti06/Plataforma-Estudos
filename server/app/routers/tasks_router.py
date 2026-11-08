@@ -12,6 +12,12 @@ def list_tasks(db: Database, auth: CurrentAuth, response: Response, groupId: int
     return tasks_service.list_tasks(db, auth.user.id_usuario, groupId)
 
 
+@router.get("/calendar/tasks", response_model=list[TaskResponse])
+def list_calendar_tasks(db: Database, auth: CurrentAuth, response: Response):
+    response.headers["Cache-Control"] = "no-store"
+    return tasks_service.list_calendar_tasks(db, auth.user.id_usuario)
+
+
 @router.post("/tasks", response_model=TaskResponse, status_code=201)
 def create_task(data: TaskCreate, db: Database, auth: CurrentAuth):
     return tasks_service.create(db, auth.user.id_usuario, data)

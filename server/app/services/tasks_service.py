@@ -81,6 +81,10 @@ def list_tasks(db, user_id, group_id=None):
     return [response(db, task, user_id) for task in DashboardRepository(db).visible_tasks(user_id, group_id)]
 
 
+def list_calendar_tasks(db, user_id):
+    return [response(db, task, user_id) for task in DashboardRepository(db).calendar_tasks(user_id)]
+
+
 def create(db, user_id, data):
     if data.groupId is not None:
         require_member(db, data.groupId, user_id, write=True)

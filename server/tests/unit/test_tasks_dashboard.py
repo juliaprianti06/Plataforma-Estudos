@@ -142,9 +142,80 @@ def test_events_dashboard_progress_and_preferences(client):
     assert client.get("/api/v1/events", headers=owner).json() == []
 
 
-@pytest.mark.parametrize("path", ["tasks", "events", "dashboard"])
+def test_personal_event_is_visible_only_to_its_owner(client):
+    owner = account(client, "personal-event-owner@example.com")
+    stranger = account(client, "personal-event-stranger@example.com")
+    starts_at = (datetime.now(timezone.utc) + timedelta(days=3)).isoformat()
+
+    created = client.post("/api/v1/events", headers=owner, json={
+        "title": "Revisão individual", "startsAt": starts_at,
+    })
+    assert created.status_code == 201, created.text
+    event = created.json()
+    assert event["groupId"] == "personal" and event["groupName"] == "Eventos pessoais"
+    assert [item["id"] for item in client.get("/api/v1/events", headers=owner).json()] == [event["id"]]
+    assert client.get("/api/v1/events", headers=stranger).json() == []
+
+    updated = client.put(f"/api/v1/events/{event['id']}", headers=owner, json={
+        "title": "Revisão atualizada", "startsAt": starts_at,
+    })
+    assert updated.status_code == 200 and updated.json()["title"] == "Revisão atualizada"
+    assert client.put(f"/api/v1/events/{event['id']}", headers=stranger, json={
+        "title": "Alteração indevida", "startsAt": starts_at,
+    }).status_code == 404
+    assert client.delete(f"/api/v1/events/{event['id']}", headers=stranger).status_code == 404
+    assert client.delete(f"/api/v1/events/{event['id']}", headers=owner).status_code == 204
+
+
+@pytest.mark.parametrize("path", ["tasks", "calendar/tasks", "events", "dashboard"])
 def test_requires_authentication(client, path):
     assert client.get("/api/v1/" + path).status_code == 401
+
+
+def test_calendar_tasks_returns_personal_and_responsible_group_tasks_only(client, db):
+    from app.models.disciplinas import Disciplina
+    from app.models.usuario import Usuario
+
+    owner, member, _, group = setup_group(client)
+    owner_user = db.scalar(select(Usuario).where(Usuario.email == "owner@example.com"))
+    discipline = Disciplina(nome="Python", usuario_id=owner_user.id_usuario)
+    db.add(discipline)
+    db.flush()
+    personal = Tarefa(
+        nome="Revisar conteúdo", prioridade="alta", status="a_fazer",
+        disciplina_id=discipline.id, usuario_id=owner_user.id_usuario,
+        data_prazo=datetime.now(timezone.utc) + timedelta(days=1),
+    )
+    db.add(personal)
+    db.commit()
+
+    group_task = client.post("/api/v1/tasks", headers=owner, json={
+        "groupId": group["id"], "title": "Trabalho do grupo",
+        "dueAt": (datetime.now(timezone.utc) + timedelta(days=2)).isoformat(),
+    }).json()
+    without_deadline = client.post("/api/v1/tasks", headers=owner, json={
+        "groupId": group["id"], "title": "Sem prazo",
+    }).json()
+
+    owner_calendar = client.get("/api/v1/calendar/tasks", headers=owner)
+    assert owner_calendar.status_code == 200, owner_calendar.text
+    assert {item["id"] for item in owner_calendar.json()} == {personal.id, group_task["id"]}
+    assert without_deadline["id"] not in {item["id"] for item in owner_calendar.json()}
+
+    member_calendar = client.get("/api/v1/calendar/tasks", headers=member)
+    assert member_calendar.status_code == 200
+    assert member_calendar.json() == []
+
+    members = client.get(f"/api/v1/groups/{group['id']}/members", headers=owner).json()
+    member_id = next(item["id"] for item in members if item["email"] == "member@example.com")
+    assigned = client.put(
+        f"/api/v1/groups/{group['id']}/tasks/{group_task['id']}/responsibilities",
+        headers=owner,
+        json={"userIds": [member_id]},
+    )
+    assert assigned.status_code == 204
+    assert [item["id"] for item in client.get("/api/v1/calendar/tasks", headers=owner).json()] == [personal.id]
+    assert [item["id"] for item in client.get("/api/v1/calendar/tasks", headers=member).json()] == [group_task["id"]]
 
 
 def test_dashboard_reads_current_personal_tasks_and_updates_progress(client, db):
