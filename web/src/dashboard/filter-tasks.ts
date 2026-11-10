@@ -2,6 +2,10 @@ import type { DashboardTask } from '../data/dashboard.ts'
 
 export type TaskFilters = { query: string; group: string; discipline: string; priority: string; status: string; overdue: boolean; sort: 'due' | 'priority' | 'recent' }
 export const defaultTaskFilters: TaskFilters = { query: '', group: '', discipline: '', priority: '', status: '', overdue: false, sort: 'due' }
+export function hasActiveFilters(filters: TaskFilters) {
+  return filters.group !== '' || filters.discipline !== '' || filters.priority !== '' || filters.overdue || filters.sort !== defaultTaskFilters.sort
+}
+
 function due(task: DashboardTask) {
   return 'dueAt' in task && typeof task.dueAt === 'string' ? Date.parse(task.dueAt) : Infinity
 }
