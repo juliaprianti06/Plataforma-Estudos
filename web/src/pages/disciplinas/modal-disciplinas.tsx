@@ -25,6 +25,7 @@ function DisciplinaModalForm({
   const [descricao, setDescricao] = useState(disciplina?.descricao ?? '');
   const [corSelecionada, setCorSelecionada] = useState(disciplina?.cor || 'bg-accent');
   const [isSubmitting, setIsSubmitting] = useState(false); 
+  const [erro, setErro] = useState('');
 
   const cores = [
     'bg-accent',
@@ -39,6 +40,7 @@ function DisciplinaModalForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); 
     setIsSubmitting(true);
+    setErro('');
 
     try {
       const payload = {
@@ -60,7 +62,7 @@ function DisciplinaModalForm({
       
     } catch (error) {
       console.error("Erro ao salvar disciplina:", error);
-      alert("Houve um erro ao salvar a disciplina. Tente novamente.");
+      setErro('Não foi possível salvar a disciplina. Confira os dados e tente novamente.');
     } finally {
       setIsSubmitting(false);
     }
@@ -140,6 +142,7 @@ function DisciplinaModalForm({
               ))}
             </div>
           </div>
+          {erro && <p role="alert" className="text-sm text-destructive">{erro}</p>}
           <div className="flex items-center justify-end gap-6 pt-6">
             <button
               type="button"
