@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { Check, Circle } from 'lucide-react'
 
 import type { DashboardTask, TaskPriority, TaskStatus } from '@/data/dashboard'
@@ -18,6 +18,9 @@ const priorityClasses: Record<TaskPriority, string> = {
 type KanbanBoardProps = {
   tasks: DashboardTask[]
   searching: boolean
+  toolbar?: ReactNode
+  expanded?: boolean
+  emptyHint?: string
   onEdit?: (task: DashboardTask) => void
   onMove?: (task: DashboardTask, status: TaskStatus) => void
   busy?: boolean
@@ -70,7 +73,7 @@ function TaskCard({ task, onEdit, onMove, busy }: { task: DashboardTask; onEdit?
     </article>
   )
 }
-export function KanbanBoard({ tasks, searching, onEdit, onMove, busy }: KanbanBoardProps) {
+export function KanbanBoard({ tasks, searching, toolbar, expanded = false, emptyHint, onEdit, onMove, busy }: KanbanBoardProps) {
   const [showAll, setShowAll] = useState(false)
 
   const groupedTasks = useMemo(
@@ -90,7 +93,7 @@ export function KanbanBoard({ tasks, searching, onEdit, onMove, busy }: KanbanBo
         <h2 id="kanban-title" className="text-[13px] font-bold text-primary">
           Kanban
         </h2>
-        {!searching && (
+        {!searching && !expanded && (
           <button
             aria-expanded={showAll}
             className="rounded text-[10px] font-bold text-accent transition hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
@@ -101,12 +104,13 @@ export function KanbanBoard({ tasks, searching, onEdit, onMove, busy }: KanbanBo
           </button>
         )}
       </div>
+      {toolbar}
 
       <div className="min-h-[400px] flex-1 overflow-x-auto rounded-xl border border-border bg-card p-3 shadow-sm shadow-primary/5 sm:p-4">
         {hasTasks ? (
           <div className="grid min-w-[570px] grid-cols-3 gap-3">
             {groupedTasks.map((column) => {
-              const displayedTasks = showAll || searching ? column.tasks : column.tasks.slice(0, 2)
+              const displayedTasks = showAll || searching || expanded ? column.tasks : column.tasks.slice(0, 2)
               const hiddenCount = column.tasks.length - displayedTasks.length
 
               return (
@@ -155,7 +159,7 @@ export function KanbanBoard({ tasks, searching, onEdit, onMove, busy }: KanbanBo
             <div>
               <Circle aria-hidden="true" className="mx-auto mb-3 size-8 text-muted-foreground" />
               <p className="text-sm font-semibold text-foreground">Nenhuma tarefa encontrada</p>
-              <p className="mt-1 text-xs text-muted-foreground">{searching ? 'Tente buscar usando outro termo.' : 'Crie uma tarefa em um dos seus grupos para começar.'}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{searching ? 'Tente outro termo de busca ou limpe os filtros.' : emptyHint ?? 'Crie uma tarefa em um dos seus grupos para começar.'}</p>
             </div>
           </div>
         )}

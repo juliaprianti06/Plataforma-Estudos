@@ -7,11 +7,12 @@ import type { AuthSession } from '@/auth/types'
 import type { StudyGroup } from '@/data/groups'
 import { createApiGroupsRepository } from '@/groups/api-repository'
 import { createDashboardRepository, type ApiTask, type ApiEvent, type DashboardData, type DashboardNotification } from '@/dashboard/api-repository'
-import { defaultTaskFilters, filterTasks } from '@/dashboard/filter-tasks'
+import { defaultTaskFilters, filterTasks, hasActiveFilters, type TaskFilters } from '@/dashboard/filter-tasks'
 import type { DashboardTask, TaskStatus } from '@/data/dashboard'
 import { Button } from '@/components/ui/button'
 import { TaskDialog } from './task-dialog'
 import { EventDialog } from './event-dialog'
+import { TaskFiltersBar } from './task-filters'
 
 import { DashboardHeader } from './dashboard-header'
 import { KanbanBoard } from './kanban-board'
@@ -88,11 +89,19 @@ function DashboardContent({ session }: { session: AuthSession }) {
   const { openMenu } = useLayout()
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [query, setQuery] = useState('')
+  const [filters, setFilters] = useState<TaskFilters>(defaultTaskFilters)
 
   const filteredTasks = useMemo(() => {
     const availableTasks = remote ? (data?.tasks ?? []) : tasks
-    return filterTasks(availableTasks, { ...defaultTaskFilters, query })
-  }, [query, remote, data])
+    return filterTasks(availableTasks, { ...filters, query })
+  }, [query, filters, remote, data])
+  const groupOptions = useMemo(() => {
+    const options = new Map<string, string>()
+    for (const task of data?.tasks ?? []) if (task.groupId !== 'personal') options.set(task.groupId, task.groupName)
+    return [...options].map(([value, label]) => ({ value, label })).sort((a, b) => a.label.localeCompare(b.label, 'pt-BR'))
+  }, [data])
+  const disciplineOptions = useMemo(() => disciplines.map(discipline => ({ value: String(discipline.id), label: discipline.nome })), [disciplines])
+  const filtering = query.trim().length > 0 || hasActiveFilters(filters)
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -113,7 +122,7 @@ function DashboardContent({ session }: { session: AuthSession }) {
           {error && <div role="alert" className="mt-4 rounded-lg border border-border bg-card p-4 text-sm text-destructive">{error} <Button variant="outline" onClick={refresh}>Tentar novamente</Button></div>}
           {remote && loading ? <p role="status" className="mt-5 text-sm text-muted-foreground">Carregando seus estudos...</p> : (!remote || (data && !error)) && (
             <div className="mt-5 grid min-h-0 flex-1 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
-              <KanbanBoard searching={query.trim().length > 0} tasks={filteredTasks} busy={busy} onMove={remote ? (task, status) => { void move(task, status) } : undefined} onEdit={remote ? task => {
+              <KanbanBoard searching={filtering} toolbar={remote ? <TaskFiltersBar filters={filters} groups={groupOptions} disciplines={disciplineOptions} onChange={setFilters} /> : undefined} tasks={filteredTasks} busy={busy} onMove={remote ? (task, status) => { void move(task, status) } : undefined} onEdit={remote ? task => {
                 const selected = data?.tasks.find(item => item.id === task.id)
                 if (selected?.canEdit && !busy) setTaskDialog(selected)
               } : undefined} />

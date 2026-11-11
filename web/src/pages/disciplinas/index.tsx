@@ -23,6 +23,10 @@ export default function Disciplinas() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [disciplinaParaExcluir, setDisciplinaParaExcluir] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+  const [materiaisParaExcluir, setMateriaisParaExcluir] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [busca, setBusca] = useState('');
   const [disciplinaSelecionada, setDisciplinaSelecionada] = useState<Disciplina | null>(null);
   const [progressoMap, setProgressoMap] = useState<Record<number, { total: number; concluidas: number }>>({});
@@ -59,29 +63,58 @@ export default function Disciplinas() {
     api.get<Disciplina[]>('/disciplinas/').then((response) => {
       if (!active) return;
       setDisciplinas(response.data);
+      setLoadError('');
       void carregarProgresso(response.data);
-    }).catch((error) => { if (active) console.error('Erro ao buscar disciplinas:', error); });
+    }).catch((error) => {
+      if (!active) return;
+      console.error('Erro ao buscar disciplinas:', error);
+      setLoadError('Não foi possível carregar suas disciplinas.');
+    }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [refresh, carregarProgresso]);
 
   const handleAbrirConfirmExcluir = (id: number) => {
     setDisciplinaParaExcluir(id);
+    setDeleteError('');
+    setMateriaisParaExcluir(null);
     setConfirmOpen(true);
+    api.get<unknown[]>('/materiais/', { params: { disciplina_id: id } })
+      .then((response) => setMateriaisParaExcluir(Array.isArray(response.data) ? response.data.length : null))
+      .catch(() => setMateriaisParaExcluir(null));
   };
+
+  const handleFecharConfirmExcluir = () => {
+    if (isDeleting) return;
+    setConfirmOpen(false);
+    setDisciplinaParaExcluir(null);
+    setDeleteError('');
+  };
+
+  const disciplinaExcluida = disciplinas.find((d) => d.id === disciplinaParaExcluir);
+  const tarefasParaExcluir = disciplinaParaExcluir === null ? 0 : progressoMap[disciplinaParaExcluir]?.total ?? 0;
+  const descricaoExclusao = [
+    `A disciplina ${disciplinaExcluida?.nome ?? ''} será excluída junto com`,
+    `${tarefasParaExcluir} ${tarefasParaExcluir === 1 ? 'tarefa' : 'tarefas'}`,
+    materiaisParaExcluir === null ? 'e todos os materiais enviados nela.' : `e ${materiaisParaExcluir} ${materiaisParaExcluir === 1 ? 'material enviado' : 'materiais enviados'}.`,
+    materiaisParaExcluir === 0 ? '' : 'Os materiais também deixam de aparecer nos grupos em que foram compartilhados.',
+    'Essa ação não pode ser desfeita.',
+  ].filter(Boolean).join(' ');
 
   const handleExcluir = async () => {
     if (disciplinaParaExcluir === null) return;
     setIsDeleting(true);
+    setDeleteError('');
     try {
       await api.delete(`/disciplinas/${disciplinaParaExcluir}`);
       if (disciplinaSelecionada?.id === disciplinaParaExcluir) setDisciplinaSelecionada(null);
       carregarDisciplinas();
-    } catch (error) {
-      console.error('Erro ao excluir:', error);
-    } finally {
-      setIsDeleting(false);
       setConfirmOpen(false);
       setDisciplinaParaExcluir(null);
+    } catch (error) {
+      console.error('Erro ao excluir:', error);
+      setDeleteError('Não foi possível excluir a disciplina. Tente novamente.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -136,6 +169,20 @@ export default function Disciplinas() {
           </div>
         </header>
 
+        {loadError && (
+          <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+            {loadError}
+            <button type="button" onClick={() => { setLoading(true); carregarDisciplinas(); }} className="rounded-full border border-border bg-card px-4 py-1.5 text-xs font-semibold text-primary hover:bg-muted cursor-pointer">Tentar novamente</button>
+          </div>
+        )}
+        {loading && <p role="status" className="text-sm text-muted-foreground">Carregando disciplinas...</p>}
+        {!loading && !loadError && disciplinasFiltradas.length === 0 && (
+          <div className="rounded-xl border border-dashed border-border bg-card/60 px-6 py-12 text-center">
+            <p className="text-sm font-semibold text-primary">{busca ? 'Nenhuma disciplina encontrada' : 'Nenhuma disciplina cadastrada'}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{busca ? 'Tente buscar por outro nome.' : 'Crie uma disciplina para organizar suas tarefas e materiais.'}</p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {disciplinasFiltradas.map((disc) => (
             <div 
@@ -158,12 +205,16 @@ export default function Disciplinas() {
                 <div className={`flex items-center gap-2`}>
                   <div className={`flex gap-2 text-muted-foreground transition-opacity`}>
                     <button 
+                      type="button"
+                      aria-label={`Editar ${disc.nome}`}
                       onClick={(e) => { e.stopPropagation(); handleEditarDisciplina(disc); }} 
                       className="hover:text-primary transition-colors cursor-pointer"
                     >
                       <Pencil className="w-4 h-4" />
                     </button>
                     <button 
+                      type="button"
+                      aria-label={`Excluir ${disc.nome}`}
                       onClick={(e) => { e.stopPropagation(); handleAbrirConfirmExcluir(disc.id); }} 
                       className="hover:text-destructive transition-colors cursor-pointer"
                     >
@@ -243,11 +294,13 @@ export default function Disciplinas() {
       />
       <ConfirmDialog
         isOpen={confirmOpen}
-        onClose={() => setConfirmOpen(false)}
+        onClose={handleFecharConfirmExcluir}
         onConfirm={handleExcluir}
-        title="Excluir disciplina"
-        description="Deseja realmente excluir essa disciplina? Essa ação não pode ser desfeita."
+        title="Excluir disciplina?"
+        description={descricaoExclusao}
+        confirmLabel="Excluir tudo"
         isLoading={isDeleting}
+        error={deleteError}
       />
     </div>
   );
