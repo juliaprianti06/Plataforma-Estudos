@@ -21,7 +21,7 @@ class CriarTarefaCommand(BaseCommand):
             raise HTTPException(status_code=404, detail="Disciplina não encontrada")
         agora = datetime.now(timezone.utc)
         nova_tarefa = Tarefa(
-            id_coluna=self.tarefa_data.id_coluna,
+            id_coluna=None,
             nome=self.tarefa_data.nome,
             prioridade=self.tarefa_data.prioridade,
             data_vencimento=self.tarefa_data.data_vencimento,
