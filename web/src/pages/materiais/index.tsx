@@ -3,7 +3,8 @@ import { Search, Plus, Menu, ChevronDown } from 'lucide-react';
 import { useLayout } from '../../components/layout/layout-context';
 import { MateriaisPanel } from './materiais-panel';
 import ModalMateriais from './modal-materiais';
-import { api } from '../../api/client';
+import { materiaisRepository } from '@/materiais/api-repository';
+import { disciplinasRepository } from '@/disciplinas/api-repository';
 
 interface Disciplina {
   id: number;
@@ -11,14 +12,7 @@ interface Disciplina {
   cor: string;
 }
 
-interface MaterialTipo {
-  tipo: string | null;
-}
-
-async function buscarTiposMateriais() {
-  const { data } = await api.get<MaterialTipo[]>('/materiais/');
-  return [...new Set(data.map((material) => material.tipo?.trim()).filter((tipo): tipo is string => Boolean(tipo)))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
-}
+const buscarTiposMateriais = () => materiaisRepository.listTypes();
 
 export default function Materiais() {
   const { openMenu } = useLayout();
@@ -31,7 +25,7 @@ export default function Materiais() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    api.get('/disciplinas/').then(res => setDisciplinas(res.data)).catch(console.error);
+    disciplinasRepository.list().then(setDisciplinas).catch(console.error);
     buscarTiposMateriais().then(setTiposMateriais).catch(console.error);
   }, []);
 

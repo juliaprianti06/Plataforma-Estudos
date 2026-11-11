@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, UploadCloud, FileText, ChevronDown } from 'lucide-react';
-import { api } from '../../api/client';
+import { materiaisRepository } from '@/materiais/api-repository';
+import { disciplinasRepository } from '@/disciplinas/api-repository';
 
 interface Disciplina {
   id: number;
@@ -39,8 +40,8 @@ function ModalMateriaisForm({
 
   useEffect(() => {
     let active = true;
-    api.get<Disciplina[]>('/disciplinas/')
-      .then((res) => { if (active) setDisciplinas(res.data); })
+    disciplinasRepository.list()
+      .then((data) => { if (active) setDisciplinas(data); })
       .catch((err) => { if (active) console.error('Erro ao carregar disciplinas', err); });
     return () => { active = false; };
   }, []);
@@ -103,31 +104,13 @@ function ModalMateriaisForm({
 
     try {
       if (material) {
-        await api.put(`/materiais/${material.id_material}`, {
+        await materiaisRepository.update(material.id_material, {
           titulo,
           descricao: descricao || null,
           tipo: tipo || null,
         });
       } else {
-        const formData = new FormData();
-
-        formData.append('file', file!);
-        formData.append('titulo', titulo);
-        formData.append('disciplina_id', selectedDisciplinaId.toString());
-
-        if (descricao) {
-          formData.append('descricao', descricao);
-        }
-
-        if (tipo) {
-          formData.append('tipo', tipo);
-        }
-
-        await api.post('/materiais/', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
+        await materiaisRepository.upload(file!, titulo, selectedDisciplinaId as number, descricao || undefined, tipo || undefined);
       }
 
       onSuccess();

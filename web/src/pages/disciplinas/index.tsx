@@ -5,16 +5,8 @@ import NovaDisciplinaModal from './modal-disciplinas';
 import ConfirmDialog from '../../components/ui/confirm-dialog';
 import { TarefasPanel } from '../tarefas/index';
 import { MateriaisPanel } from '../materiais/materiais-panel';
-import { api } from '../../api/client';
-
-interface Disciplina {
-  id: number;
-  nome: string;
-  professor: string;
-  descricao: string;
-  cor: string;
-  ativo: boolean;
-}
+import { disciplinasRepository, type Disciplina } from '@/disciplinas/api-repository';
+import { tarefasRepository } from '@/tarefas/api-repository';
 
 export default function Disciplinas() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -36,7 +28,7 @@ export default function Disciplinas() {
   const carregarProgresso = useCallback(async (lista: Disciplina[]) => {
     try {
       const resultados = await Promise.all(
-        lista.map((d) => api.get<{ status: string }[]>(`/tarefas/disciplina/${d.id}`).then((r) => ({ id: d.id, tarefas: r.data })))
+        lista.map((d) => tarefasRepository.listByDisciplina(d.id).then((tarefas) => ({ id: d.id, tarefas })))
       );
       const mapa: Record<number, { total: number; concluidas: number }> = {};
       resultados.forEach(({ id, tarefas }) => {
@@ -56,10 +48,10 @@ export default function Disciplinas() {
 
   useEffect(() => {
     let active = true;
-    api.get<Disciplina[]>('/disciplinas/').then((response) => {
+    disciplinasRepository.list().then((data) => {
       if (!active) return;
-      setDisciplinas(response.data);
-      void carregarProgresso(response.data);
+      setDisciplinas(data);
+      void carregarProgresso(data);
     }).catch((error) => { if (active) console.error('Erro ao buscar disciplinas:', error); });
     return () => { active = false; };
   }, [refresh, carregarProgresso]);
@@ -73,7 +65,7 @@ export default function Disciplinas() {
     if (disciplinaParaExcluir === null) return;
     setIsDeleting(true);
     try {
-      await api.delete(`/disciplinas/${disciplinaParaExcluir}`);
+      await disciplinasRepository.remove(disciplinaParaExcluir);
       if (disciplinaSelecionada?.id === disciplinaParaExcluir) setDisciplinaSelecionada(null);
       carregarDisciplinas();
     } catch (error) {
