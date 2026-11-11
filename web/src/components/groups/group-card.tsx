@@ -11,12 +11,12 @@ const categoryColors = {
 
 export function GroupCard({ group, onOpen }: { group: StudyGroup; onOpen: (group: StudyGroup) => void }) {
   return (
-    <article className="flex min-h-[194px] flex-col rounded-[14px] border border-border bg-card p-4 transition duration-200 hover:border-ring/50 hover:shadow-sm">
+    <article className="flex min-h-[194px] cursor-pointer flex-col rounded-[14px] border border-border bg-card p-4 transition duration-200 hover:border-ring/50 hover:shadow-sm" onClick={() => onOpen(group)}>
       <div className="flex items-start gap-3">
         <GroupIcon name={group.icon} />
         <div className="min-w-0 flex-1 pt-0.5">
           <h2 className="text-[13px] font-bold leading-snug tracking-[-0.02em] text-card-foreground">
-            <button className="rounded text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring" onClick={() => onOpen(group)}>
+            <button className="rounded text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring" onClick={(event) => { event.stopPropagation(); onOpen(group) }}>
               {group.name}
             </button>
           </h2>
@@ -30,7 +30,7 @@ export function GroupCard({ group, onOpen }: { group: StudyGroup; onOpen: (group
           aria-label={`Abrir ${group.name}`}
           title="Abrir grupo"
           className="-mr-1 grid size-7 shrink-0 place-items-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-primary focus-visible:outline-2 focus-visible:outline-ring"
-          onClick={() => onOpen(group)}
+          onClick={(event) => { event.stopPropagation(); onOpen(group) }}
         >
           <Info className="size-3.5" />
         </button>
