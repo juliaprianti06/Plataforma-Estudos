@@ -127,10 +127,7 @@ function DashboardContent({ session }: { session: AuthSession }) {
                 if (selected?.canEdit && !busy) setTaskDialog(selected)
               } : undefined} />
               <aside aria-label="Resumo dos estudos" className="space-y-4 xl:pt-[25px]">
-                <StudyCard summary={remote ? data?.summary : undefined} busy={busy} onResume={remote ? () => {
-                  const task = data?.summary.activeTask
-                  if (task) run(() => repository.moveTask(task.id, 'progress'))
-                } : undefined} />
+                <StudyCard summary={remote ? data?.summary : undefined} />
                 <UpcomingEvents events={remote ? data?.events : undefined} busy={busy} onEdit={remote ? event => setEventDialog({ event }) : undefined} onDelete={remote ? id => run(() => repository.deleteEvent(id)) : undefined} />
               </aside>
             </div>
