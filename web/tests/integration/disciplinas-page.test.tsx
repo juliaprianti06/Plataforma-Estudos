@@ -54,3 +54,30 @@ test('DisciplinasPage renders disciplines and can open create modal', async () =
     expect(screen.getAllByText(/Nova disciplina/i).length).toBeGreaterThan(1);
   });
 });
+
+test('DisciplinasPage avisa quantas tarefas e materiais serão apagados', async () => {
+  vi.mocked(api.get).mockImplementation(async (url) => {
+    if (url === '/disciplinas/') return { data: mockDisciplinas };
+    if (url === '/tarefas/disciplina/1') return { data: [{ status: 'concluido' }, { status: 'a_fazer' }] };
+    if (url === '/materiais/') return { data: [{}, {}, {}] };
+    return { data: [] };
+  });
+
+  render(<DisciplinasPage />);
+  await waitFor(() => expect(screen.getByText('1 de 2 tarefas')).toBeInTheDocument());
+
+  fireEvent.click(screen.getByRole('button', { name: 'Excluir Matemática' }));
+
+  expect(api.get).toHaveBeenCalledWith('/materiais/', { params: { disciplina_id: 1 } });
+  await waitFor(() => {
+    expect(screen.getByText(/será excluída junto com 2 tarefas e 3 materiais enviados/)).toBeInTheDocument();
+  });
+  expect(screen.getByRole('button', { name: 'Excluir tudo' })).toBeInTheDocument();
+});
+
+test('DisciplinasPage mostra erro quando não consegue carregar', async () => {
+  vi.mocked(api.get).mockRejectedValue(new Error('offline'));
+  render(<DisciplinasPage />);
+  await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Não foi possível carregar suas disciplinas.'));
+  expect(screen.getByRole('button', { name: 'Tentar novamente' })).toBeInTheDocument();
+});

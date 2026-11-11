@@ -18,7 +18,7 @@ import { GroupFeedPanel } from './group-feed'
 import { GroupMembersPanel } from './group-members'
 import { GroupActivities } from './group-activities'
 
-const tabs = [{ id: 'feed', label: 'Feed' }, { id: 'members', label: 'Membros' }, { id: 'materials', label: 'Materiais' }] as const
+const tabs = [{ id: 'feed', label: 'Feed' }, { id: 'kanban', label: 'Kanban' }, { id: 'members', label: 'Membros' }, { id: 'materials', label: 'Materiais' }] as const
 type Tab = typeof tabs[number]['id']
 type Confirmation = { title: string; description: string; action: () => Promise<unknown>; destructive?: boolean; navigateAway?: boolean }
 
@@ -40,7 +40,6 @@ function Workspace({ groupId, session }: { groupId: string; session: AuthSession
   const mutation = useRef(false)
   const [tab, setTab] = useState<Tab>('feed')
   const [groupEditor, setGroupEditor] = useState(false)
-  const [activitiesOpen, setActivitiesOpen] = useState(false)
   const [inviteOpen, setInviteOpen] = useState(false)
   const [ownMaterials, setOwnMaterials] = useState<SharedMaterial[]>([])
   const [sharing, setSharing] = useState(false)
@@ -133,7 +132,6 @@ function Workspace({ groupId, session }: { groupId: string; session: AuthSession
           <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="rounded-full bg-muted text-muted-foreground" aria-label="Ações do grupo" disabled={busy}><MoreHorizontal /></Button></DropdownMenuTrigger><DropdownMenuContent align="end" className="min-w-52 rounded-xl border-border bg-card p-1">
             <DropdownMenuItem disabled={!writable} className="py-2 text-xs" onSelect={() => { void copyCode() }}>Copiar código do grupo</DropdownMenuItem>
             {admin && <DropdownMenuItem disabled={!writable} className="py-2 text-xs" onSelect={() => setGroupEditor(true)}>Editar grupo<span className="ml-auto text-[9px] text-muted-foreground">Admin</span></DropdownMenuItem>}
-            <DropdownMenuItem className="py-2 text-xs" onSelect={() => setActivitiesOpen(true)}>Tarefas e eventos</DropdownMenuItem>
             <DropdownMenuItem className="py-2 text-xs" onSelect={refresh}>Atualizar atividades</DropdownMenuItem>
             {admin && <DropdownMenuItem className="py-2 text-xs" onSelect={() => confirm({ title: group.archived ? 'Reativar grupo?' : 'Arquivar grupo?', description: 'Os dados serão preservados. Grupos arquivados ficam disponíveis apenas para consulta.', action: () => repository.archive(!group.archived) })}>{group.archived ? 'Reativar grupo' : 'Arquivar grupo'}<span className="ml-auto text-[9px] text-muted-foreground">Admin</span></DropdownMenuItem>}
             <DropdownMenuSeparator />
@@ -154,13 +152,13 @@ function Workspace({ groupId, session }: { groupId: string; session: AuthSession
       </div>
       <div role="tabpanel" id={`group-panel-${tab}`} aria-labelledby={`group-tab-${tab}`}>
         {tab === 'feed' && <GroupFeedPanel feed={feed} busy={busy} archived={!!group.archived} loadingMore={loadingMore} onComment={text => mutate(() => repository.comment(text))} onLoadMore={() => { void loadMore() }} onDownload={id => run(() => download(id))} onDelete={item => confirm({ title: 'Excluir comentário?', description: 'O comentário será removido do feed do grupo.', destructive: true, action: () => repository.deleteComment(item.id) })} />}
+        {tab === 'kanban' && <GroupActivities data={data} session={session} busy={busy} onMutation={mutate} />}
         {tab === 'members' && <GroupMembersPanel members={data.members} userId={session.user.id} canManage={!!admin && writable} onRole={changeRole} onRemove={removeMember} />}
         {tab === 'materials' && <section aria-label="Materiais do grupo" className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-xs text-muted-foreground">{data.materials.length} {data.materials.length === 1 ? 'material compartilhado' : 'materiais compartilhados'}</p><Button disabled={!writable} className="text-xs" onClick={() => run(async () => { setOwnMaterials(await repository.ownMaterials()); setSharing(true) })}><Plus className="size-3.5" />Compartilhar material</Button></div>
           <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">{!data.materials.length && <p className="p-8 text-center text-xs text-muted-foreground">Compartilhe arquivos já enviados na aba Materiais para estudar com o grupo.</p>}{data.materials.map(material => <article key={material.id_material} className="flex flex-wrap items-center gap-3 p-4"><span className="grid size-10 shrink-0 place-items-center rounded-lg bg-muted text-accent"><FileText className="size-5" /></span><div className="min-w-0 flex-1"><h2 className="text-xs font-semibold text-primary [overflow-wrap:anywhere]">{material.titulo}</h2><p className="mt-1 text-[10px] text-muted-foreground">{formatMaterialSize(material.tamanho_bytes)}</p>{material.descricao && <p className="mt-1 line-clamp-2 text-[10px] text-muted-foreground">{material.descricao}</p>}</div><Button variant="outline" size="icon" aria-label={`Baixar material ${material.titulo}`} title="Baixar" disabled={busy} onClick={() => run(() => download(material.id_material))}><Download /></Button>{(admin || String(material.id_usuario) === session.user.id) && <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon-xs" aria-label={`Ações do material ${material.titulo}`} disabled={!writable}><MoreHorizontal /></Button></DropdownMenuTrigger><DropdownMenuContent align="end"><DropdownMenuItem variant="destructive" onSelect={() => confirm({ title: 'Remover compartilhamento?', description: 'O arquivo original continuará na conta de quem o enviou.', destructive: true, action: () => repository.unshare(material.id_material) })}><Trash2 className="size-4" />Remover compartilhamento</DropdownMenuItem></DropdownMenuContent></DropdownMenu>}</article>)}</div>
         </section>}
       </div>
-      {activitiesOpen && <GroupActivities data={data} session={session} busy={busy} onClose={() => setActivitiesOpen(false)} onMutation={mutate} />}
       {groupEditor && <GroupDialog group={group} onClose={() => setGroupEditor(false)} onSave={input => mutate(() => groupRepository.update(groupId, input))} />}
       <Dialog open={inviteOpen} onOpenChange={open => { if (!busy) setInviteOpen(open) }}><DialogContent className="sm:max-w-md"><DialogTitle>Convidar para {group.name}</DialogTitle><DialogDescription>Compartilhe este código com quem você quer convidar para estudar no grupo.</DialogDescription><InviteCode code={group.inviteCode} />{admin && <Button variant="outline" className="text-xs" disabled={!writable} onClick={() => { setInviteOpen(false); confirm({ title: 'Renovar convite?', description: 'O código atual deixará de permitir novas entradas. Os membros atuais continuam no grupo.', action: repository.rotate }) }}>Renovar convite</Button>}</DialogContent></Dialog>
       <Dialog open={sharing} onOpenChange={open => { if (!busy) setSharing(open) }}><DialogContent className="max-h-[85dvh] overflow-y-auto"><DialogTitle>Compartilhar material</DialogTitle><DialogDescription>Escolha um arquivo da sua conta para compartilhar com os membros do grupo.</DialogDescription>{availableMaterials.map(item => <Button key={item.id_material} disabled={busy} variant="outline" className="h-auto justify-start whitespace-normal py-3 text-left text-xs" onClick={() => run(async () => { await repository.share(item.id_material); setSharing(false) })}><FileText className="size-4 shrink-0" />{item.titulo}</Button>)}{!availableMaterials.length && <p className="text-xs text-muted-foreground">{ownMaterials.length ? 'Seus materiais já estão compartilhados neste grupo.' : 'Envie um arquivo na aba Materiais primeiro.'}</p>}</DialogContent></Dialog>
