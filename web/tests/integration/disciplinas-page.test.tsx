@@ -59,7 +59,7 @@ test('DisciplinasPage avisa quantas tarefas e materiais serão apagados', async 
   vi.mocked(api.get).mockImplementation(async (url) => {
     if (url === '/disciplinas/') return { data: mockDisciplinas };
     if (url === '/tarefas/disciplina/1') return { data: [{ status: 'concluido' }, { status: 'a_fazer' }] };
-    if (url === '/materiais/') return { data: [{}, {}, {}] };
+    if (url === '/materiais/?disciplina_id=1') return { data: [{}, {}, {}] };
     return { data: [] };
   });
 
@@ -68,7 +68,7 @@ test('DisciplinasPage avisa quantas tarefas e materiais serão apagados', async 
 
   fireEvent.click(screen.getByRole('button', { name: 'Excluir Matemática' }));
 
-  expect(api.get).toHaveBeenCalledWith('/materiais/', { params: { disciplina_id: 1 } });
+  expect(api.get).toHaveBeenCalledWith('/materiais/?disciplina_id=1');
   await waitFor(() => {
     expect(screen.getByText(/será excluída junto com 2 tarefas e 3 materiais enviados/)).toBeInTheDocument();
   });

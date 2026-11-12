@@ -28,7 +28,6 @@ function AuthDialog({ initialMode, trigger }: AuthDialogProps) {
   const session = useAuth()
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
-  const [notice, setNotice] = useState('')
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<AuthMode>(initialMode)
   const [showPassword, setShowPassword] = useState(false)
@@ -38,7 +37,6 @@ function AuthDialog({ initialMode, trigger }: AuthDialogProps) {
     if (pending) return
     setOpen(nextOpen)
     setError('')
-    setNotice('')
 
     if (nextOpen) {
       setMode(initialMode)
@@ -48,7 +46,6 @@ function AuthDialog({ initialMode, trigger }: AuthDialogProps) {
 
   function changeMode(nextMode: AuthMode) {
     setError('')
-    setNotice('')
     setMode(nextMode)
     setShowPassword(false)
   }
@@ -57,7 +54,6 @@ function AuthDialog({ initialMode, trigger }: AuthDialogProps) {
     if (pending) return
     setPending(true)
     setError('')
-    setNotice('')
     try {
       if (input.name !== undefined) {
         await auth.register({ ...input, name: input.name })
@@ -96,13 +92,6 @@ function AuthDialog({ initialMode, trigger }: AuthDialogProps) {
           <span className="sr-only">Close</span>
         </DialogClose>
         <div className="bg-primary px-8 pb-7 pt-8 text-primary-foreground">
-          <div className="mb-5 flex size-12 items-center justify-center rounded-2xl bg-primary-foreground/12 ring-1 ring-primary-foreground/15">
-            {isSignup ? (
-              <UserPlus className="size-6" aria-hidden="true" />
-            ) : (
-              <LogIn className="size-6" aria-hidden="true" />
-            )}
-          </div>
           <DialogHeader className="gap-2 text-left">
             <DialogTitle className="text-2xl font-bold tracking-tight">
               {isSignup ? 'Crie seu espaço de estudos' : 'Boas-vindas de volta!'}
@@ -131,7 +120,6 @@ function AuthDialog({ initialMode, trigger }: AuthDialogProps) {
               </div>
             )}
             {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-            {notice && <p role="status" className="text-sm text-muted-foreground">{notice}</p>}
             {isSignup && (
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-foreground" htmlFor="signup-name">
@@ -179,19 +167,10 @@ function AuthDialog({ initialMode, trigger }: AuthDialogProps) {
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
                 <label className="text-sm font-semibold text-foreground" htmlFor={`${mode}-password`}>
                   Senha
                 </label>
-                {!isSignup && (
-                  <button
-                    type="button"
-                    onClick={() => setNotice('A recuperação de senha ainda não está disponível.')}
-                    className="text-xs font-medium text-accent transition-colors hover:text-primary hover:underline"
-                  >
-                    Esqueci minha senha
-                  </button>
-                )}
               </div>
               <div className="relative">
                 <LockKeyhole
