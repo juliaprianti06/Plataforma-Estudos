@@ -3,6 +3,7 @@ import { getProfileStore } from '@/profile/use-profile'
 import { Download, KeyRound, RotateCcw, ShieldCheck } from 'lucide-react'
 import type { AuthSession } from '@/auth/types'
 import { Button } from '@/components/ui/button'
+import { ChangePassword } from './change-password'
 
 export function AccountPanel({ session, onReset }: { session: AuthSession; onReset: () => void }) {
   const [downloading, setDownloading] = useState(false)
@@ -38,8 +39,10 @@ export function AccountPanel({ session, onReset }: { session: AuthSession; onRes
       </div>
       <section className="space-y-3 border-t pt-5">
         <h3 className="flex items-center gap-2 text-sm font-semibold text-primary"><KeyRound className="size-4" /> Acesso à conta</h3>
-        <p className="text-xs leading-relaxed text-muted-foreground">{session.mode === 'mock' ? 'O login de demonstração não armazena nem verifica senhas. A alteração de senha e a exclusão de conta estarão disponíveis com o serviço de contas.' : 'A alteração de senha e a exclusão de conta ainda não estão disponíveis.'}</p>
-        <Button type="button" variant="outline" disabled className="rounded-full text-xs">Alterar senha</Button>
+        {session.mode === 'mock' ? <>
+          <p className="text-xs leading-relaxed text-muted-foreground">O login de demonstração não armazena nem verifica senhas. A alteração de senha está disponível ao usar a API.</p>
+          <Button type="button" variant="outline" disabled className="rounded-full text-xs">Alterar senha</Button>
+        </> : <ChangePassword session={session} />}
       </section>
       <section className="space-y-3 border-t pt-5">
         <h3 className="text-sm font-semibold text-primary">Uma cópia do seu perfil</h3>
