@@ -127,3 +127,33 @@ def test_falha_no_commit_restaura_arquivo(tmp_path, monkeypatch):
     with pytest.raises(RuntimeError, match="falha simulada"):
         command.execute()
     assert file_path.read_bytes() == b"arquivo"
+
+
+def criar_disciplina(client, auth_token):
+    response = client.post('/api/v1/disciplinas/', json={'nome': 'Tipos de arquivo'}, headers=auth_token)
+    return response.json()['id']
+
+
+@pytest.mark.parametrize('nome', ['pagina.html', 'imagem.svg', 'script.js', 'sem_extensao'])
+def test_upload_rejeita_tipos_nao_permitidos(client, auth_token, nome):
+    response = client.post('/api/v1/materiais/', headers=auth_token,
+                           data={'titulo': 'Arquivo', 'disciplina_id': criar_disciplina(client, auth_token)},
+                           files={'file': (nome, b'<script>alert(1)</script>', 'text/html')})
+    assert response.status_code == 400
+    assert response.json()['mensagem'].startswith('Tipo de arquivo não permitido.')
+    assert list(storage_service.UPLOAD_DIR.iterdir()) == []
+
+
+def test_upload_usa_tipo_do_servidor_e_nosniff(client, auth_token, monkeypatch):
+    from app.services import material_download_service
+    monkeypatch.setattr(material_download_service, 'UPLOAD_DIR', storage_service.UPLOAD_DIR)
+    response = client.post('/api/v1/materiais/', headers=auth_token,
+                           data={'titulo': 'Apostila', 'disciplina_id': criar_disciplina(client, auth_token)},
+                           files={'file': ('Apostila.PDF', b'%PDF-1.4', 'text/html')})
+    assert response.status_code == 201, response.text
+    assert response.json()['content_type'] == 'application/pdf'
+    assert response.headers['x-content-type-options'] == 'nosniff'
+    download = client.get(response.json()['url_arquivo'], headers=auth_token)
+    assert download.status_code == 200
+    assert download.headers['content-type'] == 'application/pdf'
+    assert download.headers['x-content-type-options'] == 'nosniff'

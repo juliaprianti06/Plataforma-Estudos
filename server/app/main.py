@@ -27,6 +27,13 @@ app.add_middleware(
 
 registrar_handlers(app)
 
+
+@app.middleware("http")
+async def security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    return response
+
 app.include_router(auth_router.router, prefix="/api/v1/auth", tags=["Autenticação"])
 app.include_router(profile_router.router, prefix="/api/v1/profile", tags=["Perfil"])
 app.include_router(groups_router.router, prefix="/api/v1/groups", tags=["Grupos"])
