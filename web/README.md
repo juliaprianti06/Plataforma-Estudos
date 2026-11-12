@@ -1,6 +1,6 @@
 # Frontend
 
-Interface web da Plataforma de Estudos Colaborativos, desenvolvida com React, TypeScript e Vite. O frontend consome a API do backend e oferece autenticação em modo de demonstração (`mock`).
+Interface web da Plataforma de Estudos Colaborativos, desenvolvida com React, TypeScript e Vite. O frontend consome a API do backend e também pode rodar em modo de demonstração (`mock`), sem backend.
 
 ## Tecnologias
 

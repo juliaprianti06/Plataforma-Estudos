@@ -98,7 +98,7 @@ O projeto apoia estudantes na organização de disciplinas, tarefas e materiais.
    - API: <http://localhost:8000>
    - Documentação interativa da API: <http://localhost:8000/docs>
 
-Por padrão, o frontend usa autenticação em modo `mock`. Para conectá-lo à API, crie `web/.env` com estas configurações e reinicie os serviços:
+Por padrão, o frontend usa a API. Para garantir a configuração, crie `web/.env` a partir de `web/.env.example` com estas configurações e reinicie os serviços:
 
 ```dotenv
 VITE_AUTH_MODE=api
