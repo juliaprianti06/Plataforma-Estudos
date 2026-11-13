@@ -3,17 +3,17 @@ from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
 from jwt import InvalidTokenError
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
-from app.core.exceptions import ConflitoError, NaoAutenticadoError
+from app.core.exceptions import ConflitoError, NaoAutenticadoError, RegraNegocioError, SenhaAtualIncorretaError
 from app.core.security import DUMMY_HASH, create_access_token, decode_access_token, hash_password, verify_password
 from app.models.sessao_auth import SessaoAuth
 from app.models.usuario import Usuario
 from app.repository.usuario_repository import get_by_email
-from app.schemas.auth_schema import AuthUser, LoginRequest, RegisterRequest, TokenResponse
+from app.schemas.auth_schema import AuthUser, ChangePasswordRequest, LoginRequest, RegisterRequest, TokenResponse
 
 
 @dataclass
@@ -92,4 +92,26 @@ def authenticate(db: Session, token: str) -> AuthContext:
 
 def logout(db: Session, auth: AuthContext) -> None:
     auth.session.revogado_em = datetime.now(timezone.utc)
+    db.commit()
+
+
+def change_password(db: Session, auth: AuthContext, data: ChangePasswordRequest) -> None:
+    user = auth.user
+    current = data.currentPassword.get_secret_value()
+    new = data.newPassword.get_secret_value()
+    if not verify_password(current, user.senha_hash):
+        raise SenhaAtualIncorretaError()
+    if current == new:
+        raise RegraNegocioError("A nova senha precisa ser diferente da atual.")
+    now = datetime.now(timezone.utc)
+    user.senha_hash = hash_password(new)
+    db.execute(
+        update(SessaoAuth)
+        .where(
+            SessaoAuth.id_usuario == user.id_usuario,
+            SessaoAuth.id_sessao != auth.session.id_sessao,
+            SessaoAuth.revogado_em.is_(None),
+        )
+        .values(revogado_em=now)
+    )
     db.commit()
