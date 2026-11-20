@@ -49,6 +49,8 @@ python -c "import secrets; print(secrets.token_urlsafe(48))"
 
 Para cadastrar disciplinas pelo frontend, configure `VITE_AUTH_MODE=api` em `web/.env`, execute `docker compose up -d frontend` e entre com uma conta da API. Contas do modo `mock` são demonstrativas e não autenticam chamadas ao backend.
 
+Se outro PostgreSQL já ocupar a porta `5432`, defina `POSTGRES_PORT=5433` no arquivo `.env` da **raiz do repositório** e execute `docker compose up -d db backend`. Isso altera apenas a porta publicada no computador; o backend no Docker continua acessando `db:5432`. Para executar Python fora do Docker nesse caso, use a porta escolhida também no `DATABASE_URL` de `server/.env`.
+
 
 ## Iniciar a aplicação
 
