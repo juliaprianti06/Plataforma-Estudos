@@ -45,6 +45,10 @@ Gere uma chave para `JWT_SECRET` e coloque-a no arquivo:
 python -c "import secrets; print(secrets.token_urlsafe(48))"
 ```
 
+`JWT_SECRET` é obrigatório e precisa ter pelo menos 32 caracteres. Deixá-lo vazio no `.env` impede o backend de iniciar, inclusive as migrations. Depois de alterar esse arquivo, execute `docker compose up -d db backend` na raiz para carregar a nova configuração. Preserve a chave gerada no seu ambiente local; o arquivo `.env` é ignorado pelo Git.
+
+Para cadastrar disciplinas pelo frontend, configure `VITE_AUTH_MODE=api` em `web/.env`, execute `docker compose up -d frontend` e entre com uma conta da API. Contas do modo `mock` são demonstrativas e não autenticam chamadas ao backend.
+
 
 ## Iniciar a aplicação
 
