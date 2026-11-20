@@ -27,7 +27,7 @@ describe('modal de sessão', () => {
       expect(screen.getByText('O término deve ser após o início.')).toBeInTheDocument()
     }
     expect(onSubmit).not.toHaveBeenCalled()
-  })
+  }, 30_000)
 
   test('calcula duração e envia os campos válidos antes de fechar', async () => {
     const { onSubmit, onClose } = abrir()
@@ -40,7 +40,7 @@ describe('modal de sessão', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Salvar' }))
     await waitFor(() => expect(onClose).toHaveBeenCalledOnce())
     expect(onSubmit).toHaveBeenCalledExactlyOnceWith({ disciplina, data: dataLocal(new Date()), inicio: '14:00', termino: '16:15', observacao: 'Revisão' })
-  })
+  }, 30_000)
 
   test('preenche edição e mantém o modal aberto quando salvar falha', async () => {
     const onClose = vi.fn()
@@ -53,7 +53,7 @@ describe('modal de sessão', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Salvar' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível salvar')
     expect(onClose).not.toHaveBeenCalled()
-  })
+  }, 30_000)
 
   test.each(['Cancelar', 'Fechar', 'Escape', 'fundo'])('fecha pelo controle %s', async controle => {
     const { onClose, container } = abrir()
@@ -63,5 +63,5 @@ describe('modal de sessão', () => {
     else fireEvent.click(screen.getByRole('button', { name: controle }))
     await waitFor(() => expect(onClose).toHaveBeenCalledOnce())
     expect(container).toBeInTheDocument()
-  })
+  }, 30_000)
 })

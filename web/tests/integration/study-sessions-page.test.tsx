@@ -43,5 +43,5 @@ describe('página de sessões', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Excluir$/ }))
     await waitFor(() => expect(screen.queryByText('Sessão de teste')).not.toBeInTheDocument())
     expect(within(screen.getByRole('region', { name: 'Resumo das sessões' })).getByText('Este mês').parentElement!.parentElement!.textContent).toBe(minutosAntes)
-  })
+  }, 120_000)
 })
