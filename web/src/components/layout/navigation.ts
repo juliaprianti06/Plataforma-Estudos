@@ -7,5 +7,5 @@ export const navigationItems = [
   { label: 'Disciplinas', icon: ClipboardList, to: '/disciplinas' },
   { label: 'Progresso', icon: Trophy, to: '/progresso' },
   { label: 'Calendário', icon: Calendar },
-  { label: 'Sessão de Estudos', icon: Timer },
+  { label: 'Sessão de Estudos', icon: Timer, to: '/sessoes-estudo' },
 ] as const
