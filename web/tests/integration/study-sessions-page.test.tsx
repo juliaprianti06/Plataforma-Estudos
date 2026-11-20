@@ -40,7 +40,7 @@ describe('página de sessões', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }))
     expect(screen.getByText('Sessão de teste')).toBeInTheDocument()
     fireEvent.click(within(linhaRestaurada).getByRole('button', { name: /Excluir sessão/ }))
-    fireEvent.click(screen.getByRole('button', { name: 'Excluir', exact: true }))
+    fireEvent.click(screen.getByRole('button', { name: /^Excluir$/ }))
     await waitFor(() => expect(screen.queryByText('Sessão de teste')).not.toBeInTheDocument())
     expect(within(screen.getByRole('region', { name: 'Resumo das sessões' })).getByText('Este mês').parentElement!.parentElement!.textContent).toBe(minutosAntes)
   })
