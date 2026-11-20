@@ -57,8 +57,15 @@ A interface fica disponível em `http://localhost:5173`
 | `/disciplinas` | Disciplinas e tarefas associadas |
 | `/materiais` | Materiais de estudo |
 | `/progresso` | Indicadores e gráficos de progresso |
+| `/sessoes-estudo` | Registro, edição e histórico de sessões de estudo |
 
 As tarefas são acessadas pelo contexto das disciplinas. A página de progresso permite selecionar período semanal ou mensal. O card de tempo de estudo informa que o registro de sessões ainda não está disponível.
+
+As sessões de estudo estão disponíveis no menu lateral. A página calcula o tempo da semana atual (segunda a domingo), do mês atual e de cada disciplina, além de permitir criar, editar e excluir registros. Os gráficos usam HTML/CSS e as cores do tema.
+
+Como o backend ainda não oferece endpoints de sessões de estudo, `src/api/study-sessions.ts` mantém dados demonstrativos em memória, separados por usuário. As alterações sobrevivem à navegação, mas reiniciam ao recarregar a página. Em modo API, o formulário utiliza as disciplinas ativas cadastradas; em modo mock, utiliza as disciplinas de demonstração em `src/data/study-sessions.ts`. O card da página de progresso ainda depende das métricas do backend e não incorpora esses registros temporários.
+
+Os helpers puros ficam em `src/lib/study-sessions.ts`. Para integrar a persistência real, substitua as operações `listar`, `criar`, `editar` e `excluir` da camada de API, preservando seus contratos.
 
 ## Testes
 
