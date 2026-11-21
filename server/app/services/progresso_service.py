@@ -110,9 +110,9 @@ def obter_progresso(
         ),
         'disciplinas': disciplinas,
         'tempo_estudo': {
-            'disponivel': False,
-            'minutos_total': None,
-            'mensagem': 'A plataforma ainda não registra sessões de estudo.',
+            'disponivel': True,
+            'minutos_total': repository.minutos_estudo_no_periodo(usuario_id, inicio, fim_exclusivo),
+            'mensagem': 'Tempo registrado nas suas sessões de estudo no período.',
         },
         'conclusoes_sem_data': repository.conclusoes_sem_data(usuario_id),
     }

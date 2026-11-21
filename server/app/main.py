@@ -11,6 +11,7 @@ from app.routers import (
     material_router,
     profile_router,
     progresso_router,
+    sessao_estudo_router,
     tarefa_router,
     tasks_router,
     uploads_router,
@@ -44,6 +45,7 @@ app.include_router(disciplina_router.router, prefix="/api/v1")
 app.include_router(tarefa_router.router, prefix="/api/v1")
 app.include_router(material_router.router, prefix="/api/v1")
 app.include_router(progresso_router.router, prefix="/api/v1")
+app.include_router(sessao_estudo_router.router, prefix="/api/v1")
 
 app.include_router(uploads_router.router, prefix="/uploads", tags=["Arquivos"])
 
