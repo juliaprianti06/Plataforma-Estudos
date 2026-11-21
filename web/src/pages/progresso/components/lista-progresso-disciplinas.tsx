@@ -20,7 +20,7 @@ export function ListaProgressoDisciplinas({ disciplines }: { disciplines: Discip
             ? 0
             : Math.max(0, Math.min(discipline.progresso_percentual, 100))
           return (
-            <div className="grid grid-cols-[minmax(5rem,7rem)_minmax(0,1fr)_3rem] items-center gap-3" key={discipline.disciplina_id}>
+            <div className="grid min-w-0 grid-cols-[minmax(0,5rem)_minmax(0,1fr)_auto] items-center gap-2 sm:grid-cols-[minmax(5rem,7rem)_minmax(0,1fr)_3rem] sm:gap-3" key={discipline.disciplina_id}>
               <span className="truncate text-sm" title={discipline.nome}>{discipline.nome}</span>
               <div
                 aria-label={`${discipline.nome}: ${discipline.progresso_percentual === null ? 'sem tarefas' : `${discipline.progresso_percentual}%`}`}
@@ -32,7 +32,7 @@ export function ListaProgressoDisciplinas({ disciplines }: { disciplines: Discip
               >
                 <div className="h-full rounded-full transition-[width]" style={{ width: `${progress}%`, backgroundColor: COLORS[index % COLORS.length] }} />
               </div>
-              <span className="text-right text-xs font-semibold tabular-nums">
+              <span className="min-w-7 text-right text-xs font-semibold tabular-nums">
                 {discipline.progresso_percentual === null ? '—' : `${discipline.progresso_percentual}%`}
               </span>
             </div>

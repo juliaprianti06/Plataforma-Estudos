@@ -32,7 +32,7 @@ export function GraficoDistribuicaoDisciplinas({ disciplines }: { disciplines: D
         <p className="text-xs text-muted-foreground">Distribuição das tarefas cadastradas</p>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-5 pt-0 sm:flex-row sm:items-center">
-        <div className="relative size-36 shrink-0" role="img" aria-label={`Distribuição de ${total} tarefas entre ${disciplines.length} disciplinas`}>
+        <div className="relative size-28 shrink-0 sm:size-36" role="img" aria-label={`Distribuição de ${total} tarefas entre ${disciplines.length} disciplinas`}>
           <svg aria-hidden="true" className="size-full -rotate-90" viewBox="0 0 100 100">
             <circle cx="50" cy="50" fill="none" r={RADIUS} stroke="var(--color-muted)" strokeWidth="12" />
             {segments.map((segment) => segment.length > 0 && (

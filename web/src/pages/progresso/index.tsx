@@ -57,8 +57,8 @@ export default function Progresso() {
   const semTarefas = dados !== null && indicadores?.tarefas_total === 0
 
   return (
-    <div className="mx-auto min-h-screen max-w-[1440px] px-4 py-5 sm:px-6 sm:py-7 xl:px-8">
-      <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
+    <div className="mx-auto min-h-screen w-full max-w-[1440px] overflow-x-hidden px-4 py-5 pb-12 sm:px-6 sm:py-7 sm:pb-12 xl:px-8">
+      <header className="mb-6 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <Button
             aria-label="Abrir menu de navegação"
@@ -75,7 +75,7 @@ export default function Progresso() {
           </div>
         </div>
 
-        <div aria-label="Período do progresso" className="flex rounded-lg border bg-card p-1" role="group">
+        <div aria-label="Período do progresso" className="flex w-full rounded-lg border bg-card p-1 sm:w-auto" role="group">
           {([
             ['semana', 'Semana'],
             ['mes', 'Mês'],
@@ -84,6 +84,7 @@ export default function Progresso() {
               aria-pressed={periodo === valor}
               key={valor}
               onClick={() => setPeriodo(valor)}
+              className="flex-1 sm:flex-none"
               size="sm"
               variant={periodo === valor ? 'default' : 'ghost'}
             >
