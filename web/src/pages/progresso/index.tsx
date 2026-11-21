@@ -129,6 +129,10 @@ export default function Progresso() {
         </Card>
       )}
 
+      {!carregando && !erro && semTarefas && dados?.tempo_estudo.disponivel && (
+        <div className="mt-5"><CartaoTempoEstudo data={dados.tempo_estudo} /></div>
+      )}
+
       {!carregando && !erro && dados && !semTarefas && indicadores && (
         <div className="space-y-5">
           <section aria-label="Resumo do progresso" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

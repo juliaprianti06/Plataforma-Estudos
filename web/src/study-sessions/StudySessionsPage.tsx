@@ -18,7 +18,17 @@ import type { DisciplinaEstudo, SessaoEstudo, SessaoEstudoInput } from './type'
 
 export function StudySessionsPage() {
   const session = useAuth()
-  return session ? <StudySessionsContent key={`${session.mode}:${session.user.id}:${session.accessToken}`} session={session} /> : <Navigate to="/" replace />
+  if (!session) return <Navigate to="/" replace />
+  if (session.mode !== 'api') return (
+    <div className="mx-auto max-w-[1440px] p-6">
+      <Card className="items-start p-6">
+        <h1 className="text-xl font-bold text-primary">Sessões de estudo</h1>
+        <p>Entre com uma conta conectada ao servidor para registrar e consultar suas sessões.</p>
+        <Link to="/" className="text-accent underline">Voltar ao início</Link>
+      </Card>
+    </div>
+  )
+  return <StudySessionsContent key={`${session.user.id}:${session.accessToken}`} session={session} />
 }
 
 function StudySessionsContent({ session }: { session: AuthSession }) {
@@ -40,8 +50,7 @@ function StudySessionsContent({ session }: { session: AuthSession }) {
     let ativo = true
     async function carregar() {
       try {
-        const listaDisciplinas = await api.listarDisciplinas()
-        const listaSessoes = await api.listar(listaDisciplinas)
+        const [listaDisciplinas, listaSessoes] = await Promise.all([api.listarDisciplinas(), api.listar()])
         if (ativo) { setDisciplinas(listaDisciplinas); setSessoes(listaSessoes) }
       } catch {
         if (ativo) setErro('Não foi possível carregar as sessões e disciplinas. Tente novamente.')
@@ -109,7 +118,6 @@ function StudySessionsContent({ session }: { session: AuthSession }) {
         </section>
         <SessionHistory sessions={sessoes} onEdit={setEditor} onDelete={sessao => { setErroExclusao(''); setExcluindo(sessao) }} />
         {!disciplinas.length && <p className="text-sm text-muted-foreground">Cadastre uma disciplina em <Link to="/disciplinas" className="text-accent underline">Disciplinas</Link> para registrar sessões.</p>}
-        <p className="text-xs text-muted-foreground">Dados demonstrativos em memória. As alterações são mantidas durante a navegação e reiniciadas ao recarregar a página.</p>
         <p role="status" aria-live="polite" className="sr-only">{mensagem}</p>
       </>}
 

@@ -51,7 +51,7 @@ describe('modal de sessão', () => {
     expect(screen.getByLabelText('Duração')).toHaveTextContent('1h15')
     expect(screen.getByLabelText('Data')).toHaveValue('2026-10-28')
     fireEvent.click(screen.getByRole('button', { name: 'Salvar' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível salvar')
+    expect(await screen.findByRole('alert')).toHaveTextContent('offline')
     expect(onClose).not.toHaveBeenCalled()
   }, 30_000)
 

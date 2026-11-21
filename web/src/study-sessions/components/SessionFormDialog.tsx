@@ -47,8 +47,8 @@ export function SessionFormDialog({ onClose, disciplinas, sessao, onSubmit }: Pr
     try {
       await onSubmit({ disciplina, data, inicio, termino, observacao })
       onClose()
-    } catch {
-      setErro('Não foi possível salvar. Tente novamente.')
+    } catch (cause) {
+      setErro(cause instanceof Error ? cause.message : 'Não foi possível salvar. Tente novamente.')
     } finally { setSalvando(false) }
   }
 

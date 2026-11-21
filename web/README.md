@@ -59,13 +59,13 @@ A interface fica disponível em `http://localhost:5173`
 | `/progresso` | Indicadores e gráficos de progresso |
 | `/sessoes-estudo` | Registro, edição e histórico de sessões de estudo |
 
-As tarefas são acessadas pelo contexto das disciplinas. A página de progresso permite selecionar período semanal ou mensal. O card de tempo de estudo informa que o registro de sessões ainda não está disponível.
+As tarefas são acessadas pelo contexto das disciplinas. A página de progresso permite selecionar período semanal ou mensal. O card de tempo de estudo soma as sessões salvas no período escolhido.
 
 As sessões de estudo estão disponíveis no menu lateral. A página calcula o tempo da semana atual (segunda a domingo), do mês atual e de cada disciplina, além de permitir criar, editar e excluir registros. Os gráficos usam HTML/CSS e as cores do tema.
 
-Como o backend ainda não oferece endpoints de sessões de estudo, `src/api/study-sessions.ts` mantém dados demonstrativos em memória, separados por usuário. As alterações sobrevivem à navegação, mas reiniciam ao recarregar a página. Em modo API, o formulário utiliza as disciplinas ativas cadastradas; em modo mock, utiliza as disciplinas de demonstração em `src/data/study-sessions.ts`. O card da página de progresso ainda depende das métricas do backend e não incorpora esses registros temporários.
+As sessões utilizam exclusivamente os endpoints autenticados `/api/v1/sessoes-estudo/`, por meio de `src/api/study-sessions.ts`. Os registros são persistidos no PostgreSQL e continuam disponíveis após recarregar a página ou entrar novamente com a mesma conta. Não há sessões de exemplo, armazenamento em memória nem fallback para dados demonstrativos. O formulário utiliza as disciplinas cadastradas na API; é necessário usar `VITE_AUTH_MODE=api` e uma conta real do backend.
 
-Os helpers puros ficam em `src/lib/study-sessions.ts`. Para integrar a persistência real, substitua as operações `listar`, `criar`, `editar` e `excluir` da camada de API, preservando seus contratos.
+Os helpers puros ficam em `src/lib/study-sessions.ts`. O servidor valida a propriedade da disciplina e calcula a duração a partir dos horários; o frontend atualiza o histórico e os indicadores com a resposta recebida da API.
 
 ## Testes
 
