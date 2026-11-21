@@ -15,6 +15,7 @@ vi.mock('@tanstack/react-router', () => ({ Link: ({ children }: { children: Reac
 
 const session = { user: { id: '1', name: 'Estudante', email: 'estudante@example.com' }, accessToken: 'token-api', expiresAt: Date.now() + 3600000, mode: 'api' as const }
 const disciplina = { id: 1, nome: 'Matemática', cor: 'bg-success' }
+const historicoVazio = 'Nenhuma sessão registrada. Registre sua primeira sessão de estudo.'
 function registro(): SessaoEstudo {
   return { id: '00000000-0000-0000-0000-000000000001', disciplina, data: dataLocal(new Date()), inicio: '18:00', termino: '23:00', duracaoMinutos: 300, observacao: 'Sessão registrada via API' }
 }
@@ -33,7 +34,7 @@ beforeEach(() => {
 describe('sessões conectadas à API', () => {
   test('mostra zero e histórico vazio quando a API não possui registros, sem criar exemplos', async () => {
     render(<StudySessionsPage />)
-    expect(await screen.findByText(/Nenhuma sessão registrada/)).toBeInTheDocument()
+    expect(await screen.findByText(historicoVazio)).toBeInTheDocument()
     expect(within(screen.getByRole('region', { name: 'Resumo das sessões' })).getAllByText('0h00')).toHaveLength(2)
     expect(screen.queryByText(/Dados demonstrativos/)).not.toBeInTheDocument()
     expect(repo.listar).toHaveBeenCalledExactlyOnceWith()
@@ -80,7 +81,7 @@ describe('sessões conectadas à API', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível carregar')
     expect(screen.queryByRole('heading', { name: 'Histórico de sessões' })).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }))
-    expect(await screen.findByText(/Nenhuma sessão registrada/)).toBeInTheDocument()
+    expect(await screen.findByText(historicoVazio)).toBeInTheDocument()
     expect(repo.listar).toHaveBeenCalledTimes(2)
     expect(repo.criar).not.toHaveBeenCalled()
   }, 30_000)
@@ -88,13 +89,13 @@ describe('sessões conectadas à API', () => {
   test('não adiciona uma sessão local quando a gravação falha', async () => {
     repo.criar.mockRejectedValueOnce(new Error('Não foi possível gravar no servidor.'))
     render(<StudySessionsPage />)
-    await screen.findByText(/Nenhuma sessão registrada/)
+    await screen.findByText(historicoVazio)
     fireEvent.click(screen.getByRole('button', { name: 'Registrar sessão' }))
     fireEvent.change(screen.getByLabelText('Disciplina'), { target: { value: '1' } })
     fireEvent.click(screen.getByRole('button', { name: 'Salvar' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível gravar no servidor.')
     expect(screen.getByRole('dialog')).toBeInTheDocument()
-    expect(screen.getByText(/Nenhuma sessão registrada/)).toBeInTheDocument()
+    expect(screen.getByText(historicoVazio)).toBeInTheDocument()
     expect(repo.criar).toHaveBeenCalledOnce()
   }, 30_000)
 
