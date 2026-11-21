@@ -123,7 +123,7 @@ def test_isola_usuarios_e_impede_associacao_a_disciplina_de_outra_conta(client):
 def test_rejeita_dados_invalidos_e_campos_controlados_pelo_servidor(client, alteracoes):
     headers = estudante(client)
     disciplina_id = disciplina(client, headers)
-    resposta = client.post('/api/v1/sessoes-estudo/', headers=headers, json=dados(disciplina_id, **alteracoes))
+    resposta = client.post('/api/v1/sessoes-estudo/', headers=headers, json={**dados(disciplina_id), **alteracoes})
     assert resposta.status_code == 422
     assert client.get('/api/v1/sessoes-estudo/', headers=headers).json() == []
 
