@@ -23,8 +23,8 @@ export function criarApiSessoesEstudo(session: AuthSession) {
     },
     listar: () => request<SessaoEstudo[]>('get', caminho),
     criar: (input: SessaoEstudoInput) => request<SessaoEstudo>('post', caminho, payload(input)),
-    editar: (id: string, input: SessaoEstudoInput) => request<SessaoEstudo>('put', `${caminho}${encodeURIComponent(id)}`, payload(input)),
-    async excluir(id: string): Promise<void> {
+    editar: (id: string | number, input: SessaoEstudoInput) => request<SessaoEstudo>('put', `${caminho}${encodeURIComponent(id)}`, payload(input)),
+    async excluir(id: string | number): Promise<void> {
       await request('delete', `${caminho}${encodeURIComponent(id)}`)
     },
   }

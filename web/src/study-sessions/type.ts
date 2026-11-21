@@ -1,7 +1,7 @@
 export type DisciplinaEstudo = { id: number; nome: string; cor: string }
 
 export type SessaoEstudo = {
-  id: string
+  id: string | number
   disciplina: DisciplinaEstudo
   data: string
   inicio: string

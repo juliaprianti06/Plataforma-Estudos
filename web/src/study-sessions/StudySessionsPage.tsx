@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate } from '@tanstack/react-router'
-import { Bell, BookOpen, Calendar, Clock, Menu, Plus } from 'lucide-react'
+import { BookOpen, Calendar, Clock, Menu, Plus } from 'lucide-react'
 import { useAuth } from '@/auth/use-auth'
 import type { AuthSession } from '@/auth/types'
 import { criarApiSessoesEstudo } from '@/api/study-sessions'
@@ -43,7 +43,6 @@ function StudySessionsContent({ session }: { session: AuthSession }) {
   const [excluindo, setExcluindo] = useState<SessaoEstudo | null>(null)
   const [removendo, setRemovendo] = useState(false)
   const [erroExclusao, setErroExclusao] = useState('')
-  const [notificacoes, setNotificacoes] = useState(false)
   const [mensagem, setMensagem] = useState('')
 
   useEffect(() => {
@@ -96,10 +95,6 @@ function StudySessionsContent({ session }: { session: AuthSession }) {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="relative">
-            <Button type="button" aria-label="Notificações" aria-expanded={notificacoes} onClick={() => setNotificacoes(atual => !atual)} size="icon" variant="ghost" className="text-muted-foreground"><Bell aria-hidden="true" /></Button>
-            {notificacoes && <div className="absolute left-0 top-11 z-30 w-64 rounded-xl border border-border bg-card p-4 text-xs shadow-xl sm:left-auto sm:right-0"><p className="mb-2 font-semibold text-primary">Notificações</p><Link to="/dashboard" className="text-muted-foreground hover:underline">Confira seus avisos e atividades no Início.</Link></div>}
-          </div>
           <Button type="button" onClick={() => { setMensagem(''); setEditor('nova') }} disabled={carregando || Boolean(erro)} className="h-9 px-4 text-xs"><Plus aria-hidden="true" />Registrar sessão</Button>
         </div>
       </header>
