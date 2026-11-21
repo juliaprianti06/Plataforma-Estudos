@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
+import { isAxiosError } from 'axios';
 import { disciplinasRepository } from '@/disciplinas/api-repository';
 import { X } from 'lucide-react';
 
@@ -19,7 +20,7 @@ function DisciplinaModalForm({
   onSuccess = () => {},
   disciplina = null 
 }: DisciplinaModalProps) {
-
+  const id = useId();
   const [nome, setNome] = useState(disciplina?.nome ?? '');
   const [professor, setProfessor] = useState(disciplina?.professor ?? '');
   const [descricao, setDescricao] = useState(disciplina?.descricao ?? '');
@@ -39,6 +40,7 @@ function DisciplinaModalForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); 
+    if (isSubmitting) return;
     setIsSubmitting(true);
     setErro('');
 
@@ -61,8 +63,12 @@ function DisciplinaModalForm({
       onClose();   
       
     } catch (error) {
-      console.error("Erro ao salvar disciplina:", error);
-      setErro('Não foi possível salvar a disciplina. Confira os dados e tente novamente.');
+      const mensagem = isAxiosError<{ mensagem?: string }>(error) ? error.response?.data?.mensagem : undefined;
+      setErro(typeof mensagem === 'string' && mensagem.trim()
+        ? mensagem
+        : isAxiosError(error) && !error.response
+          ? 'Não foi possível conectar ao servidor. Tente novamente em instantes.'
+          : 'Não foi possível salvar a disciplina. Tente novamente.');
     } finally {
       setIsSubmitting(false);
     }
@@ -78,6 +84,7 @@ function DisciplinaModalForm({
           </h2>
           <button
             type="button"
+            aria-label="Fechar"
             onClick={onClose}
             className="text-muted-foreground hover:text-primary transition-colors cursor-pointer rounded-full p-1 hover:bg-muted/50"
           >
@@ -86,10 +93,11 @@ function DisciplinaModalForm({
         </div>
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-muted-foreground">
+            <label htmlFor={`${id}-nome`} className="text-sm font-semibold text-muted-foreground">
               Nome
             </label>
             <input
+              id={`${id}-nome`}
               type="text"
               required
               value={nome}
@@ -99,10 +107,11 @@ function DisciplinaModalForm({
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-muted-foreground">
+            <label htmlFor={`${id}-professor`} className="text-sm font-semibold text-muted-foreground">
               Professor
             </label>
             <input
+              id={`${id}-professor`}
               type="text"
               required
               value={professor}
@@ -112,10 +121,11 @@ function DisciplinaModalForm({
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-muted-foreground">
+            <label htmlFor={`${id}-descricao`} className="text-sm font-semibold text-muted-foreground">
               Descrição (opcional)
             </label>
             <textarea
+              id={`${id}-descricao`}
               value={descricao}
               onChange={(e) => setDescricao(e.target.value)}
               placeholder="Descreva a disciplina..."

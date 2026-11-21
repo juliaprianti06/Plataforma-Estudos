@@ -87,6 +87,38 @@ def test_progresso_vazio_retorna_periodo_e_disciplina_sem_tarefas(client):
         for dia in ('21', '22', '23', '24', '25', '26', '27')
     ]
     assert dados['disciplinas'][0]['progresso_percentual'] is None
+    assert dados['tempo_estudo']['disponivel'] is True
+    assert dados['tempo_estudo']['minutos_total'] == 0
+
+
+def test_tempo_estudo_usa_sessoes_persistidas_do_periodo_e_do_usuario(client):
+    headers = criar_estudante(client, 'tempo-estudo@example.com')
+    disciplina_id = criar_disciplina(client, headers)
+    registros = []
+    for dia, termino in [('2026-09-21', '15:30'), ('2026-09-27', '15:00'),
+                         ('2026-09-20', '16:00'), ('2026-10-01', '17:00')]:
+        resposta = client.post('/api/v1/sessoes-estudo/', headers=headers, json={
+            'disciplina_id': disciplina_id, 'data': dia, 'inicio': '14:00', 'termino': termino,
+        })
+        assert resposta.status_code == 201
+        registros.append(resposta.json())
+    outro = criar_estudante(client, 'tempo-outro@example.com')
+    outra_disciplina = criar_disciplina(client, outro)
+    assert client.post('/api/v1/sessoes-estudo/', headers=outro, json={
+        'disciplina_id': outra_disciplina, 'data': '2026-09-22', 'inicio': '08:00', 'termino': '12:00',
+    }).status_code == 201
+    with congelar_agora():
+        semana = client.get('/api/v1/progresso/?periodo=semana', headers=headers).json()
+        mes = client.get('/api/v1/progresso/?periodo=mes', headers=headers).json()
+    assert semana['tempo_estudo']['minutos_total'] == 150
+    assert mes['tempo_estudo']['minutos_total'] == 270
+    assert client.put(f"/api/v1/sessoes-estudo/{registros[0]['id']}", headers=headers, json={
+        'disciplina_id': disciplina_id, 'data': '2026-09-21', 'inicio': '14:00', 'termino': '14:30',
+    }).status_code == 200
+    assert client.delete(f"/api/v1/sessoes-estudo/{registros[1]['id']}", headers=headers).status_code == 204
+    with congelar_agora():
+        atualizado = client.get('/api/v1/progresso/?periodo=semana', headers=headers).json()
+    assert atualizado['tempo_estudo']['minutos_total'] == 30
 
 
 def test_progresso_semanal_calcula_indicadores_e_isola_estudante(client, db):

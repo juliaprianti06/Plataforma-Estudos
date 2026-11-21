@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.models.disciplinas import Disciplina
 from app.models.tarefa import Tarefa
+from app.models.sessao_estudo import SessaoEstudo
 
 
 class ProgressoRepository:
@@ -134,5 +135,16 @@ class ProgressoRepository:
             Tarefa.usuario_id == usuario_id,
             Tarefa.status == 'concluido',
             Tarefa.concluido_em.is_(None),
+        ).scalar()
+        return int(total or 0)
+
+    def minutos_estudo_no_periodo(self, usuario_id: int, inicio: date, fim_exclusivo: date) -> int:
+        total = self.db.query(func.coalesce(func.sum(SessaoEstudo.duracao_minutos), 0)).join(
+            Disciplina, Disciplina.id == SessaoEstudo.disciplina_id,
+        ).filter(
+            SessaoEstudo.usuario_id == usuario_id,
+            Disciplina.usuario_id == usuario_id,
+            SessaoEstudo.data >= inicio,
+            SessaoEstudo.data < fim_exclusivo,
         ).scalar()
         return int(total or 0)

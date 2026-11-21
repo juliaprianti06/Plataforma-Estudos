@@ -17,6 +17,7 @@ import { Route as GroupsRouteImport } from './routes/groups'
 import { Route as MateriaisRouteImport } from './routes/materiais'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ProgressoRouteImport } from './routes/progresso'
+import { Route as SessoesEstudoRouteImport } from './routes/sessoes-estudo'
 import { Route as GroupsGroupIdRouteImport } from './routes/groups.$groupId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -59,6 +60,11 @@ const ProgressoRoute = ProgressoRouteImport.update({
   path: '/progresso',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SessoesEstudoRoute = SessoesEstudoRouteImport.update({
+  id: '/sessoes-estudo',
+  path: '/sessoes-estudo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GroupsGroupIdRoute = GroupsGroupIdRouteImport.update({
   id: '/$groupId',
   path: '/$groupId',
@@ -74,6 +80,7 @@ export interface FileRoutesByFullPath {
   '/materiais': typeof MateriaisRoute
   '/profile': typeof ProfileRoute
   '/progresso': typeof ProgressoRoute
+  '/sessoes-estudo': typeof SessoesEstudoRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
 }
 export interface FileRoutesByTo {
@@ -85,6 +92,7 @@ export interface FileRoutesByTo {
   '/materiais': typeof MateriaisRoute
   '/profile': typeof ProfileRoute
   '/progresso': typeof ProgressoRoute
+  '/sessoes-estudo': typeof SessoesEstudoRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
 }
 export interface FileRoutesById {
@@ -97,6 +105,7 @@ export interface FileRoutesById {
   '/materiais': typeof MateriaisRoute
   '/profile': typeof ProfileRoute
   '/progresso': typeof ProgressoRoute
+  '/sessoes-estudo': typeof SessoesEstudoRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
 }
 export interface FileRouteTypes {
@@ -110,6 +119,7 @@ export interface FileRouteTypes {
     | '/materiais'
     | '/profile'
     | '/progresso'
+    | '/sessoes-estudo'
     | '/groups/$groupId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -121,6 +131,7 @@ export interface FileRouteTypes {
     | '/materiais'
     | '/profile'
     | '/progresso'
+    | '/sessoes-estudo'
     | '/groups/$groupId'
   id:
     | '__root__'
@@ -132,6 +143,7 @@ export interface FileRouteTypes {
     | '/materiais'
     | '/profile'
     | '/progresso'
+    | '/sessoes-estudo'
     | '/groups/$groupId'
   fileRoutesById: FileRoutesById
 }
@@ -144,6 +156,7 @@ export interface RootRouteChildren {
   MateriaisRoute: typeof MateriaisRoute
   ProfileRoute: typeof ProfileRoute
   ProgressoRoute: typeof ProgressoRoute
+  SessoesEstudoRoute: typeof SessoesEstudoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -204,6 +217,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProgressoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sessoes-estudo': {
+      id: '/sessoes-estudo'
+      path: '/sessoes-estudo'
+      fullPath: '/sessoes-estudo'
+      preLoaderRoute: typeof SessoesEstudoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/groups/$groupId': {
       id: '/groups/$groupId'
       path: '/$groupId'
@@ -234,6 +254,7 @@ const rootRouteChildren: RootRouteChildren = {
   MateriaisRoute: MateriaisRoute,
   ProfileRoute: ProfileRoute,
   ProgressoRoute: ProgressoRoute,
+  SessoesEstudoRoute: SessoesEstudoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

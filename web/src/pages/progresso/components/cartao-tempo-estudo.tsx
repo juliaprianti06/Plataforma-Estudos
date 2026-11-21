@@ -1,4 +1,4 @@
-import { TimerOff } from 'lucide-react'
+import { Timer, TimerOff } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { RespostaProgresso } from '@/api/progresso'
 
@@ -11,7 +11,7 @@ export function CartaoTempoEstudo({ data }: { data: RespostaProgresso['tempo_est
       </CardHeader>
       <CardContent className="flex min-h-36 flex-1 flex-col items-center justify-center gap-3 pt-0 text-center">
         <span className="flex size-11 items-center justify-center rounded-full bg-muted text-muted-foreground">
-          <TimerOff aria-hidden="true" className="size-5" />
+          {data.disponivel ? <Timer aria-hidden="true" className="size-5 text-accent" /> : <TimerOff aria-hidden="true" className="size-5" />}
         </span>
         <p className="max-w-xs text-sm text-muted-foreground">
           {data.disponivel && data.minutos_total !== null
