@@ -26,7 +26,7 @@ def dados(disciplina_id, **alteracoes):
 
 
 def criar(client, headers, disciplina_id, **alteracoes):
-    resposta = client.post('/api/v1/sessoes-estudo/', headers=headers, json=dados(disciplina_id, **alteracoes))
+    resposta = client.post('/api/v1/sessoes-estudo/', headers=headers, json={**dados(disciplina_id), **alteracoes})
     assert resposta.status_code == 201, resposta.text
     assert resposta.headers['cache-control'] == 'no-store'
     return resposta.json()
