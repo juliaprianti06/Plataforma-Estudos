@@ -12,6 +12,10 @@ class RegraNegocioError(APIException):
     def __init__(self, message: str):
         super().__init__(message=message, status_code=400, error_code="REGRA_NEGOCIO")
 
+class SenhaAtualIncorretaError(RegraNegocioError):
+    def __init__(self):
+        super().__init__("A senha atual está incorreta.")
+
 class NaoAutenticadoError(APIException):
     def __init__(self, message: str = "Autenticação necessária"):
         super().__init__(message=message, status_code=401, error_code="NAO_AUTENTICADO")

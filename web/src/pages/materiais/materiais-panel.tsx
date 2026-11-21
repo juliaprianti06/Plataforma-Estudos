@@ -2,20 +2,7 @@ import { useState, useEffect } from 'react';
 import { Pencil, Trash2, Download} from 'lucide-react';
 import ConfirmDialog from '../../components/ui/confirm-dialog';
 import ModalMateriais from './modal-materiais';
-import { api, storageBaseUrl } from '../../api/client';
-
-interface Material {
-  id_material: number;
-  titulo: string;
-  descricao: string;
-  url_arquivo: string;
-  content_type: string;
-  tamanho_bytes: number;
-  data_upload: string;
-  tipo: string | null;
-  disciplina_id: number;
-  id_usuario: number;
-}
+import { materiaisRepository, type Material } from '@/materiais/api-repository';
 
 interface Disciplina {
   id: number;
@@ -60,8 +47,8 @@ export function MateriaisPanel({
 
   useEffect(() => {
     let active = true;
-    api.get<Material[]>(disciplinaId ? `/materiais/?disciplina_id=${disciplinaId}` : '/materiais/')
-      .then((response) => { if (active) setMateriais(response.data); })
+    materiaisRepository.list(disciplinaId)
+      .then((data) => { if (active) setMateriais(data); })
       .catch((error) => { if (active) { setMateriais([]); console.error('Erro ao buscar materiais:', error); } })
       .finally(() => { if (active) setLoadedKey(requestKey); });
     return () => { active = false; };
@@ -72,7 +59,7 @@ export function MateriaisPanel({
     setIsDeleting(true);
     setDeleteError('');
     try {
-      await api.delete(`/materiais/${materialParaExcluir}`);
+      await materiaisRepository.remove(materialParaExcluir);
       carregarMateriais();
       onMaterialsChange?.();
       setConfirmOpen(false);
@@ -90,27 +77,7 @@ export function MateriaisPanel({
 
   const handleDownload = async (url_arquivo: string, titulo: string, content_type: string) => {
     try {
-      const response = await api.get<Blob>(`${storageBaseUrl}${url_arquivo}`, { responseType: 'blob' });
-      const blob = response.data;
-      const blobUrl = window.URL.createObjectURL(blob);
-      
-      let ext = url_arquivo.split('.').pop() || '';
-      if (!ext || ext.length > 5) {
-        if (content_type.includes('pdf')) ext = 'pdf';
-        else if (content_type.includes('image/jpeg')) ext = 'jpg';
-        else if (content_type.includes('image/png')) ext = 'png';
-        else ext = 'bin';
-      }
-
-      const filename = `${titulo.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${ext}`;
-
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(blobUrl);
+      await materiaisRepository.download({ url_arquivo, titulo, content_type });
     } catch (error) {
       console.error('Erro ao baixar o arquivo:', error);
       alert('Não foi possível baixar o arquivo.');

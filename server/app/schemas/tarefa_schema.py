@@ -7,7 +7,6 @@ StatusTarefa = Literal['a_fazer', 'em_andamento', 'concluido']
 
 
 class TarefaBase(BaseModel):
-    id_coluna: Optional[int] = None
     nome: str
     prioridade: str
     data_vencimento: Optional[date] = None
@@ -20,7 +19,6 @@ class TarefaCreate(TarefaBase):
     status: StatusTarefa = 'a_fazer'
 
 class TarefaUpdate(BaseModel):
-    id_coluna: Optional[int] = None
     nome: Optional[TextoObrigatorio] = None
     prioridade: Optional[TextoObrigatorio] = None
     data_vencimento: Optional[date] = None
@@ -37,6 +35,7 @@ class TarefaUpdate(BaseModel):
         return values
 
 class TarefaResponse(TarefaBase):
+    id_coluna: Optional[int] = None
     id: int
     usuario_id: int
     criado_em: Optional[datetime] = None

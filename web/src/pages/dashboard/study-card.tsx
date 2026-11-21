@@ -1,13 +1,7 @@
 import type { StudySummary } from '@/dashboard/api-repository'
-import { useState } from 'react'
-import { Play } from 'lucide-react'
-
-import { Button } from '@/components/ui/button'
 import { dashboardSummary } from '@/data/dashboard'
 
-export function StudyCard({ summary, onResume, busy = false }: { summary?: StudySummary; onResume?: () => void; busy?: boolean }) {
-  const [resumed, setResumed] = useState(false)
-
+export function StudyCard({ summary }: { summary?: StudySummary }) {
   const progress = summary?.progress ?? dashboardSummary.courseProgress
   return (
     <section className="rounded-xl bg-primary p-5 text-primary-foreground shadow-lg shadow-primary/15">
@@ -26,18 +20,10 @@ export function StudyCard({ summary, onResume, busy = false }: { summary?: Study
           style={{ width: `${progress}%` }}
         />
       </div>
-      <div className="mt-5 flex items-center justify-between gap-3">
+      <div className="mt-5">
         <span aria-live="polite" className="text-[10px] text-primary-foreground/75">
-          {summary ? `${summary.completed} de ${summary.total} tarefas concluídas` : resumed ? 'Aula retomada!' : `${progress}% concluído`}
+          {summary ? `${summary.completed} de ${summary.total} tarefas concluídas` : `${progress}% concluído`}
         </span>
-        <Button
-          className="h-9 rounded-full bg-primary-foreground px-5 text-[10px] font-bold text-primary hover:bg-primary-foreground/90"
-          disabled={busy || (summary !== undefined && !summary.activeTask)}
-          onClick={onResume ?? (() => setResumed(true))}
-        >
-          <Play aria-hidden="true" className="size-3 fill-current" />
-          {busy ? 'SALVANDO...' : summary?.activeTask?.status === 'progress' || resumed ? 'EM ANDAMENTO' : 'RETOMAR'}
-        </Button>
       </div>
     </section>
   )

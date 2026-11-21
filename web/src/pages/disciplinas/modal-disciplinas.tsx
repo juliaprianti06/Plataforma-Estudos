@@ -1,6 +1,6 @@
 import { useId, useState } from 'react';
 import { isAxiosError } from 'axios';
-import { api } from '../../api/client';
+import { disciplinasRepository } from '@/disciplinas/api-repository';
 import { X } from 'lucide-react';
 
 interface DisciplinaModalProps {
@@ -54,9 +54,9 @@ function DisciplinaModalForm({
       };
 
       if (disciplina && disciplina.id) {
-        await api.put(`/disciplinas/${disciplina.id}`, payload);
+        await disciplinasRepository.update(disciplina.id, payload);
       } else {
-        await api.post('/disciplinas/', payload);
+        await disciplinasRepository.create(payload);
       }
       
       onSuccess(); 

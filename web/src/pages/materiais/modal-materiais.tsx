@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, UploadCloud, FileText, ChevronDown } from 'lucide-react';
-import { api } from '../../api/client';
+import axios from 'axios';
+import { materiaisRepository } from '@/materiais/api-repository';
+import { disciplinasRepository } from '@/disciplinas/api-repository';
+import { EXTENSOES_PERMITIDAS, MENSAGEM_TIPO_NAO_PERMITIDO, arquivoPermitido } from './tipos-permitidos';
 
 interface Disciplina {
   id: number;
@@ -39,8 +42,8 @@ function ModalMateriaisForm({
 
   useEffect(() => {
     let active = true;
-    api.get<Disciplina[]>('/disciplinas/')
-      .then((res) => { if (active) setDisciplinas(res.data); })
+    disciplinasRepository.list()
+      .then((data) => { if (active) setDisciplinas(data); })
       .catch((err) => { if (active) console.error('Erro ao carregar disciplinas', err); });
     return () => { active = false; };
   }, []);
@@ -64,6 +67,11 @@ function ModalMateriaisForm({
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const droppedFile = e.dataTransfer.files[0];
 
+      if (!arquivoPermitido(droppedFile.name)) {
+        alert(MENSAGEM_TIPO_NAO_PERMITIDO);
+        return;
+      }
+
       if (droppedFile.size > 20 * 1024 * 1024) {
         alert('O arquivo não pode exceder 20MB.');
         return;
@@ -76,6 +84,12 @@ function ModalMateriaisForm({
   const handleChangeFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
+
+      if (!arquivoPermitido(selectedFile.name)) {
+        e.target.value = '';
+        alert(MENSAGEM_TIPO_NAO_PERMITIDO);
+        return;
+      }
 
       if (selectedFile.size > 20 * 1024 * 1024) {
         alert('O arquivo não pode exceder 20MB.');
@@ -103,38 +117,21 @@ function ModalMateriaisForm({
 
     try {
       if (material) {
-        await api.put(`/materiais/${material.id_material}`, {
+        await materiaisRepository.update(material.id_material, {
           titulo,
           descricao: descricao || null,
           tipo: tipo || null,
         });
       } else {
-        const formData = new FormData();
-
-        formData.append('file', file!);
-        formData.append('titulo', titulo);
-        formData.append('disciplina_id', selectedDisciplinaId.toString());
-
-        if (descricao) {
-          formData.append('descricao', descricao);
-        }
-
-        if (tipo) {
-          formData.append('tipo', tipo);
-        }
-
-        await api.post('/materiais/', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
+        await materiaisRepository.upload(file!, titulo, selectedDisciplinaId as number, descricao || undefined, tipo || undefined);
       }
 
       onSuccess();
       onClose();
     } catch (error) {
       console.error('Erro ao salvar material:', error);
-      alert('Ocorreu um erro ao salvar o material.');
+      const mensagem = axios.isAxiosError(error) ? error.response?.data?.mensagem : undefined;
+      alert(typeof mensagem === 'string' ? mensagem : 'Ocorreu um erro ao salvar o material.');
     } finally {
       setLoading(false);
     }
@@ -178,6 +175,7 @@ function ModalMateriaisForm({
             >
               <input
                 type="file"
+                accept={EXTENSOES_PERMITIDAS.join(',')}
                 ref={fileInputRef}
                 onChange={handleChangeFile}
                 className="hidden"
@@ -199,7 +197,7 @@ function ModalMateriaisForm({
                     Arraste um arquivo ou clique
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    PDF, DOCX, PPTX ou IMG (máx 20MB)
+                    PDF, Office, TXT, CSV ou imagens (máx 20MB)
                   </p>
                 </div>
               )}

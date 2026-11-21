@@ -65,7 +65,7 @@ test('dashboard API validates contracts, permissions and cancels writes after ac
   const emptySummary = renderToStaticMarkup(createElement(StudyCard, { summary: payload.summary }))
   assert.match(emptySummary, /0 de 0 tarefas/)
   assert.doesNotMatch(emptySummary, /Hooks|82%/)
-  assert.match(emptySummary, /disabled/)
+  assert.doesNotMatch(emptySummary, /EM ANDAMENTO|RETOMAR|disabled/)
   const emptyEvents = renderToStaticMarkup(createElement(UpcomingEvents, { events: [] }))
   assert.match(emptyEvents, /Nenhum evento agendado/)
   assert.doesNotMatch(emptyEvents, /Workshop/)

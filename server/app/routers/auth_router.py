@@ -4,10 +4,10 @@ from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
-from app.core.exceptions import NaoAutenticadoError
+from app.core.exceptions import NaoAutenticadoError, SenhaAtualIncorretaError
 from app.core.rate_limit import login_rate_limiter
 from app.database import get_db
-from app.schemas.auth_schema import AuthUser, LoginRequest, RegisterRequest, TokenResponse
+from app.schemas.auth_schema import AuthUser, ChangePasswordRequest, LoginRequest, RegisterRequest, TokenResponse
 from app.services import auth_service
 
 router = APIRouter()
@@ -57,4 +57,18 @@ def me(auth: CurrentAuth, response: Response):
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 def logout(db: Database, auth: CurrentAuth):
     auth_service.logout(db, auth)
+    return Response(status_code=status.HTTP_204_NO_CONTENT, headers={"Cache-Control": "no-store"})
+
+
+@router.post("/password", status_code=status.HTTP_204_NO_CONTENT)
+def change_password(data: ChangePasswordRequest, db: Database, auth: CurrentAuth, request: Request):
+    ip = request.client.host if request.client else "unknown"
+    email = auth.user.email
+    login_rate_limiter.check(ip=ip, email=email)
+    try:
+        auth_service.change_password(db, auth, data)
+    except SenhaAtualIncorretaError:
+        login_rate_limiter.record_failure(ip=ip, email=email)
+        raise
+    login_rate_limiter.record_success(email=email)
     return Response(status_code=status.HTTP_204_NO_CONTENT, headers={"Cache-Control": "no-store"})

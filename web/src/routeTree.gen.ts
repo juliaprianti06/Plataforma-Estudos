@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CalendarioRouteImport } from './routes/calendario'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as DisciplinasRouteImport } from './routes/disciplinas'
 import { Route as GroupsRouteImport } from './routes/groups'
@@ -22,6 +23,11 @@ import { Route as GroupsGroupIdRouteImport } from './routes/groups.$groupId'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalendarioRoute = CalendarioRouteImport.update({
+  id: '/calendario',
+  path: '/calendario',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -67,6 +73,7 @@ const GroupsGroupIdRoute = GroupsGroupIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/calendario': typeof CalendarioRoute
   '/dashboard': typeof DashboardRoute
   '/disciplinas': typeof DisciplinasRoute
   '/groups': typeof GroupsRouteWithChildren
@@ -78,6 +85,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/calendario': typeof CalendarioRoute
   '/dashboard': typeof DashboardRoute
   '/disciplinas': typeof DisciplinasRoute
   '/groups': typeof GroupsRouteWithChildren
@@ -90,6 +98,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/calendario': typeof CalendarioRoute
   '/dashboard': typeof DashboardRoute
   '/disciplinas': typeof DisciplinasRoute
   '/groups': typeof GroupsRouteWithChildren
@@ -103,6 +112,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/calendario'
     | '/dashboard'
     | '/disciplinas'
     | '/groups'
@@ -114,6 +124,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/calendario'
     | '/dashboard'
     | '/disciplinas'
     | '/groups'
@@ -125,6 +136,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/calendario'
     | '/dashboard'
     | '/disciplinas'
     | '/groups'
@@ -137,6 +149,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CalendarioRoute: typeof CalendarioRoute
   DashboardRoute: typeof DashboardRoute
   DisciplinasRoute: typeof DisciplinasRoute
   GroupsRoute: typeof GroupsRouteWithChildren
@@ -153,6 +166,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calendario': {
+      id: '/calendario'
+      path: '/calendario'
+      fullPath: '/calendario'
+      preLoaderRoute: typeof CalendarioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -227,6 +247,7 @@ const GroupsRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CalendarioRoute: CalendarioRoute,
   DashboardRoute: DashboardRoute,
   DisciplinasRoute: DisciplinasRoute,
   GroupsRoute: GroupsRouteWithChildren,
