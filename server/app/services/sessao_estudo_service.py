@@ -13,7 +13,7 @@ class SessaoEstudoService:
     def listar(self, usuario_id: int):
         return self.repository.listar(usuario_id)
 
-    def _buscar(self, usuario_id: int, sessao_id: str):
+    def _buscar(self, usuario_id: int, sessao_id: int):
         sessao = self.repository.buscar(usuario_id, sessao_id)
         if sessao is None:
             raise NaoEncontradoError('Sessão de estudo não encontrada.')
@@ -34,8 +34,8 @@ class SessaoEstudoService:
     def criar(self, usuario_id: int, dados: SessaoEstudoInput):
         return self._preencher(SessaoEstudo(usuario_id=usuario_id), usuario_id, dados)
 
-    def editar(self, usuario_id: int, sessao_id: str, dados: SessaoEstudoInput):
+    def editar(self, usuario_id: int, sessao_id: int, dados: SessaoEstudoInput):
         return self._preencher(self._buscar(usuario_id, sessao_id), usuario_id, dados)
 
-    def excluir(self, usuario_id: int, sessao_id: str):
+    def excluir(self, usuario_id: int, sessao_id: int):
         self.repository.excluir(self._buscar(usuario_id, sessao_id))

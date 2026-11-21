@@ -18,7 +18,7 @@ class SessaoEstudoRepository:
             SessaoEstudo.data.desc(), SessaoEstudo.inicio.desc(), SessaoEstudo.id,
         ).all()
 
-    def buscar(self, usuario_id: int, sessao_id: str):
+    def buscar(self, usuario_id: int, sessao_id: int):
         return self._do_usuario(usuario_id).filter(SessaoEstudo.id == sessao_id).first()
 
     def buscar_disciplina(self, usuario_id: int, disciplina_id: int):

@@ -46,7 +46,7 @@ class DisciplinaSessaoResponse(BaseModel):
 class SessaoEstudoResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: str
+    id: int
     disciplina: DisciplinaSessaoResponse
     data: date
     inicio: time

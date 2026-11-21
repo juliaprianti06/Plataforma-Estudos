@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from fastapi import APIRouter, Response
 
 from app.routers.auth_router import CurrentAuth, Database
@@ -22,12 +20,12 @@ def criar_sessao(dados: SessaoEstudoInput, auth: CurrentAuth, db: Database, resp
 
 
 @router.put('/{sessao_id}', response_model=SessaoEstudoResponse)
-def editar_sessao(sessao_id: UUID, dados: SessaoEstudoInput, auth: CurrentAuth, db: Database, response: Response):
+def editar_sessao(sessao_id: int, dados: SessaoEstudoInput, auth: CurrentAuth, db: Database, response: Response):
     response.headers['Cache-Control'] = 'no-store'
-    return SessaoEstudoService(db).editar(auth.user.id_usuario, str(sessao_id), dados)
+    return SessaoEstudoService(db).editar(auth.user.id_usuario, sessao_id, dados)
 
 
 @router.delete('/{sessao_id}', status_code=204)
-def excluir_sessao(sessao_id: UUID, auth: CurrentAuth, db: Database):
-    SessaoEstudoService(db).excluir(auth.user.id_usuario, str(sessao_id))
+def excluir_sessao(sessao_id: int, auth: CurrentAuth, db: Database):
+    SessaoEstudoService(db).excluir(auth.user.id_usuario, sessao_id)
     return Response(status_code=204, headers={'Cache-Control': 'no-store'})

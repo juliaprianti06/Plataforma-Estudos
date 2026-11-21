@@ -1,6 +1,4 @@
-from uuid import uuid4
-
-from sqlalchemy import CheckConstraint, Column, Date, ForeignKey, Index, Integer, String, Text, Time
+from sqlalchemy import CheckConstraint, Column, Date, ForeignKey, Index, Integer, Text, Time
 from sqlalchemy.orm import relationship
 
 from app.database import Base
@@ -14,7 +12,7 @@ class SessaoEstudo(Base):
         Index('ix_sessoes_estudo_usuario_data', 'usuario_id', 'data'),
     )
 
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    id = Column(Integer, primary_key=True, autoincrement=True)
     usuario_id = Column(Integer, ForeignKey('usuarios.id_usuario', ondelete='CASCADE'), nullable=False)
     disciplina_id = Column(Integer, ForeignKey('disciplinas.id', ondelete='CASCADE'), nullable=False)
     data = Column(Date, nullable=False)
