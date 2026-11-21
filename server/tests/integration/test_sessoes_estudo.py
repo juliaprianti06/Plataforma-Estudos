@@ -1,5 +1,3 @@
-from uuid import UUID
-
 import pytest
 from sqlalchemy import func, select
 
@@ -35,8 +33,8 @@ def criar(client, headers, disciplina_id, **alteracoes):
 @pytest.mark.parametrize('metodo,caminho', [
     ('get', '/api/v1/sessoes-estudo/'),
     ('post', '/api/v1/sessoes-estudo/'),
-    ('put', '/api/v1/sessoes-estudo/00000000-0000-0000-0000-000000000001'),
-    ('delete', '/api/v1/sessoes-estudo/00000000-0000-0000-0000-000000000001'),
+    ('put', '/api/v1/sessoes-estudo/1'),
+    ('delete', '/api/v1/sessoes-estudo/1'),
 ])
 def test_sessoes_exigem_autenticacao(client, metodo, caminho):
     parametros = {'json': dados(1)} if metodo in ('post', 'put') else {}
@@ -59,7 +57,8 @@ def test_persiste_reconsulta_edita_e_exclui_sessao(client, db):
     headers = estudante(client)
     disciplina_id = disciplina(client, headers)
     sessao = criar(client, headers, disciplina_id)
-    assert str(UUID(sessao['id'])) == sessao['id']
+    assert isinstance(sessao['id'], int)
+    assert sessao['id'] > 0
     assert sessao['inicio'] == '14:00'
     assert sessao['termino'] == '15:30'
     assert sessao['duracaoMinutos'] == 90
@@ -135,7 +134,7 @@ def test_edicao_invalida_nao_altera_dados_e_id_inexistente_retorna_404(client):
     assert client.put(f"/api/v1/sessoes-estudo/{sessao['id']}", headers=headers,
                       json=dados(disciplina_id, termino='13:00')).status_code == 422
     assert client.get('/api/v1/sessoes-estudo/', headers=headers).json() == [sessao]
-    inexistente = '/api/v1/sessoes-estudo/00000000-0000-0000-0000-000000000001'
+    inexistente = '/api/v1/sessoes-estudo/999999'
     assert client.put(inexistente, headers=headers, json=dados(disciplina_id)).status_code == 404
     assert client.delete(inexistente, headers=headers).status_code == 404
 
