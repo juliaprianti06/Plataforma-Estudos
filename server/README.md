@@ -45,6 +45,12 @@ Gere uma chave para `JWT_SECRET` e coloque-a no arquivo:
 python -c "import secrets; print(secrets.token_urlsafe(48))"
 ```
 
+`JWT_SECRET` é obrigatório e precisa ter pelo menos 32 caracteres. Deixá-lo vazio no `.env` impede o backend de iniciar, inclusive as migrations. Depois de alterar esse arquivo, execute `docker compose up -d db backend` na raiz para carregar a nova configuração. Preserve a chave gerada no seu ambiente local; o arquivo `.env` é ignorado pelo Git.
+
+Para cadastrar disciplinas pelo frontend, configure `VITE_AUTH_MODE=api` em `web/.env`, execute `docker compose up -d frontend` e entre com uma conta da API. Contas do modo `mock` são demonstrativas e não autenticam chamadas ao backend.
+
+Se outro PostgreSQL já ocupar a porta `5432`, defina `POSTGRES_PORT=5433` no arquivo `.env` da **raiz do repositório** e execute `docker compose up -d db backend`. Isso altera apenas a porta publicada no computador; o backend no Docker continua acessando `db:5432`. Para executar Python fora do Docker nesse caso, use a porta escolhida também no `DATABASE_URL` de `server/.env`.
+
 
 ## Iniciar a aplicação
 
@@ -68,6 +74,11 @@ As rotas ficam sob o prefixo `/api/v1`. Endpoints privados exigem `Authorization
 | Tarefas | `POST /tarefas/`, `GET /tarefas/disciplina/{id}`, `PUT` e `DELETE /tarefas/{id}` |
 | Materiais | `GET` e `POST /materiais/`, `PUT` e `DELETE /materiais/{id}` |
 | Progresso | `GET /progresso/?periodo=semana` ou `GET /progresso/?periodo=mes` |
+| Sessões de estudo | `GET` e `POST /sessoes-estudo/`, `PUT` e `DELETE /sessoes-estudo/{id}` |
+
+Sessões de estudo são persistidas na tabela `sessoes_estudo` e pertencem ao usuário autenticado e a uma disciplina da mesma conta. A API recebe `disciplina_id`, `data`, `inicio`, `termino` e `observacao` opcional, calcula a duração em minutos e não insere registros demonstrativos. A exclusão de uma disciplina remove suas sessões. O endpoint de progresso soma os tempos reais dentro do período solicitado.
+
+Para atualizar um ambiente existente, execute `docker compose exec -T backend alembic upgrade head` na raiz. A migration de sessões cria apenas a tabela e o índice necessários, sem popular dados nem alterar os registros das disciplinas existentes.
 
 ## Migrations
 

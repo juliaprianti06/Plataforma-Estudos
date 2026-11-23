@@ -54,7 +54,7 @@ class EventFields(BaseModel):
 
 
 class EventInput(EventFields):
-    groupId: int = Field(gt=0)
+    groupId: int | None = Field(default=None, gt=0)
 
 
 class EventResponse(BaseModel):

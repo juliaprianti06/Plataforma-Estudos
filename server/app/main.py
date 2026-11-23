@@ -11,6 +11,7 @@ from app.routers import (
     material_router,
     profile_router,
     progresso_router,
+    sessao_estudo_router,
     tarefa_router,
     tasks_router,
     uploads_router,
@@ -27,6 +28,13 @@ app.add_middleware(
 
 registrar_handlers(app)
 
+
+@app.middleware("http")
+async def security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    return response
+
 app.include_router(auth_router.router, prefix="/api/v1/auth", tags=["Autenticação"])
 app.include_router(profile_router.router, prefix="/api/v1/profile", tags=["Perfil"])
 app.include_router(groups_router.router, prefix="/api/v1/groups", tags=["Grupos"])
@@ -37,6 +45,7 @@ app.include_router(disciplina_router.router, prefix="/api/v1")
 app.include_router(tarefa_router.router, prefix="/api/v1")
 app.include_router(material_router.router, prefix="/api/v1")
 app.include_router(progresso_router.router, prefix="/api/v1")
+app.include_router(sessao_estudo_router.router, prefix="/api/v1")
 
 app.include_router(uploads_router.router, prefix="/uploads", tags=["Arquivos"])
 

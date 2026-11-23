@@ -4,9 +4,30 @@ import uuid
 from pathlib import Path
 from fastapi import UploadFile, HTTPException
 
+from app.core.exceptions import RegraNegocioError
+
 UPLOAD_DIR = Path(__file__).resolve().parents[2] / "uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 MAX_FILE_SIZE = 20 * 1024 * 1024 
+ALLOWED_TYPES = {
+    ".pdf": "application/pdf",
+    ".doc": "application/msword",
+    ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ".ppt": "application/vnd.ms-powerpoint",
+    ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    ".xls": "application/vnd.ms-excel",
+    ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ".odt": "application/vnd.oasis.opendocument.text",
+    ".odp": "application/vnd.oasis.opendocument.presentation",
+    ".ods": "application/vnd.oasis.opendocument.spreadsheet",
+    ".txt": "text/plain",
+    ".md": "text/markdown",
+    ".csv": "text/csv",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".webp": "image/webp",
+}
 
 class StorageService:
     @staticmethod
@@ -18,15 +39,18 @@ class StorageService:
         if file_size > MAX_FILE_SIZE:
             raise HTTPException(status_code=413, detail="File too large. Max size is 20MB.")
         
-        ext = os.path.splitext(file.filename)[1] if file.filename else ""
+        ext = os.path.splitext(file.filename)[1].lower() if file.filename else ""
+        content_type = ALLOWED_TYPES.get(ext)
+        if content_type is None:
+            raise RegraNegocioError(
+                "Tipo de arquivo não permitido. Envie PDF, documentos do Office ou LibreOffice, TXT, MD, CSV ou imagens PNG, JPG ou WebP."
+            )
         unique_filename = f"{uuid.uuid4().hex}{ext}"
         file_path = UPLOAD_DIR / unique_filename
 
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        content_type = file.content_type or "application/octet-stream"
-        
         return f"/uploads/{unique_filename}", content_type, file_size
 
     @staticmethod

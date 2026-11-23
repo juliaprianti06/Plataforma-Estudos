@@ -54,7 +54,13 @@ test('TarefasPanel renders tasks and handles toggle status', async () => {
   }
 
   await waitFor(() => {
-    expect(api.put).toHaveBeenCalledWith('/tarefas/1', { status: 'concluido' });
+    expect(api.put).toHaveBeenCalledWith('/tarefas/1', {
+      nome: mockTarefas[0].nome,
+      prioridade: mockTarefas[0].prioridade,
+      data_vencimento: mockTarefas[0].data_vencimento,
+      status: 'concluido',
+      disciplina_id: mockTarefas[0].disciplina_id,
+    });
     expect(api.get).toHaveBeenCalledTimes(2);
   });
 });

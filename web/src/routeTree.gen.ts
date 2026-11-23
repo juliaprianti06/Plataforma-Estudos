@@ -10,17 +10,24 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CalendarioRouteImport } from './routes/calendario'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as DisciplinasRouteImport } from './routes/disciplinas'
 import { Route as GroupsRouteImport } from './routes/groups'
 import { Route as MateriaisRouteImport } from './routes/materiais'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ProgressoRouteImport } from './routes/progresso'
+import { Route as SessoesEstudoRouteImport } from './routes/sessoes-estudo'
 import { Route as GroupsGroupIdRouteImport } from './routes/groups.$groupId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalendarioRoute = CalendarioRouteImport.update({
+  id: '/calendario',
+  path: '/calendario',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -53,6 +60,11 @@ const ProgressoRoute = ProgressoRouteImport.update({
   path: '/progresso',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SessoesEstudoRoute = SessoesEstudoRouteImport.update({
+  id: '/sessoes-estudo',
+  path: '/sessoes-estudo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GroupsGroupIdRoute = GroupsGroupIdRouteImport.update({
   id: '/$groupId',
   path: '/$groupId',
@@ -61,76 +73,90 @@ const GroupsGroupIdRoute = GroupsGroupIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/calendario': typeof CalendarioRoute
   '/dashboard': typeof DashboardRoute
   '/disciplinas': typeof DisciplinasRoute
   '/groups': typeof GroupsRouteWithChildren
   '/materiais': typeof MateriaisRoute
   '/profile': typeof ProfileRoute
   '/progresso': typeof ProgressoRoute
+  '/sessoes-estudo': typeof SessoesEstudoRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/calendario': typeof CalendarioRoute
   '/dashboard': typeof DashboardRoute
   '/disciplinas': typeof DisciplinasRoute
   '/groups': typeof GroupsRouteWithChildren
   '/materiais': typeof MateriaisRoute
   '/profile': typeof ProfileRoute
   '/progresso': typeof ProgressoRoute
+  '/sessoes-estudo': typeof SessoesEstudoRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/calendario': typeof CalendarioRoute
   '/dashboard': typeof DashboardRoute
   '/disciplinas': typeof DisciplinasRoute
   '/groups': typeof GroupsRouteWithChildren
   '/materiais': typeof MateriaisRoute
   '/profile': typeof ProfileRoute
   '/progresso': typeof ProgressoRoute
+  '/sessoes-estudo': typeof SessoesEstudoRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/calendario'
     | '/dashboard'
     | '/disciplinas'
     | '/groups'
     | '/materiais'
     | '/profile'
     | '/progresso'
+    | '/sessoes-estudo'
     | '/groups/$groupId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/calendario'
     | '/dashboard'
     | '/disciplinas'
     | '/groups'
     | '/materiais'
     | '/profile'
     | '/progresso'
+    | '/sessoes-estudo'
     | '/groups/$groupId'
   id:
     | '__root__'
     | '/'
+    | '/calendario'
     | '/dashboard'
     | '/disciplinas'
     | '/groups'
     | '/materiais'
     | '/profile'
     | '/progresso'
+    | '/sessoes-estudo'
     | '/groups/$groupId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CalendarioRoute: typeof CalendarioRoute
   DashboardRoute: typeof DashboardRoute
   DisciplinasRoute: typeof DisciplinasRoute
   GroupsRoute: typeof GroupsRouteWithChildren
   MateriaisRoute: typeof MateriaisRoute
   ProfileRoute: typeof ProfileRoute
   ProgressoRoute: typeof ProgressoRoute
+  SessoesEstudoRoute: typeof SessoesEstudoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -140,6 +166,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calendario': {
+      id: '/calendario'
+      path: '/calendario'
+      fullPath: '/calendario'
+      preLoaderRoute: typeof CalendarioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -184,6 +217,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProgressoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sessoes-estudo': {
+      id: '/sessoes-estudo'
+      path: '/sessoes-estudo'
+      fullPath: '/sessoes-estudo'
+      preLoaderRoute: typeof SessoesEstudoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/groups/$groupId': {
       id: '/groups/$groupId'
       path: '/$groupId'
@@ -207,12 +247,14 @@ const GroupsRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CalendarioRoute: CalendarioRoute,
   DashboardRoute: DashboardRoute,
   DisciplinasRoute: DisciplinasRoute,
   GroupsRoute: GroupsRouteWithChildren,
   MateriaisRoute: MateriaisRoute,
   ProfileRoute: ProfileRoute,
   ProgressoRoute: ProgressoRoute,
+  SessoesEstudoRoute: SessoesEstudoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

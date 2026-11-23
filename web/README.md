@@ -1,6 +1,6 @@
 # Frontend
 
-Interface web da Plataforma de Estudos Colaborativos, desenvolvida com React, TypeScript e Vite. O frontend consome a API do backend e oferece autenticação em modo de demonstração (`mock`).
+Interface web da Plataforma de Estudos Colaborativos, desenvolvida com React, TypeScript e Vite. O frontend consome a API do backend e também pode rodar em modo de demonstração (`mock`), sem backend.
 
 ## Tecnologias
 
@@ -57,8 +57,15 @@ A interface fica disponível em `http://localhost:5173`
 | `/disciplinas` | Disciplinas e tarefas associadas |
 | `/materiais` | Materiais de estudo |
 | `/progresso` | Indicadores e gráficos de progresso |
+| `/sessoes-estudo` | Registro, edição e histórico de sessões de estudo |
 
-As tarefas são acessadas pelo contexto das disciplinas. A página de progresso permite selecionar período semanal ou mensal. O card de tempo de estudo informa que o registro de sessões ainda não está disponível.
+As tarefas são acessadas pelo contexto das disciplinas. A página de progresso permite selecionar período semanal ou mensal. O card de tempo de estudo soma as sessões salvas no período escolhido.
+
+As sessões de estudo estão disponíveis no menu lateral. A página calcula o tempo da semana atual (segunda a domingo), do mês atual e de cada disciplina, além de permitir criar, editar e excluir registros. Os gráficos usam HTML/CSS e as cores do tema.
+
+As sessões utilizam exclusivamente os endpoints autenticados `/api/v1/sessoes-estudo/`, por meio de `src/api/study-sessions.ts`. Os registros são persistidos no PostgreSQL e continuam disponíveis após recarregar a página ou entrar novamente com a mesma conta. Não há sessões de exemplo, armazenamento em memória nem fallback para dados demonstrativos. O formulário utiliza as disciplinas cadastradas na API; é necessário usar `VITE_AUTH_MODE=api` e uma conta real do backend.
+
+Os helpers puros ficam em `src/lib/study-sessions.ts`. O servidor valida a propriedade da disciplina e calcula a duração a partir dos horários; o frontend atualiza o histórico e os indicadores com a resposta recebida da API.
 
 ## Testes
 

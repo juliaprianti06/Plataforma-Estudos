@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
-import { api } from '../../api/client';
+import { tarefasRepository } from '@/tarefas/api-repository';
 
 interface TarefaModalProps {
   isOpen?: boolean;
@@ -66,9 +66,9 @@ function TarefaModalForm({
         disciplina_id: disciplinaId,
       };
       if (tarefa?.id) {
-        await api.put(`/tarefas/${tarefa.id}`, payload);
+        await tarefasRepository.update(tarefa.id, payload);
       } else {
-        await api.post('/tarefas/', payload);
+        await tarefasRepository.create(payload);
       }
       onSuccess();
       onClose();

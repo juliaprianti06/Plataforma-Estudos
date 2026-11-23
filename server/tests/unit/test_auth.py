@@ -221,3 +221,45 @@ def test_cors_allows_frontend_bearer_requests_and_rejects_other_origins(client):
     response = client.options(BASE + "/login", headers=headers | {"Origin": "https://untrusted.example"})
     assert response.status_code == 400
     assert "access-control-allow-origin" not in response.headers
+
+
+def login(client, password=ACCOUNT["password"]):
+    return client.post(BASE + "/login", json={"email": ACCOUNT["email"], "password": password})
+
+
+def test_change_password_keeps_current_session_and_revokes_others(client):
+    current = register(client)
+    other = login(client).json()
+    response = client.post(BASE + "/password", headers=bearer(current),
+                           json={"currentPassword": ACCOUNT["password"], "newPassword": "nova-senha-456"})
+    assert response.status_code == 204, response.text
+    assert response.headers["cache-control"] == "no-store"
+    assert client.get(BASE + "/me", headers=bearer(current)).status_code == 200
+    assert client.get(BASE + "/me", headers=bearer(other)).status_code == 401
+    assert login(client).status_code == 401
+    assert login(client, "nova-senha-456").status_code == 200
+
+
+def test_change_password_rejects_wrong_current_or_same_password(client):
+    data = register(client)
+    wrong = client.post(BASE + "/password", headers=bearer(data),
+                        json={"currentPassword": "senha-errada", "newPassword": "nova-senha-456"})
+    assert wrong.status_code == 400
+    assert wrong.json()["mensagem"] == "A senha atual está incorreta."
+    same = client.post(BASE + "/password", headers=bearer(data),
+                       json={"currentPassword": ACCOUNT["password"], "newPassword": ACCOUNT["password"]})
+    assert same.status_code == 400
+    short = client.post(BASE + "/password", headers=bearer(data),
+                        json={"currentPassword": ACCOUNT["password"], "newPassword": "curta"})
+    assert short.status_code == 422
+    assert login(client).status_code == 200
+
+
+def test_change_password_requires_authentication_and_limits_attempts(client):
+    assert client.post(BASE + "/password", json={"currentPassword": "x", "newPassword": "nova-senha-456"}).status_code == 401
+    data = register(client)
+    body = {"currentPassword": "senha-errada", "newPassword": "nova-senha-456"}
+    for _ in range(login_rate_limiter.account_limit):
+        assert client.post(BASE + "/password", headers=bearer(data), json=body).status_code == 400
+    blocked = client.post(BASE + "/password", headers=bearer(data), json=body | {"currentPassword": ACCOUNT["password"]})
+    assert blocked.status_code == 429

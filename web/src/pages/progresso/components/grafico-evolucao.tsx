@@ -35,7 +35,7 @@ export function GraficoEvolucao({ points }: { points: EvolutionPoint[] }) {
           <div className="w-full overflow-hidden">
             <svg
               aria-label={`Evolução de conclusões: ${points.map((point) => `${point.rotulo}: ${point.conclusoes}`).join(', ')}`}
-              className="h-56 w-full overflow-visible"
+              className="h-48 w-full overflow-visible sm:h-56"
               preserveAspectRatio="none"
               role="img"
               viewBox={`0 0 ${WIDTH} ${HEIGHT}`}

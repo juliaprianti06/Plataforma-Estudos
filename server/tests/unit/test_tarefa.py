@@ -83,3 +83,44 @@ def test_deletar_tarefa(client):
     
     res_get = client.get(f"/api/v1/tarefas/disciplina/{disc_id}", headers=headers)
     assert len(res_get.json()) == 0
+
+
+def _coluna_de_outro_grupo(client, db):
+    from sqlalchemy import select
+    from app.models.coluna_kanban import ColunaKanban
+    from test_groups import account, DATA
+
+    dono = account(client, "dono_grupo_alvo@example.com")
+    grupo = client.post("/api/v1/groups", headers=dono, json=DATA).json()
+    coluna = db.scalar(select(ColunaKanban).where(ColunaKanban.id_grupo == int(grupo["id"])))
+    return dono, coluna.id_coluna
+
+
+def test_criar_tarefa_ignora_coluna_de_grupo_alheio(client, db):
+    dono, coluna_alvo = _coluna_de_outro_grupo(client, db)
+    headers = get_headers(register_user(client, "atacante_criar@example.com"))
+    disc_id = criar_disciplina_helper(client, headers)
+
+    res = client.post("/api/v1/tarefas/", json={
+        "nome": "Intrusa", "prioridade": "Alta", "status": "a_fazer",
+        "disciplina_id": disc_id, "id_coluna": coluna_alvo,
+    }, headers=headers)
+
+    assert res.status_code == 200, res.text
+    assert res.json()["id_coluna"] is None
+    assert client.get("/api/v1/tasks", headers=dono).json() == []
+
+
+def test_atualizar_tarefa_nao_move_para_coluna_de_grupo_alheio(client, db):
+    dono, coluna_alvo = _coluna_de_outro_grupo(client, db)
+    headers = get_headers(register_user(client, "atacante_mover@example.com"))
+    disc_id = criar_disciplina_helper(client, headers)
+    tarefa_id = client.post("/api/v1/tarefas/", json={
+        "nome": "Pessoal", "prioridade": "Alta", "status": "a_fazer", "disciplina_id": disc_id,
+    }, headers=headers).json()["id"]
+
+    res = client.put(f"/api/v1/tarefas/{tarefa_id}", json={"id_coluna": coluna_alvo}, headers=headers)
+
+    assert res.status_code == 200, res.text
+    assert res.json()["id_coluna"] is None
+    assert client.get("/api/v1/tasks", headers=dono).json() == []

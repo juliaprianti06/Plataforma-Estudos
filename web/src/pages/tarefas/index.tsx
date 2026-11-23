@@ -2,22 +2,13 @@ import { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, Check } from 'lucide-react';
 import TarefaModal from './modal-tarefas';
 import ConfirmDialog from '../../components/ui/confirm-dialog';
-import { api } from '../../api/client';
+import { tarefasRepository, type Tarefa } from '@/tarefas/api-repository';
 
 interface Disciplina {
   id: number;
   nome: string;
   professor: string;
   cor: string;
-}
-
-interface Tarefa {
-  id: number;
-  nome: string;
-  prioridade: string;
-  data_vencimento: string | null;
-  status: string;
-  disciplina_id: number;
 }
 
 interface TarefasPanelProps {
@@ -44,8 +35,8 @@ export function TarefasPanel({ disciplina, onTarefasChange }: TarefasPanelProps)
 
   useEffect(() => {
     let active = true;
-    api.get<Tarefa[]>(`/tarefas/disciplina/${disciplina.id}`)
-      .then((response) => { if (active) setTarefas(response.data); })
+    tarefasRepository.listByDisciplina(disciplina.id)
+      .then((data) => { if (active) setTarefas(data); })
       .catch((error) => { if (active) { setTarefas([]); console.error('Erro ao buscar tarefas:', error); } })
       .finally(() => { if (active) setLoadedKey(requestKey); });
     return () => { active = false; };
@@ -54,7 +45,7 @@ export function TarefasPanel({ disciplina, onTarefasChange }: TarefasPanelProps)
   const handleToggleFeito = async (tarefa: Tarefa) => {
     try {
       const novoStatus = tarefa.status === 'concluido' ? 'a_fazer' : 'concluido';
-      await api.put(`/tarefas/${tarefa.id}`, { status: novoStatus });
+      await tarefasRepository.update(tarefa.id, { nome: tarefa.nome, prioridade: tarefa.prioridade, data_vencimento: tarefa.data_vencimento, status: novoStatus, disciplina_id: tarefa.disciplina_id });
       carregarTarefas();
     } catch (error) {
       console.error('Erro ao atualizar tarefa:', error);
@@ -65,7 +56,7 @@ export function TarefasPanel({ disciplina, onTarefasChange }: TarefasPanelProps)
     if (tarefaParaExcluir === null) return;
     setIsDeleting(true);
     try {
-      await api.delete(`/tarefas/${tarefaParaExcluir}`);
+      await tarefasRepository.remove(tarefaParaExcluir);
       carregarTarefas();
     } catch (error) {
       console.error('Erro ao excluir tarefa:', error);

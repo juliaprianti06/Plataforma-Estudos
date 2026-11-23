@@ -40,9 +40,9 @@ function criarResposta(overrides: Partial<RespostaProgresso> = {}): RespostaProg
       conclusoes_periodo: 1,
     }],
     tempo_estudo: {
-      disponivel: false,
-      minutos_total: null,
-      mensagem: 'A plataforma ainda não registra sessões de estudo.',
+      disponivel: true,
+      minutos_total: 90,
+      mensagem: 'Tempo registrado nas suas sessões de estudo no período.',
     },
     conclusoes_sem_data: 0,
     ...overrides,
@@ -77,6 +77,7 @@ describe('página de progresso', () => {
 
     expect(await screen.findByText('Progresso geral')).toBeInTheDocument()
     expect(screen.getByText('66,7%')).toBeInTheDocument()
+    expect(screen.getByText('1h 30min registrados')).toBeInTheDocument()
     expect(screen.getAllByText('Matemática')).toHaveLength(2)
 
     fireEvent.click(screen.getByRole('button', { name: 'Mês' }))
@@ -116,5 +117,6 @@ describe('página de progresso', () => {
 
     expect(await screen.findByText('Ainda não há tarefas para acompanhar')).toBeInTheDocument()
     expect(screen.getByText('Cadastre tarefas em uma disciplina e seu progresso aparecerá aqui.')).toBeInTheDocument()
+    expect(screen.getByText('1h 30min registrados')).toBeInTheDocument()
   })
 })

@@ -13,3 +13,4 @@ class Disciplina(Base):
     cor = Column(String, nullable=False, default="bg-accent")
     ativo = Column(Boolean, default=True)
     tarefas = relationship("Tarefa", back_populates="disciplina", cascade="all, delete-orphan")
+    sessoes_estudo = relationship("SessaoEstudo", back_populates="disciplina", cascade="all, delete-orphan", passive_deletes=True)

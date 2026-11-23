@@ -17,3 +17,4 @@ from app.models.perfil_usuario import PerfilUsuario
 from app.models.evento_grupo import EventoGrupo
 from app.models.notificacao_lida import NotificacaoLida
 from app.models.atividade_grupo import AtividadeGrupo
+from app.models.sessao_estudo import SessaoEstudo
