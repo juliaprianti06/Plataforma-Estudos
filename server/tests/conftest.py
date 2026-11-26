@@ -19,6 +19,7 @@ os.environ["DATABASE_URL"] = test_url
 os.environ["JWT_SECRET"] = "test-only-secret-that-is-not-used-by-the-application"
 os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "60"
 os.environ["CORS_ORIGINS"] = '["http://localhost:5173"]'
+os.environ["COOKIE_SECURE"] = "true"
 
 from fastapi.testclient import TestClient
 from app.database import get_db
