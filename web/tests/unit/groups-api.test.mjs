@@ -20,7 +20,7 @@ test('groups API uses authenticated contracts, validates responses and cancels w
   const { sessionStore } = await server.ssrLoadModule('/src/auth/session.ts')
   const { api } = await server.ssrLoadModule('/src/api/client.ts')
   const { createApiGroupsRepository } = await server.ssrLoadModule('/src/groups/api-repository.ts')
-  const session = { mode: 'api', user: { id: '1', name: 'Ana', email: 'ana@example.com' }, accessToken: 'token', expiresAt: Date.now() + 3600000 }
+  const session = { mode: 'api', user: { id: '1', name: 'Ana', email: 'ana@example.com' }, sessionKey: 'token', expiresAt: Date.now() + 3600000 }
   sessionStore.save(session)
   const group = { id: '1', name: 'Clube Python', description: 'Aprendendo Python', category: 'Programação', icon: 'laptop', members: 1, inviteCode: 'ABC123', role: 'admin' }
   const calls = []
@@ -44,12 +44,12 @@ test('groups API uses authenticated contracts, validates responses and cancels w
   assert.equal(calls.at(-1).url, '/groups/join')
   await groups.join('1')
   assert.equal(calls.at(-1).url, '/groups/1/join')
-  assert.ok(calls.every(call => call.headers.Authorization === 'Bearer token'))
+  assert.ok(calls.every(call => call.headers.Authorization === undefined && call.withCredentials === true))
   payload = [{ ...group, inviteCode: 'bad' }]
   await assert.rejects(groups.list())
   const before = calls.length
   const pending = groups.create(input)
-  sessionStore.save({ ...session, user: { ...session.user, id: '2' }, accessToken: 'second-token' })
+  sessionStore.save({ ...session, user: { ...session.user, id: '2' }, sessionKey: 'second-token' })
   await assert.rejects(pending)
   assert.equal(calls.length, before)
   await assert.rejects(groups.join('1'))

@@ -40,7 +40,7 @@ sessionStore.subscribe(() => {
 })
 
 export function getProfileStore(session: AuthSession) {
-  const key = `${session.mode}:${session.user.id}:${session.accessToken ?? ''}`
+  const key = `${session.mode}:${session.user.id}:${session.sessionKey}`
   if (!cached || cached.key !== key) cached = { key, store: makeStore(session) }
   return cached.store
 }

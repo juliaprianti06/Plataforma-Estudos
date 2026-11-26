@@ -25,7 +25,8 @@ test('cadastro simulado preserva perfil ao recarregar, sem salvar a senha', asyn
   assert.equal(restored?.user.email, 'ana@example.test')
   assert.equal(storage.local.length, 0)
   assert.equal(storage.session.getItem(SESSION_KEY)?.includes('segredo123'), false)
-  assert.equal(restored?.accessToken, null)
+  assert.equal(typeof restored?.sessionKey, 'string')
+  assert.equal('accessToken' in (restored ?? {}), false)
 })
 
 test('lembrar de mim persiste; trocar para sessão temporária remove a persistente; sair limpa ambas', async () => {
@@ -69,4 +70,12 @@ test('armazenamento bloqueado mantém sessão apenas em memória e permite sair'
   assert.equal(store.getSnapshot()?.user.email, 'demo@example.test')
   store.clear()
   assert.equal(store.getSnapshot(), null)
+})
+
+test('sessões antigas com token salvo no navegador são descartadas', () => {
+  const storage = { local: memoryStorage(), session: memoryStorage() }
+  const legacy = { mode: 'api', accessToken: 'token-antigo', expiresAt: Date.now() + 60000, user: { id: '1', name: 'Ana', email: 'ana@example.test' } }
+  storage.local.setItem(SESSION_KEY, JSON.stringify(legacy))
+  assert.equal(createSessionStore(storage, 'api').read(), null)
+  assert.equal(storage.local.getItem(SESSION_KEY), null)
 })

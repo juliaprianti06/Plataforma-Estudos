@@ -6,7 +6,7 @@ import type { AuthSession } from '@/auth/types'
 import type { SessaoEstudo, SessaoEstudoInput } from '@/study-sessions/type'
 
 vi.mock('@/api/client', () => ({ api: { request: vi.fn() } }))
-const session: AuthSession = { user: { id: '1', name: 'Estudante', email: 'teste@example.com' }, mode: 'api', accessToken: 'token', expiresAt: Date.now() + 3600000 }
+const session: AuthSession = { user: { id: '1', name: 'Estudante', email: 'teste@example.com' }, mode: 'api', sessionKey: 'token', expiresAt: Date.now() + 3600000 }
 const input: SessaoEstudoInput = { disciplina: { id: 7, nome: 'Java', cor: 'bg-success' }, data: '2026-11-21', inicio: '14:00', termino: '15:30', observacao: 'Revisão' }
 const resposta: SessaoEstudo = { ...input, id: '00000000-0000-0000-0000-000000000007', duracaoMinutos: 90 }
 
@@ -45,14 +45,14 @@ test('propaga falhas de rede e não retorna registros locais como fallback', asy
 
 test('impede consultas e alterações quando a conta muda', async () => {
   const repository = criarApiSessoesEstudo(session)
-  sessionStore.save({ ...session, user: { ...session.user, id: '2' }, accessToken: 'outra-conta' })
+  sessionStore.save({ ...session, user: { ...session.user, id: '2' }, sessionKey: 'outra-conta' })
   await expect(repository.listar()).rejects.toThrow('Sua sessão mudou')
   await expect(repository.editar(resposta.id, input)).rejects.toThrow('Sua sessão mudou')
   expect(api.request).not.toHaveBeenCalled()
 })
 
 test('não usa dados demonstrativos quando a sessão é mock', async () => {
-  const mockSession: AuthSession = { ...session, mode: 'mock', accessToken: null }
+  const mockSession: AuthSession = { ...session, mode: 'mock', sessionKey: 'mock-key' }
   sessionStore.save(mockSession)
   const repository = criarApiSessoesEstudo(mockSession)
   await expect(repository.listarDisciplinas()).rejects.toThrow('Sua sessão mudou')

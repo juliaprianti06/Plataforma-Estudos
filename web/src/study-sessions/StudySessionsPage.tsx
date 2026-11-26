@@ -28,7 +28,7 @@ export function StudySessionsPage() {
       </Card>
     </div>
   )
-  return <StudySessionsContent key={`${session.user.id}:${session.accessToken}`} session={session} />
+  return <StudySessionsContent key={`${session.user.id}:${session.sessionKey}`} session={session} />
 }
 
 function StudySessionsContent({ session }: { session: AuthSession }) {

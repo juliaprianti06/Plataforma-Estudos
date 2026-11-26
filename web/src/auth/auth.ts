@@ -35,7 +35,7 @@ export const auth = {
     if (session && session.expiresAt <= Date.now()) sessionStore.clear()
   },
   async login(input: Credentials, remember: boolean) {
-    const session = await provider.login(validate(input))
+    const session = await provider.login(validate(input), remember)
     sessionStore.save(session, remember)
   },
   async register(input: Registration) {

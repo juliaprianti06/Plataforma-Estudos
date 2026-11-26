@@ -6,7 +6,7 @@ import Calendario from '@/pages/calendario'
 const { calendarTasks, calendarEvents, createEvent } = vi.hoisted(() => ({ calendarTasks: vi.fn(), calendarEvents: vi.fn(), createEvent: vi.fn() }))
 
 vi.mock('@/auth/use-auth', () => ({
-  useAuth: () => ({ user: { id: '1', name: 'Julia', email: 'julia@example.com' }, accessToken: 'token', expiresAt: Date.now() + 60_000, mode: 'api' }),
+  useAuth: () => ({ user: { id: '1', name: 'Julia', email: 'julia@example.com' }, sessionKey: 'token', expiresAt: Date.now() + 60_000, mode: 'api' }),
 }))
 
 vi.mock('@/dashboard/api-repository', () => ({

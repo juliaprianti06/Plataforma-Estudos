@@ -13,7 +13,7 @@ vi.mock('@/auth/use-auth', () => ({ useAuth: getSession }))
 vi.mock('@/api/study-sessions', () => ({ criarApiSessoesEstudo: factory }))
 vi.mock('@tanstack/react-router', () => ({ Link: ({ children }: { children: ReactNode }) => <span>{children}</span>, Navigate: () => null }))
 
-const session = { user: { id: '1', name: 'Estudante', email: 'estudante@example.com' }, accessToken: 'token-api', expiresAt: Date.now() + 3600000, mode: 'api' as const }
+const session = { user: { id: '1', name: 'Estudante', email: 'estudante@example.com' }, sessionKey: 'token-api', expiresAt: Date.now() + 3600000, mode: 'api' as const }
 const disciplina = { id: 1, nome: 'Matemática', cor: 'bg-success' }
 const historicoVazio = 'Nenhuma sessão registrada. Registre sua primeira sessão de estudo.'
 function registro(): SessaoEstudo {
@@ -114,7 +114,7 @@ describe('sessões conectadas à API', () => {
   }, 30_000)
 
   test('não oferece sessões demonstrativas para uma conta mock', () => {
-    getSession.mockReturnValue({ ...session, mode: 'mock', accessToken: null })
+    getSession.mockReturnValue({ ...session, mode: 'mock', sessionKey: 'mock-key' })
     render(<StudySessionsPage />)
     expect(screen.getByText(/Entre com uma conta conectada ao servidor/)).toBeInTheDocument()
     expect(factory).not.toHaveBeenCalled()

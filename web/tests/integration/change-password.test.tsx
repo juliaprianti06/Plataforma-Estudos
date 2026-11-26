@@ -13,7 +13,7 @@ vi.mock('../../src/api/session-request', () => ({
   },
 }));
 
-const session: AuthSession = { mode: 'api', accessToken: 'token', expiresAt: Date.now() + 60000, user: { id: '1', name: 'Ana', email: 'ana@example.com' } };
+const session: AuthSession = { mode: 'api', sessionKey: 'token', expiresAt: Date.now() + 60000, user: { id: '1', name: 'Ana', email: 'ana@example.com' } };
 
 function preencher(atual: string, nova: string, confirmacao: string) {
   fireEvent.change(screen.getByLabelText('Senha atual'), { target: { value: atual } });

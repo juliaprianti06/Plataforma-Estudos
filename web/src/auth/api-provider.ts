@@ -1,7 +1,7 @@
 import { api } from '@/api/client'
 import type { AuthProvider, AuthSession, AuthUser } from './types'
 
-type TokenResponse = { access_token: string; expires_in: number; user: AuthUser }
+type TokenResponse = { expires_in: number; user: AuthUser }
 
 function validateUser(user: AuthUser) {
   if (!user || typeof user.id !== 'string' || !user.id ||
@@ -13,19 +13,18 @@ function validateUser(user: AuthUser) {
 }
 
 function toSession(data: TokenResponse): AuthSession {
-  if (!data || typeof data.access_token !== 'string' || !data.access_token ||
-    !Number.isFinite(data.expires_in) || data.expires_in <= 0) {
+  if (!data || !Number.isFinite(data.expires_in) || data.expires_in <= 0) {
     throw new Error('O servidor retornou uma sessão inválida.')
   }
   return {
-    user: validateUser(data.user), accessToken: data.access_token,
+    user: validateUser(data.user), sessionKey: crypto.randomUUID(),
     expiresAt: Date.now() + data.expires_in * 1000, mode: 'api',
   }
 }
 
 export const apiProvider: AuthProvider = {
-  async login(input) {
-    return toSession((await api.post<TokenResponse>('/auth/login', input)).data)
+  async login(input, remember = false) {
+    return toSession((await api.post<TokenResponse>('/auth/login', { ...input, remember })).data)
   },
   async register(input) {
     return toSession((await api.post<TokenResponse>('/auth/register', input)).data)

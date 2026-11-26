@@ -20,7 +20,7 @@ test('dashboard API validates contracts, permissions and cancels writes after ac
   const { sessionStore } = await server.ssrLoadModule('/src/auth/session.ts')
   const { api } = await server.ssrLoadModule('/src/api/client.ts')
   const { createDashboardRepository, taskInput } = await server.ssrLoadModule('/src/dashboard/api-repository.ts')
-  const session = { mode: 'api', user: { id: '1', name: 'Ana', email: 'ana@example.com' }, accessToken: 'token', expiresAt: Date.now() + 3600000 }
+  const session = { mode: 'api', user: { id: '1', name: 'Ana', email: 'ana@example.com' }, sessionKey: 'token', expiresAt: Date.now() + 3600000 }
   sessionStore.save(session)
   const group = { id: '1', name: 'Clube Python', description: 'Aprendendo Python', category: 'Programa\u00e7\u00e3o', icon: 'laptop', members: 1, inviteCode: 'ABC123', role: 'admin' }
   const task = { id: 1, title: 'Estudar Python', description: '', priority: 'high', status: 'todo', dueAt: null, disciplineId: null, groupId: '1', groupName: group.name, detail: group.name, canEdit: true }
@@ -48,7 +48,7 @@ test('dashboard API validates contracts, permissions and cancels writes after ac
   assert.equal(calls.at(-1).url, '/events')
   await dashboard.deleteEvent('1')
   assert.equal(calls.at(-1).method, 'delete')
-  assert.ok(calls.every(call => call.headers.Authorization === 'Bearer token'))
+  assert.ok(calls.every(call => call.headers.Authorization === undefined && call.withCredentials === true))
 
   for (const malformed of [null, { ...data, tasks: [{ ...task, status: 'unknown' }] }, { ...data, summary: { ...data.summary, progress: 101 } }, { ...data, events: [{ ...event, startsAt: 'yesterday' }] }]) {
     payload = malformed
@@ -76,7 +76,7 @@ test('dashboard API validates contracts, permissions and cancels writes after ac
 
   const before = calls.length
   const pending = dashboard.createTask({ ...taskInput(task), groupId: '1' })
-  sessionStore.save({ ...session, user: { ...session.user, id: '2' }, accessToken: 'second-token' })
+  sessionStore.save({ ...session, user: { ...session.user, id: '2' }, sessionKey: 'second-token' })
   await assert.rejects(pending)
   assert.equal(calls.length, before)
 })

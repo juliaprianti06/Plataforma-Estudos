@@ -34,7 +34,7 @@ export function ProfilePage() {
       </div>
     </main>
   )
-  return <ProfileContent key={session.mode + session.user.id + session.accessToken} session={session} profile={profile} />
+  return <ProfileContent key={session.mode + session.user.id + session.sessionKey} session={session} profile={profile} />
 }
 
 function ProfileContent({ session, profile }: { session: AuthSession; profile: UserProfile }) {

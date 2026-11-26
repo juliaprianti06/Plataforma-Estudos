@@ -22,7 +22,7 @@ import { UpcomingEvents } from './upcoming-events'
 
 export function Dashboard() {
   const session = useAuth()
-  return session ? <DashboardContent key={`${session.mode}:${session.user.id}:${session.accessToken}`} session={session} /> : null
+  return session ? <DashboardContent key={`${session.mode}:${session.user.id}:${session.sessionKey}`} session={session} /> : null
 }
 
 function DashboardContent({ session }: { session: AuthSession }) {
