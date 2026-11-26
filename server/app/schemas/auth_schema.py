@@ -8,6 +8,7 @@ class LoginRequest(BaseModel):
 
     email: EmailStr = Field(max_length=100)
     password: SecretStr = Field(min_length=1, max_length=128)
+    remember: bool = False
 
     @field_validator("email", mode="before")
     @classmethod

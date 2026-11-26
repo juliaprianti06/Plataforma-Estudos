@@ -7,7 +7,7 @@ import { createApiProfileStore } from './api-store'
 export function createRemoteProfileStore(session: AuthSession) {
   const isCurrent = () => {
     const current = sessionStore.getSnapshot()
-    return current?.mode === 'api' && current.user.id === session.user.id && current.accessToken === session.accessToken
+    return current?.mode === 'api' && current.user.id === session.user.id && current.sessionKey === session.sessionKey
   }
   async function request(run: (signal: AbortSignal) => Promise<{ data: unknown }>) {
     if (!isCurrent()) throw new Error('Sua sessão mudou. Entre novamente.')

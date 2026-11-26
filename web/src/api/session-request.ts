@@ -6,7 +6,7 @@ import type { AuthSession } from '@/auth/types'
 export function createSessionRequest(session: AuthSession) {
   const matches = () => {
     const current = sessionStore.getSnapshot()
-    return current?.mode === 'api' && current.user.id === session.user.id && current.accessToken === session.accessToken
+    return current?.mode === 'api' && current.user.id === session.user.id && current.sessionKey === session.sessionKey
   }
   return async function request<T>(method: 'get' | 'post' | 'put' | 'delete', url: string, data?: unknown, responseType: 'json' | 'blob' = 'json'): Promise<T> {
     if (!matches()) throw new Error('Sua sess\u00e3o mudou. Entre novamente.')

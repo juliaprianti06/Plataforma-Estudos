@@ -13,7 +13,7 @@ function memoryStorage() {
   }
 }
 
-test('contrato de API: login, restauração, erros, autorização e logout', async (t) => {
+test('contrato de API: login, restauração, erros, cookie de sessão e logout', async (t) => {
   const previousWindow = globalThis.window
   globalThis.window = { localStorage: memoryStorage(), sessionStorage: memoryStorage() }
   const server = await createServer({
@@ -45,7 +45,7 @@ test('contrato de API: login, restauração, erros, autorização e logout', asy
     return {
       status, statusText: 'OK', headers: {}, config,
       data: config.url === '/auth/me' ? profile :
-        { access_token: invalidSession ? '' : 'server-token', expires_in: 3600, user: profile },
+        { access_token: 'server-token', expires_in: invalidSession ? 0 : 3600, user: profile },
     }
   }
 
@@ -60,17 +60,20 @@ test('contrato de API: login, restauração, erros, autorização e logout', asy
     await auth.login({ email: ' ANA@example.test ', password: '123456' }, true)
     const request = calls.at(-1)
     assert.equal(request.url, '/auth/login')
-    assert.deepEqual(JSON.parse(request.data), { email: profile.email, password: '123456' })
+    assert.deepEqual(JSON.parse(request.data), { email: profile.email, password: '123456', remember: true })
     assert.equal(request.headers.Authorization, undefined)
-    assert.equal(sessionStore.getSnapshot().accessToken, 'server-token')
+    assert.equal(request.withCredentials, true)
+    assert.equal(typeof sessionStore.getSnapshot().sessionKey, 'string')
     const stored = globalThis.window.localStorage.getItem('mindspace.auth.session.v1')
     assert.equal(stored.includes('password'), false)
+    assert.equal(stored.includes('server-token'), false)
   })
 
-  await t.test('validates a saved session with me and attaches bearer token', async () => {
+  await t.test('validates a saved session with me using the session cookie', async () => {
     await auth.restore()
     assert.equal(calls.at(-1).url, '/auth/me')
-    assert.equal(calls.at(-1).headers.Authorization, 'Bearer server-token')
+    assert.equal(calls.at(-1).headers.Authorization, undefined)
+    assert.equal(calls.at(-1).withCredentials, true)
     assert.equal(sessionStore.getSnapshot().user.name, 'Ana Silva')
     await Route.options.beforeLoad()
   })

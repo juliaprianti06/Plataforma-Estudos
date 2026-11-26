@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     jwt_secret: SecretStr = Field(min_length=32)
     access_token_expire_minutes: int = Field(default=60, ge=1, le=1440)
     cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
+    cookie_secure: bool = True
 
 
 @lru_cache

@@ -263,3 +263,54 @@ def test_change_password_requires_authentication_and_limits_attempts(client):
         assert client.post(BASE + "/password", headers=bearer(data), json=body).status_code == 400
     blocked = client.post(BASE + "/password", headers=bearer(data), json=body | {"currentPassword": ACCOUNT["password"]})
     assert blocked.status_code == 429
+
+
+ORIGIN = {"Origin": "http://localhost:5173"}
+
+
+def https_client(client):
+    from fastapi.testclient import TestClient
+    return TestClient(client.app, base_url="https://testserver")
+
+
+def session_cookie(response):
+    cookies = [value for key, value in response.headers.multi_items() if key == "set-cookie" and value.startswith("mindspace_session=")]
+    assert len(cookies) == 1, response.headers
+    return cookies[0].lower()
+
+
+def test_login_sets_httponly_session_cookie(client):
+    register(client)
+    cookie = session_cookie(client.post(BASE + "/login", json={"email": ACCOUNT["email"], "password": ACCOUNT["password"]}))
+    assert "httponly" in cookie and "secure" in cookie and "samesite=lax" in cookie and "path=/" in cookie
+    assert "max-age" not in cookie
+    remembered = session_cookie(client.post(BASE + "/login", json={"email": ACCOUNT["email"], "password": ACCOUNT["password"], "remember": True}))
+    assert f"max-age={get_settings().access_token_expire_minutes * 60}" in remembered
+
+
+def test_cookie_authenticates_reads_and_requires_trusted_origin_for_changes(client):
+    browser = https_client(client)
+    assert browser.post(BASE + "/register", json=ACCOUNT).status_code == 201
+    me = browser.get(BASE + "/me")
+    assert me.status_code == 200 and me.json()["email"] == ACCOUNT["email"]
+    body = {"currentPassword": ACCOUNT["password"], "newPassword": "nova-senha-456"}
+    assert browser.post(BASE + "/password", json=body).status_code == 403
+    assert browser.post(BASE + "/password", json=body, headers={"Origin": "https://evil.example"}).status_code == 403
+    assert browser.post(BASE + "/password", json=body, headers={"Referer": "https://evil.example/page"}).status_code == 403
+    assert browser.post(BASE + "/password", json=body, headers=ORIGIN).status_code == 204
+
+
+def test_cookie_logout_revokes_session_and_clears_cookie(client):
+    browser = https_client(client)
+    data = browser.post(BASE + "/register", json=ACCOUNT).json()
+    response = browser.post(BASE + "/logout", headers=ORIGIN)
+    assert response.status_code == 204
+    assert "max-age=0" in session_cookie(response)
+    assert browser.get(BASE + "/me").status_code == 401
+    assert client.get(BASE + "/me", headers=bearer(data)).status_code == 401
+
+
+def test_bearer_still_works_without_origin_during_transition(client):
+    data = register(client)
+    body = {"currentPassword": ACCOUNT["password"], "newPassword": "nova-senha-456"}
+    assert client.post(BASE + "/password", headers=bearer(data), json=body).status_code == 204

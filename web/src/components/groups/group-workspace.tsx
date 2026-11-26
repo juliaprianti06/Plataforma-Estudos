@@ -24,7 +24,7 @@ type Confirmation = { title: string; description: string; action: () => Promise<
 
 export function GroupWorkspacePage({ groupId }: { groupId: string }) {
   const session = useAuth()
-  return session ? <Workspace key={`${groupId}:${session.user.id}:${session.accessToken}`} groupId={groupId} session={session} /> : null
+  return session ? <Workspace key={`${groupId}:${session.user.id}:${session.sessionKey}`} groupId={groupId} session={session} /> : null
 }
 
 function Workspace({ groupId, session }: { groupId: string; session: AuthSession }) {

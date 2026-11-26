@@ -33,7 +33,7 @@ test('contrato de API: chamadas de tarefa', async (t) => {
   const { api } = await server.ssrLoadModule('/src/api/client.ts')
   
   const profile = { id: 'user-1', name: 'User', email: 'user@test.com' }
-  sessionStore.save({ user: profile, accessToken: 'valid-token', expiresAt: Date.now() + 3600000, mode: 'api' })
+  sessionStore.save({ user: profile, sessionKey: 'valid-token', expiresAt: Date.now() + 3600000, mode: 'api' })
 
   let status = 200
   const calls = []
@@ -59,7 +59,8 @@ test('contrato de API: chamadas de tarefa', async (t) => {
   await t.test('recupera lista de tarefas de uma disciplina', async () => {
     const res = await api.get('/tarefas/disciplina/1')
     assert.equal(calls.at(-1).url, '/tarefas/disciplina/1')
-    assert.equal(calls.at(-1).headers.Authorization, 'Bearer valid-token')
+    assert.equal(calls.at(-1).headers.Authorization, undefined)
+    assert.equal(calls.at(-1).withCredentials, true)
     assert.deepEqual(res.data, mockTarefas)
   })
 

@@ -32,14 +32,14 @@ export function createSessionStore(storage: StoragePair, mode: AuthSession['mode
           typeof parsed.user?.id !== 'string' || !parsed.user.id ||
           typeof parsed.user?.name !== 'string' || !parsed.user.name.trim() ||
           typeof parsed.user?.email !== 'string' || !parsed.user.email ||
-          (mode === 'api' && (typeof parsed.accessToken !== 'string' || !parsed.accessToken))
+          typeof parsed.sessionKey !== 'string' || !parsed.sessionKey
         ) {
           target.removeItem(SESSION_KEY)
           continue
         }
         current = {
           mode, expiresAt: parsed.expiresAt,
-          accessToken: mode === 'api' ? parsed.accessToken : null,
+          sessionKey: parsed.sessionKey,
           user: { id: parsed.user.id, name: parsed.user.name, email: parsed.user.email },
         }
         persistent = remember

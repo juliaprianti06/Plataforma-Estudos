@@ -5,7 +5,7 @@ export const DEMO_EMAIL = 'demo@mindspace.test'
 // Simulates the flow, not password verification. No passwords are saved.
 export function createMockProvider(): AuthProvider {
   function session(user: AuthUser): AuthSession {
-    return { user, accessToken: null, expiresAt: Date.now() + 24 * 60 * 60 * 1000, mode: 'mock' }
+    return { user, sessionKey: crypto.randomUUID(), expiresAt: Date.now() + 24 * 60 * 60 * 1000, mode: 'mock' }
   }
 
   return {

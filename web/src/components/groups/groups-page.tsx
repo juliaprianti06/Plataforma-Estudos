@@ -14,7 +14,7 @@ import { DiscoverDialog } from './discover-dialog'
 
 export function GroupsPage() {
   const session = useAuth()
-  return session ? <GroupsContent key={session.mode + session.user.id + session.accessToken} session={session} /> : <Navigate to="/" replace />
+  return session ? <GroupsContent key={session.mode + session.user.id + session.sessionKey} session={session} /> : <Navigate to="/" replace />
 }
 
 function GroupsContent({ session }: { session: AuthSession }) {
