@@ -2,7 +2,7 @@
 
 Plataforma web para ajudar estudantes a organizar suas atividades acadêmicas, acompanhar o progresso nos estudos e colaborar em grupos. O sistema combina uma interface em React, uma API em FastAPI e um banco de dados PostgreSQL.
 
-> **Status:** em desenvolvimento. O planejamento do projeto está organizado em quatro sprints.
+> **Status:** Concluído. O planejamento do projeto está organizado em quatro sprints.
 
 ## Sumário
 
@@ -30,12 +30,14 @@ O projeto apoia estudantes na organização de disciplinas, tarefas e materiais.
 - Upload, consulta e gerenciamento de materiais de estudo;
 - Grupos de estudo, participação por convite e controle de permissões;
 - Acompanhamento do progresso por disciplina e períodos semanal ou mensal;
+- Registro, edição e exclusão de sessões de estudo;
+- Visualização do tempo estudado no progresso, por período e disciplina;
+- Calendário acadêmico com tarefas e eventos do estudante e dos grupos dos quais participa;
 - Interface responsiva para desktop, tablets e telas menores.
-
 
 ## Documentação
 
-- [Diagrama da arquitetura](docs/diagrama-arquitetura.png)
+- [Diagrama da arquitetura](docs/arquitetura.png)
 - [Product Backlog](docs/Product_Backlog_Plataforma_Estudos_Colaborativos.pdf)
 
 ## Links do projeto
@@ -98,7 +100,7 @@ O projeto apoia estudantes na organização de disciplinas, tarefas e materiais.
    - API: <http://localhost:8000>
    - Documentação interativa da API: <http://localhost:8000/docs>
 
-Por padrão, o frontend usa a API. Para garantir a configuração, crie `web/.env` a partir de `web/.env.example` com estas configurações e reinicie os serviços:
+Por padrão, o frontend usa a API. Para garantir a configuração, crie `web/.env` a partir de `web/.env.example`:
 
 ```dotenv
 VITE_AUTH_MODE=api
@@ -107,22 +109,28 @@ VITE_API_URL=http://localhost:8000/api/v1
 
 ## Testes
 
-Execute os comandos na raiz do projeto, com os containers em execução. A base de testes do backend precisa ser criada uma vez:
+Com os containers em execução, crie a base de testes do backend uma única vez:
 
 ```powershell
 docker compose exec -T db createdb -U postgres estudos_colaborativos_test
 ```
 
-Se o banco já existir, não é necessário criá-lo novamente. Execute as suítes:
+Se o banco já existir, não é necessário criá-lo novamente.
+
+### Backend
 
 ```powershell
 docker compose exec backend pytest -v
+```
+
+### Frontend
+
+```powershell
 docker compose exec frontend npm run test
 docker compose exec frontend npm run test:unit
 ```
 
-
-Para verificar o lint e gerar o build do frontend:
+### Lint e build
 
 ```powershell
 docker compose exec frontend npm run lint
@@ -131,45 +139,44 @@ docker compose exec frontend npm run build
 
 ## Arquitetura e padrões
 
-O backend tem uma organização em camadas:
+O backend possui uma organização em camadas:
 
-- **Routers** recebem as requisições HTTP;
-- **Schemas** validam os dados de entrada e saída;
-- **Commands** encapsulam operações específicas de escrita, incluindo a movimentação de tarefas no Kanban;
-- **Services** coordenam regras de negócio e operações que envolvem várias etapas;
-- **Repositories** concentram consultas e gravações;
-- **Models** representam as entidades persistidas no banco.
+- **Routers:** recebem as requisições HTTP;
+- **Schemas:** validam os dados de entrada e saída;
+- **Commands:** encapsulam operações específicas de escrita;
+- **Services:** coordenam regras de negócio;
+- **Repositories:** concentram consultas e gravações;
+- **Models:** representam as entidades persistidas no banco.
 
-No frontend, as rotas encaminham para páginas, as páginas compõem a interface com componentes reutilizáveis e a pasta `api` centraliza as chamadas HTTP.
+No frontend, as rotas encaminham para páginas, as páginas utilizam componentes reutilizáveis e a pasta `api` centraliza as chamadas HTTP.
 
 ### Repository Pattern
 
-O Repository Pattern separa o acesso ao banco das rotas e de parte das regras de negócio. Isso concentra consultas e gravações e facilita a manutenção.
+Separa o acesso ao banco das rotas e das regras de negócio, facilitando a manutenção e os testes.
 
 ### Command Pattern
 
-Commands encapsulam operações de escrita, como criar, atualizar e excluir disciplinas, tarefas e materiais. A movimentação de tarefas no Kanban também usa um comando próprio, que valida o acesso, atualiza a coluna e o status e registra a data de conclusão quando necessário.
+Encapsula operações de escrita, como criar, atualizar, excluir e movimentar tarefas no Kanban.
 
 ### Injeção de dependência e pool de conexões
 
-O FastAPI usa `Depends` para fornecer recursos, como a sessão do banco, às rotas. O SQLAlchemy mantém um `engine` compartilhado pela aplicação e administra um pool de conexões reutilizáveis. Ao encerrar uma sessão, a conexão pode retornar ao pool.
+O FastAPI usa `Depends` para fornecer recursos, como a sessão do banco, às rotas. O SQLAlchemy mantém um pool de conexões reutilizáveis para acessar o PostgreSQL.
 
-
-### Resumo das sprints
+## Resumo das sprints
 
 | Sprint | Foco | Situação |
 | --- | --- | --- |
 | Sprint 1 | Autenticação, segurança, disciplinas, tarefas e perfil | Funcionalidades principais implementadas |
 | Sprint 2 | Kanban, dashboard, progresso, filtros e materiais | Parcialmente implementada |
-| Sprint 3 | Grupos, membros, permissões e compartilhamento | Recursos de grupos e tarefas colaborativas implementados; compartilhamento de materiais e comentários planejados |
-| Sprint 4 | Calendário, notificações, busca, estatísticas, testes e documentação | Parcialmente implementada |
+| Sprint 3 | Grupos, membros, permissões e compartilhamento | Recursos de grupos e tarefas colaborativas implementados |
+| Sprint 4 | Calendário, sessões de estudo, notificações, testes e documentação | Parcialmente implementada |
 
 ### Sprint 1 — Fundação da plataforma
 
 - **US01:** Cadastro de conta;
 - **US02:** Login e logout seguros;
 - **US03:** Cadastro e visualização de disciplinas;
-- **US04:** Criação e visualização de tarefas vinculadas a disciplinas;
+- **US04:** Criação e visualização de tarefas;
 - **US05:** Edição, exclusão e conclusão de tarefas;
 - **US06:** Proteção dos dados e controle de acesso;
 - **US07:** Interface responsiva;
@@ -178,35 +185,35 @@ O FastAPI usa `Depends` para fornecer recursos, como a sessão do banco, às rot
 ### Sprint 2 — Organização acadêmica e materiais
 
 - **US09:** Organização de tarefas em quadro Kanban;
-- **US10:** Movimentação de tarefas entre as etapas do Kanban;
+- **US10:** Movimentação de tarefas no Kanban;
 - **US11:** Envio de materiais de estudo;
 - **US12:** Visualização e download dos materiais;
-- **US13:** Dashboard com resumo das atividades acadêmicas;
+- **US13:** Dashboard com resumo das atividades;
 - **US14:** Filtros e ordenação de tarefas;
 - **US15:** Acompanhamento do progresso por disciplina.
 
-O progresso oferece indicadores por período semanal ou mensal. O registro de sessões de estudo ainda não está implementado, por isso os indicadores de tempo estudado dependem de uma etapa futura.
+O progresso apresenta indicadores semanais ou mensais e utiliza as sessões registradas para calcular o tempo estudado.
 
 ### Sprint 3 — Colaboração entre usuários
 
 - **US16:** Criação de grupos de estudo;
 - **US17:** Entrada e saída de grupos;
-- **US18:** Gerenciamento de membros pelo administrador;
-- **US19:** Controle de permissões dos integrantes;
-- **US20:** Compartilhamento de materiais com grupos;
-- **US21:** Acesso e download de materiais compartilhados;
+- **US18:** Gerenciamento de membros;
+- **US19:** Controle de permissões;
+- **US20:** Compartilhamento de materiais;
+- **US21:** Download de materiais compartilhados;
 - **US22:** Comentários em materiais.
 
-### Sprint 4 — Recursos complementares e finalização
+### Sprint 4 — Recursos complementares
 
-- **US23:** Calendário de compromissos acadêmicos;
-- **US24:** Notificações sobre prazos e atividades;
-- **US25:** Busca por tarefas, disciplinas, grupos e materiais;
-- **US26:** Estatísticas de atividades acadêmicas;
-- **US27:** Testes dos principais fluxos;
-- **US28:** Documentação do projeto e da API.
-
-
+- **US23:** Calendário integrado às tarefas e eventos;
+- **US24:** Registro, edição e exclusão de sessões de estudo;
+- **US25:** Exibição do tempo estudado no progresso;
+- **US26:** Notificações sobre prazos e atividades;
+- **US27:** Busca por tarefas, disciplinas, grupos e materiais;
+- **US28:** Estatísticas de atividades acadêmicas;
+- **US29:** Testes dos principais fluxos;
+- **US30:** Documentação do projeto e da API.
 
 ---
 
